@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>America's Deadliest Animal | Data Dive Bar</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon-red: #ff3c3c;
+    --neon-amber: #ffb347;
+    --neon-blue: #4fc3f7;
+    --neon-green: #69f0ae;
+    --neon-pink: #ff6b9d;
+    --dark-bg: #0d0d0d;
+    --panel-bg: #1a1a1a;
+    --card-bg: #141414;
+    --chalk: #e8e0d4;
+    --muted: #7a7265;
+    --deer-color: #ff5722;
+    --bee-color: #ffc107;
+    --dog-color: #4fc3f7;
+    --mammal-color: #ab47bc;
+    --snake-color: #69f0ae;
+    --spider-color: #ef5350;
+    --shark-color: #78909c;
+    --gator-color: #8bc34a;
+    --bear-color: #795548;
+    --scorpion-color: #ff9800;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark-bg);
+    color: var(--chalk);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* === TEXTURE & ATMOSPHERE === */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255,255,255,0.008) 2px,
+        rgba(255,255,255,0.008) 4px
+      );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .page-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* === HERO === */
+  .hero {
+    text-align: center;
+    padding: 80px 0 40px;
+    position: relative;
+  }
+
+  .hero-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--neon-amber);
+    margin-bottom: 24px;
+    opacity: 0.9;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    line-height: 1.08;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--neon-red);
+    text-shadow: 0 0 30px rgba(255, 60, 60, 0.4);
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 540px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  .hero-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 32px;
+    letter-spacing: 1px;
+  }
+
+  /* === SECTION STYLES === */
+  .viz-section {
+    margin: 64px 0;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--neon-amber);
+    margin-bottom: 8px;
+    opacity: 0.7;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    color: #fff;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .section-desc {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-bottom: 32px;
+    max-width: 640px;
+    line-height: 1.6;
+  }
+
+  /* === CHART 1: THE BODY COUNT === */
+  .body-count-chart {
+    position: relative;
+  }
+
+  .animal-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 60px;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+    height: 42px;
+  }
+
+  .animal-row.deer-row {
+    height: 56px;
+    margin-bottom: 12px;
+  }
+
+  .animal-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-align: right;
+    color: var(--chalk);
+    white-space: nowrap;
+  }
+
+  .animal-name .emoji {
+    margin-right: 6px;
+  }
+
+  .bar-container {
+    position: relative;
+    height: 100%;
+    background: rgba(255,255,255,0.03);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    position: relative;
+    transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    width: 0;
+  }
+
+  .bar-fill.animated { /* width set by JS */ }
+
+  .bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    border-radius: 4px;
+  }
+
+  .deer-row .bar-fill {
+    background: linear-gradient(90deg, var(--deer-color), #ff8a65);
+    box-shadow: 0 0 20px rgba(255, 87, 34, 0.3);
+  }
+
+  .bee-row .bar-fill {
+    background: linear-gradient(90deg, var(--bee-color), #ffd54f);
+  }
+
+  .dog-row .bar-fill {
+    background: linear-gradient(90deg, var(--dog-color), #81d4fa);
+  }
+
+  .mammal-row .bar-fill {
+    background: linear-gradient(90deg, var(--mammal-color), #ce93d8);
+  }
+
+  .snake-row .bar-fill {
+    background: linear-gradient(90deg, var(--snake-color), #a5d6a7);
+  }
+
+  .scorpion-row .bar-fill {
+    background: linear-gradient(90deg, var(--scorpion-color), #ffcc80);
+  }
+
+  .spider-row .bar-fill {
+    background: linear-gradient(90deg, var(--spider-color), #ef9a9a);
+  }
+
+  .gator-row .bar-fill {
+    background: linear-gradient(90deg, var(--gator-color), #aed581);
+  }
+
+  .bear-row .bar-fill {
+    background: linear-gradient(90deg, var(--bear-color), #a1887f);
+  }
+
+  .shark-row .bar-fill {
+    background: linear-gradient(90deg, var(--shark-color), #b0bec5);
+  }
+
+  .bar-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--chalk);
+    text-align: left;
+    opacity: 0;
+    transition: opacity 0.5s ease 1.5s;
+  }
+
+  .bar-value.visible { opacity: 1; }
+
+  .deer-row .animal-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--deer-color);
+  }
+
+  .deer-row .bar-value {
+    font-size: 16px;
+    color: var(--deer-color);
+  }
+
+  .divider-line {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.1);
+    margin: 16px 0 16px 152px;
+  }
+
+  .divider-note {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    margin-left: 152px;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* fear vs kills annotation */
+  .fear-callout {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: rgba(255, 60, 60, 0.05);
+    border-left: 3px solid var(--neon-red);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .fear-callout p {
+    font-size: 0.92rem;
+    color: var(--chalk);
+    line-height: 1.6;
+  }
+
+  .fear-callout strong {
+    color: var(--neon-red);
+  }
+
+  .fear-callout .stat-pop {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+  }
+
+  /* === CHART 2: THE CLOCK === */
+  .clock-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+  }
+
+  .clock-svg {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* === CHART 3: THE TREND === */
+  .trend-container {
+    position: relative;
+  }
+
+  .trend-svg {
+    width: 100%;
+  }
+
+  /* === PROSE SECTIONS === */
+  .prose {
+    margin: 48px 0;
+  }
+
+  .prose p {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--chalk);
+    margin-bottom: 20px;
+  }
+
+  .prose p:first-child::first-letter {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5em;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: var(--neon-red);
+  }
+
+  .pull-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-style: italic;
+    color: #fff;
+    text-align: center;
+    margin: 56px 0;
+    padding: 32px 24px;
+    position: relative;
+    line-height: 1.4;
+  }
+
+  .pull-quote::before, .pull-quote::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: var(--neon-amber);
+    margin: 0 auto 24px;
+  }
+
+  .pull-quote::after {
+    margin: 24px auto 0;
+  }
+
+  /* === METHODOLOGY === */
+  .methodology {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .methodology h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .methodology p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+
+  /* === FOOTER === */
+  .article-footer {
+    text-align: center;
+    padding: 48px 0 64px;
+    margin-top: 40px;
+  }
+
+  .article-footer .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--neon-amber);
+    text-transform: uppercase;
+  }
+
+  .article-footer .tagline {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 600px) {
+    .animal-row {
+      grid-template-columns: 100px 1fr 45px;
+      gap: 8px;
+      height: 36px;
+    }
+    .animal-row.deer-row { height: 46px; }
+    .animal-name { font-size: 10px; }
+    .bar-value { font-size: 11px; }
+    .hero { padding: 48px 0 24px; }
+    .viz-section { margin: 40px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-container">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-kicker">Data Dive Bar — Investigation No. 001</div>
+    <h1>America's Deadliest Animal Is a <em>Deer</em> and It's Not Even Close</h1>
+    <p class="hero-sub">Every year, roughly 470 Americans are killed by animals. We pulled the federal data to find out which ones. The results are not what Shark Week prepared you for.</p>
+    <div class="hero-meta">By Tobias · CDC WONDER • NHTSA FARS • 2019–2023</div>
+  </header>
+
+  <!-- PROSE INTRO -->
+  <div class="prose">
+    <p>Americans spend a lot of emotional energy on the wrong animals. We make movies about sharks. We tell campfire stories about bears. We scroll past alligator attack headlines with a cocktail of horror and fascination. But the federal data on who's actually killing us reads less like a creature feature and more like a traffic report — because that's essentially what it is.</p>
+    <p>To build a complete picture of animal-caused deaths in the U.S., we combined two federal datasets: the CDC's WONDER mortality database (which tracks deaths from direct animal contact — bites, stings, tramplings) and NHTSA's Fatality Analysis Reporting System (which tracks fatal vehicle collisions where the first harmful event was striking an animal). Neither source alone tells the full story. Together, they reveal something absurd.</p>
+  </div>
+
+  <!-- CHART 1: BODY COUNT -->
+  <div class="viz-section" id="chart1">
+    <div class="section-label">Chart 01</div>
+    <div class="section-title">The Body Count</div>
+    <div class="section-desc">Average annual human deaths by animal, 2019–2023. Deer deaths estimated at 77% of all FARS animal-vehicle fatalities (per IIHS study). CDC counts below 10 use available research estimates.</div>
+
+    <div class="body-count-chart" id="bodyCountChart">
+      <!-- Deer -->
+      <div class="animal-row deer-row">
+        <div class="animal-name"><span class="emoji">🦌</span>Deer</div>
+        <div class="bar-container"><div class="bar-fill" data-width="100"></div></div>
+        <div class="bar-value">~150</div>
+      </div>
+
+      <!-- Bees -->
+      <div class="animal-row bee-row">
+        <div class="animal-name"><span class="emoji">🐝</span>Bees / Wasps</div>
+        <div class="bar-container"><div class="bar-fill" data-width="56"></div></div>
+        <div class="bar-value">84</div>
+      </div>
+
+      <!-- Dogs -->
+      <div class="animal-row dog-row">
+        <div class="animal-name"><span class="emoji">🐕</span>Dogs</div>
+        <div class="bar-container"><div class="bar-fill" data-width="51"></div></div>
+        <div class="bar-value">77</div>
+      </div>
+
+      <!-- Other Mammals -->
+      <div class="animal-row mammal-row">
+        <div class="animal-name"><span class="emoji">🐄</span>Cows / Horses</div>
+        <div class="bar-container"><div class="bar-fill" data-width="49"></div></div>
+        <div class="bar-value">74</div>
+      </div>
+
+      <hr class="divider-line">
+      <div class="divider-note">↓ below this line: the animals you're actually afraid of ↓</div>
+
+      <!-- Venomous Snakes -->
+      <div class="animal-row snake-row">
+        <div class="animal-name"><span class="emoji">🐍</span>Snakes</div>
+        <div class="bar-container"><div class="bar-fill" data-width="4.7"></div></div>
+        <div class="bar-value">~7</div>
+      </div>
+
+      <!-- Scorpions / Arthropods -->
+      <div class="animal-row scorpion-row">
+        <div class="animal-name"><span class="emoji">🦂</span>Scorpions</div>
+        <div class="bar-container"><div class="bar-fill" data-width="3.3"></div></div>
+        <div class="bar-value">~5</div>
+      </div>
+
+      <!-- Spiders -->
+      <div class="animal-row spider-row">
+        <div class="animal-name"><span class="emoji">🕷️</span>Spiders</div>
+        <div class="bar-container"><div class="bar-fill" data-width="2.7"></div></div>
+        <div class="bar-value">~4</div>
+      </div>
+
+      <!-- Alligators -->
+      <div class="animal-row gator-row">
+        <div class="animal-name"><span class="emoji">🐊</span>Alligators</div>
+        <div class="bar-container"><div class="bar-fill" data-width="0.7"></div></div>
+        <div class="bar-value">~1</div>
+      </div>
+
+      <!-- Bears -->
+      <div class="animal-row bear-row">
+        <div class="animal-name"><span class="emoji">🐻</span>Bears</div>
+        <div class="bar-container"><div class="bar-fill" data-width="0.7"></div></div>
+        <div class="bar-value">~1</div>
+      </div>
+
+      <!-- Sharks -->
+      <div class="animal-row shark-row">
+        <div class="animal-name"><span class="emoji">🦈</span>Sharks</div>
+        <div class="bar-container"><div class="bar-fill" data-width="0.7"></div></div>
+        <div class="bar-value">~1</div>
+      </div>
+    </div>
+
+    <div class="fear-callout">
+      <p>Sharks, bears, and alligators — the animals that star in horror movies and dominate cable news — combine for roughly <span class="stat-pop">3 deaths per year</span>. Deer kill <strong>50 times that many</strong>. The difference is that deer don't attack you. They just <em>stand there</em>, on a county road, at dusk, while you're doing 55.</p>
+    </div>
+  </div>
+
+  <!-- PULL QUOTE -->
+  <div class="pull-quote">
+    "Most people don't think of a car accident as an animal attack. That's exactly why deer get away with it."
+  </div>
+
+  <!-- CHART 2: THE CLOCK -->
+  <div class="viz-section" id="chart2">
+    <div class="section-label">Chart 02</div>
+    <div class="section-title">The Killing Hours</div>
+    <div class="section-desc">Fatal animal-vehicle crashes by hour of day, 2023. Deer are crepuscular — most active at dawn and dusk. The data is a near-perfect mirror of their biology. 82% of these crashes happen on dark, unlit rural roads.</div>
+
+    <div class="clock-container">
+      <svg class="clock-svg" viewBox="0 0 520 520" id="clockChart"></svg>
+    </div>
+  </div>
+
+  <!-- CHART 3: THE TREND -->
+  <div class="viz-section" id="chart3">
+    <div class="section-label">Chart 03</div>
+    <div class="section-title">It's Getting Worse</div>
+    <div class="section-desc">Total animal-related fatalities by year, combining CDC direct-contact deaths and NHTSA vehicle-collision deaths. 2023 was the deadliest year in the dataset — driven almost entirely by a spike in deer-vehicle crashes.</div>
+
+    <div class="trend-container">
+      <svg class="trend-svg" viewBox="0 0 860 400" id="trendChart"></svg>
+    </div>
+  </div>
+
+  <!-- CLOSING PROSE -->
+  <div class="prose">
+    <p>The unsatisfying truth about America's deadliest animal is that there's nothing cinematic about it. No one's making a summer blockbuster about a white-tailed doe frozen in headlights on Route 6 in rural Pennsylvania. But that's where the bodies are. In 2023 alone, deer-vehicle collisions killed an estimated 180 people — more than bees, dogs, snakes, sharks, bears, alligators, and spiders combined.</p>
+    <p>And the trend line is going the wrong direction. Fatal animal-vehicle crashes hit a 15-year high in 2023, up 23% from the prior year. Whether that's expanding deer populations, more rural driving, or just statistical noise remains an open question. But the data is clear on one thing: if you're an American worried about being killed by an animal, you should be a lot less worried about what's lurking in the water and a lot more worried about your commute home in November.</p>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="methodology">
+    <h3>Methodology & Sources</h3>
+    <p><strong>CDC WONDER</strong> — Underlying Cause of Death database, 2018–2023 Single Race files. Grouped by ICD-10 Sub-Chapter. Codes W53–W64 (nonvenomous animal contact) and X20–X29 (venomous animal contact). Individual codes with fewer than 10 annual deaths are suppressed by CDC. Estimates for suppressed categories (snakes, spiders, sharks, bears, alligators) are based on published wildlife agency reports and academic literature.</p>
+    <p><strong>NHTSA FARS</strong> — Fatality Analysis Reporting System, 2019–2023 Accident files. Filtered to First Harmful Event code 11 ("Live Animal"). FARS does not record species. The 77% deer estimate comes from Williams & Wells (2005), a review of 147 fatal animal crashes in nine states conducted for IIHS.</p>
+    <p><strong>What's not included:</strong> Diseases transmitted by animals (Lyme, rabies, etc.), allergic reactions not coded as animal contact, and non-fatal injuries. The true impact of deer on human health is considerably larger than what's captured here.</p>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="article-footer">
+    <div class="logo">Data Dive Bar</div>
+    <div class="tagline">Unhinged investigations. Unnecessary charts. Questionable research conducted at questionable hours.</div>
+  </div>
+
+</div>
+
+<script>
+// ==============================
+// CHART 1: Animate bar chart
+// ==============================
+const observerCallback = (entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const bars = entry.target.querySelectorAll('.bar-fill');
+      const values = entry.target.querySelectorAll('.bar-value');
+      bars.forEach((bar, i) => {
+        setTimeout(() => {
+          bar.style.width = bar.dataset.width + '%';
+        }, i * 80);
+      });
+      setTimeout(() => {
+        values.forEach(v => v.classList.add('visible'));
+      }, 200);
+    }
+  });
+};
+
+const observer = new IntersectionObserver(observerCallback, { threshold: 0.3 });
+const chart1El = document.getElementById('bodyCountChart');
+if (chart1El) observer.observe(chart1El);
+
+// ==============================
+// CHART 2: Radial clock chart
+// ==============================
+(function buildClock() {
+  const svg = document.getElementById('clockChart');
+  if (!svg) return;
+
+  const hourlyData = [
+    { hour: 0,  crashes: 9,  fatals: 9 },
+    { hour: 1,  crashes: 4,  fatals: 5 },
+    { hour: 2,  crashes: 9,  fatals: 12 },
+    { hour: 3,  crashes: 8,  fatals: 9 },
+    { hour: 4,  crashes: 4,  fatals: 4 },
+    { hour: 5,  crashes: 15, fatals: 16 },
+    { hour: 6,  crashes: 6,  fatals: 6 },
+    { hour: 7,  crashes: 12, fatals: 12 },
+    { hour: 8,  crashes: 2,  fatals: 3 },
+    { hour: 9,  crashes: 5,  fatals: 5 },
+    { hour: 10, crashes: 5,  fatals: 6 },
+    { hour: 11, crashes: 4,  fatals: 4 },
+    { hour: 12, crashes: 4,  fatals: 4 },
+    { hour: 13, crashes: 1,  fatals: 1 },
+    { hour: 14, crashes: 5,  fatals: 5 },
+    { hour: 15, crashes: 6,  fatals: 7 },
+    { hour: 16, crashes: 7,  fatals: 7 },
+    { hour: 17, crashes: 6,  fatals: 7 },
+    { hour: 18, crashes: 15, fatals: 15 },
+    { hour: 19, crashes: 24, fatals: 27 },
+    { hour: 20, crashes: 22, fatals: 23 },
+    { hour: 21, crashes: 14, fatals: 15 },
+    { hour: 22, crashes: 14, fatals: 14 },
+    { hour: 23, crashes: 13, fatals: 15 },
+  ];
+
+  const cx = 260, cy = 260;
+  const innerR = 70, outerRMax = 230;
+  const maxCrashes = Math.max(...hourlyData.map(d => d.crashes));
+
+  const ns = 'http://www.w3.org/2000/svg';
+
+  // Background rings
+  [0.25, 0.5, 0.75, 1].forEach(frac => {
+    const r = innerR + (outerRMax - innerR) * frac;
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', cx);
+    circle.setAttribute('cy', cy);
+    circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', 'rgba(255,255,255,0.04)');
+    circle.setAttribute('stroke-width', '1');
+    svg.appendChild(circle);
+  });
+
+  // Night/day shading
+  // Night: 8pm-5am (hours 20-23, 0-4), Dawn: 5-7am, Dusk: 18-19
+  const nightArc = document.createElementNS(ns, 'path');
+  // Shade from 6pm to 6am (rough night)
+  const nightStart = (18 / 24) * 360 - 90;
+  const nightEnd = (6 / 24) * 360 - 90;
+  const nsRad = nightStart * Math.PI / 180;
+  const neRad = nightEnd * Math.PI / 180;
+  const bigR = outerRMax + 10;
+  const d = `M ${cx + innerR * Math.cos(nsRad)} ${cy + innerR * Math.sin(nsRad)}
+             L ${cx + bigR * Math.cos(nsRad)} ${cy + bigR * Math.sin(nsRad)}
+             A ${bigR} ${bigR} 0 1 1 ${cx + bigR * Math.cos(neRad)} ${cy + bigR * Math.sin(neRad)}
+             L ${cx + innerR * Math.cos(neRad)} ${cy + innerR * Math.sin(neRad)}
+             A ${innerR} ${innerR} 0 1 0 ${cx + innerR * Math.cos(nsRad)} ${cy + innerR * Math.sin(nsRad)} Z`;
+  nightArc.setAttribute('d', d);
+  nightArc.setAttribute('fill', 'rgba(0,0,0,0.25)');
+  svg.appendChild(nightArc);
+
+  // Bars
+  hourlyData.forEach((d, i) => {
+    const angleStart = (i / 24) * 360 - 90;
+    const angleEnd = ((i + 1) / 24) * 360 - 90;
+    const angleMid = (angleStart + angleEnd) / 2;
+    const gap = 0.8;
+    const a1 = (angleStart + gap) * Math.PI / 180;
+    const a2 = (angleEnd - gap) * Math.PI / 180;
+
+    const barHeight = (d.crashes / maxCrashes) * (outerRMax - innerR);
+    const r2 = innerR + barHeight;
+
+    const x1i = cx + innerR * Math.cos(a1);
+    const y1i = cy + innerR * Math.sin(a1);
+    const x2i = cx + innerR * Math.cos(a2);
+    const y2i = cy + innerR * Math.sin(a2);
+    const x1o = cx + r2 * Math.cos(a1);
+    const y1o = cy + r2 * Math.sin(a1);
+    const x2o = cx + r2 * Math.cos(a2);
+    const y2o = cy + r2 * Math.sin(a2);
+
+    const path = document.createElementNS(ns, 'path');
+    const sweep = (a2 - a1) > Math.PI ? 1 : 0;
+    const pd = `M ${x1i} ${y1i} L ${x1o} ${y1o} A ${r2} ${r2} 0 ${sweep} 1 ${x2o} ${y2o} L ${x2i} ${y2i} A ${innerR} ${innerR} 0 ${sweep} 0 ${x1i} ${y1i} Z`;
+    path.setAttribute('d', pd);
+
+    // Color: peak hours get hot, quiet hours get cool
+    const intensity = d.crashes / maxCrashes;
+    if (intensity > 0.7) {
+      path.setAttribute('fill', '#ff5722');
+      path.setAttribute('opacity', 0.7 + intensity * 0.3);
+    } else if (intensity > 0.4) {
+      path.setAttribute('fill', '#ff9800');
+      path.setAttribute('opacity', 0.5 + intensity * 0.3);
+    } else {
+      path.setAttribute('fill', '#ffb347');
+      path.setAttribute('opacity', 0.3 + intensity * 0.3);
+    }
+
+    svg.appendChild(path);
+
+    // Hour labels
+    const labelR = outerRMax + 18;
+    const midRad = angleMid * Math.PI / 180;
+    const lx = cx + labelR * Math.cos(midRad);
+    const ly = cy + labelR * Math.sin(midRad);
+    const label = document.createElementNS(ns, 'text');
+    label.setAttribute('x', lx);
+    label.setAttribute('y', ly);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('dominant-baseline', 'middle');
+    label.setAttribute('fill', 'rgba(255,255,255,0.3)');
+    label.setAttribute('font-family', "'JetBrains Mono', monospace");
+    label.setAttribute('font-size', '9');
+    const h = d.hour;
+    const lbl = h === 0 ? '12a' : h < 12 ? h + 'a' : h === 12 ? '12p' : (h-12) + 'p';
+    label.textContent = lbl;
+    svg.appendChild(label);
+
+    // Crash count on tall bars
+    if (d.crashes >= 12) {
+      const countR = innerR + barHeight + 14;
+      const countX = cx + (innerR + barHeight/2) * Math.cos(midRad);
+      const countY = cy + (innerR + barHeight/2) * Math.sin(midRad);
+      const countText = document.createElementNS(ns, 'text');
+      countText.setAttribute('x', countX);
+      countText.setAttribute('y', countY);
+      countText.setAttribute('text-anchor', 'middle');
+      countText.setAttribute('dominant-baseline', 'middle');
+      countText.setAttribute('fill', '#fff');
+      countText.setAttribute('font-family', "'JetBrains Mono', monospace");
+      countText.setAttribute('font-size', '10');
+      countText.setAttribute('font-weight', '700');
+      countText.textContent = d.crashes;
+      svg.appendChild(countText);
+    }
+  });
+
+  // Center label
+  const centerBg = document.createElementNS(ns, 'circle');
+  centerBg.setAttribute('cx', cx);
+  centerBg.setAttribute('cy', cy);
+  centerBg.setAttribute('r', innerR - 4);
+  centerBg.setAttribute('fill', '#0d0d0d');
+  svg.appendChild(centerBg);
+
+  const t1 = document.createElementNS(ns, 'text');
+  t1.setAttribute('x', cx); t1.setAttribute('y', cy - 16);
+  t1.setAttribute('text-anchor', 'middle');
+  t1.setAttribute('fill', '#ff5722');
+  t1.setAttribute('font-family', "'JetBrains Mono', monospace");
+  t1.setAttribute('font-size', '28');
+  t1.setAttribute('font-weight', '700');
+  t1.textContent = '218';
+  svg.appendChild(t1);
+
+  const t2 = document.createElementNS(ns, 'text');
+  t2.setAttribute('x', cx); t2.setAttribute('y', cy + 6);
+  t2.setAttribute('text-anchor', 'middle');
+  t2.setAttribute('fill', 'rgba(255,255,255,0.5)');
+  t2.setAttribute('font-family', "'JetBrains Mono', monospace");
+  t2.setAttribute('font-size', '9');
+  t2.setAttribute('letter-spacing', '2');
+  t2.textContent = 'FATAL CRASHES';
+  svg.appendChild(t2);
+
+  const t3 = document.createElementNS(ns, 'text');
+  t3.setAttribute('x', cx); t3.setAttribute('y', cy + 22);
+  t3.setAttribute('text-anchor', 'middle');
+  t3.setAttribute('fill', 'rgba(255,255,255,0.35)');
+  t3.setAttribute('font-family', "'JetBrains Mono', monospace");
+  t3.setAttribute('font-size', '9');
+  t3.textContent = '2023';
+  svg.appendChild(t3);
+
+  // Dawn/Dusk annotations
+  const annotations = [
+    { angle: (19.5/24)*360-90, label: 'DUSK PEAK', sub: '7-8 PM', r: outerRMax - 25 },
+    { angle: (5.5/24)*360-90, label: 'DAWN', sub: '5-7 AM', r: outerRMax - 40 },
+  ];
+
+  annotations.forEach(a => {
+    const rad = a.angle * Math.PI / 180;
+    const ax = cx + a.r * Math.cos(rad);
+    const ay = cy + a.r * Math.sin(rad);
+    // no annotations to keep it clean, the data speaks for itself
+  });
+
+  // Night / Day labels
+  const nightLabel = document.createElementNS(ns, 'text');
+  nightLabel.setAttribute('x', cx); nightLabel.setAttribute('y', 16);
+  nightLabel.setAttribute('text-anchor', 'middle');
+  nightLabel.setAttribute('fill', 'rgba(255,255,255,0.15)');
+  nightLabel.setAttribute('font-family', "'JetBrains Mono', monospace");
+  nightLabel.setAttribute('font-size', '9');
+  nightLabel.setAttribute('letter-spacing', '3');
+  nightLabel.textContent = '◯ MIDNIGHT';
+  svg.appendChild(nightLabel);
+
+  const noonLabel = document.createElementNS(ns, 'text');
+  noonLabel.setAttribute('x', cx); noonLabel.setAttribute('y', 512);
+  noonLabel.setAttribute('text-anchor', 'middle');
+  noonLabel.setAttribute('fill', 'rgba(255,255,255,0.15)');
+  noonLabel.setAttribute('font-family', "'JetBrains Mono', monospace");
+  noonLabel.setAttribute('font-size', '9');
+  noonLabel.setAttribute('letter-spacing', '3');
+  noonLabel.textContent = '◉ NOON';
+  svg.appendChild(noonLabel);
+})();
+
+// ==============================
+// CHART 3: Area trend chart
+// ==============================
+(function buildTrend() {
+  const svg = document.getElementById('trendChart');
+  if (!svg) return;
+  const ns = 'http://www.w3.org/2000/svg';
+
+  const data = [
+    { year: 2019, cdc: 252, fars: 186 },
+    { year: 2020, cdc: 242, fars: 202 },
+    { year: 2021, cdc: 267, fars: 164 },
+    { year: 2022, cdc: 306, fars: 188 },
+    { year: 2023, cdc: 313, fars: 235 },
+  ];
+
+  const pad = { top: 40, right: 30, bottom: 60, left: 55 };
+  const w = 860, h = 400;
+  const plotW = w - pad.left - pad.right;
+  const plotH = h - pad.top - pad.bottom;
+
+  const maxY = 600;
+  const minY = 0;
+
+  const xScale = (year) => pad.left + ((year - 2019) / 4) * plotW;
+  const yScale = (val) => pad.top + plotH - (val / maxY) * plotH;
+
+  // Grid lines
+  [100, 200, 300, 400, 500, 600].forEach(v => {
+    const y = yScale(v);
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', pad.left); line.setAttribute('x2', w - pad.right);
+    line.setAttribute('y1', y); line.setAttribute('y2', y);
+    line.setAttribute('stroke', 'rgba(255,255,255,0.04)');
+    line.setAttribute('stroke-width', '1');
+    svg.appendChild(line);
+
+    const label = document.createElementNS(ns, 'text');
+    label.setAttribute('x', pad.left - 8); label.setAttribute('y', y + 3);
+    label.setAttribute('text-anchor', 'end');
+    label.setAttribute('fill', 'rgba(255,255,255,0.25)');
+    label.setAttribute('font-family', "'JetBrains Mono', monospace");
+    label.setAttribute('font-size', '10');
+    label.textContent = v;
+    svg.appendChild(label);
+  });
+
+  // Stacked area: FARS on bottom, CDC on top
+  // Bottom path (FARS) - from baseline to FARS value
+  let farsPoints = data.map(d => `${xScale(d.year)},${yScale(d.fars)}`).join(' ');
+  let farsBase = data.map(d => `${xScale(d.year)},${yScale(0)}`).reverse().join(' ');
+  const farsArea = document.createElementNS(ns, 'polygon');
+  farsArea.setAttribute('points', farsPoints + ' ' + farsBase);
+  farsArea.setAttribute('fill', 'rgba(255,87,34,0.5)');
+  svg.appendChild(farsArea);
+
+  // Top path (CDC) - from FARS value to combined
+  let cdcTopPoints = data.map(d => `${xScale(d.year)},${yScale(d.fars + d.cdc)}`).join(' ');
+  let cdcBotPoints = data.map(d => `${xScale(d.year)},${yScale(d.fars)}`).reverse().join(' ');
+  const cdcArea = document.createElementNS(ns, 'polygon');
+  cdcArea.setAttribute('points', cdcTopPoints + ' ' + cdcBotPoints);
+  cdcArea.setAttribute('fill', 'rgba(255,179,71,0.4)');
+  svg.appendChild(cdcArea);
+
+  // Lines
+  // FARS line
+  const farsLine = document.createElementNS(ns, 'polyline');
+  farsLine.setAttribute('points', data.map(d => `${xScale(d.year)},${yScale(d.fars)}`).join(' '));
+  farsLine.setAttribute('fill', 'none');
+  farsLine.setAttribute('stroke', '#ff5722');
+  farsLine.setAttribute('stroke-width', '2.5');
+  svg.appendChild(farsLine);
+
+  // Combined line
+  const combLine = document.createElementNS(ns, 'polyline');
+  combLine.setAttribute('points', data.map(d => `${xScale(d.year)},${yScale(d.fars + d.cdc)}`).join(' '));
+  combLine.setAttribute('fill', 'none');
+  combLine.setAttribute('stroke', '#ffb347');
+  combLine.setAttribute('stroke-width', '2.5');
+  svg.appendChild(combLine);
+
+  // Data points and labels
+  data.forEach(d => {
+    const combined = d.fars + d.cdc;
+
+    // Combined dot + label
+    const cy1 = yScale(combined);
+    const dot1 = document.createElementNS(ns, 'circle');
+    dot1.setAttribute('cx', xScale(d.year)); dot1.setAttribute('cy', cy1);
+    dot1.setAttribute('r', 4); dot1.setAttribute('fill', '#ffb347');
+    svg.appendChild(dot1);
+
+    const lbl1 = document.createElementNS(ns, 'text');
+    lbl1.setAttribute('x', xScale(d.year)); lbl1.setAttribute('y', cy1 - 12);
+    lbl1.setAttribute('text-anchor', 'middle');
+    lbl1.setAttribute('fill', '#ffb347');
+    lbl1.setAttribute('font-family', "'JetBrains Mono', monospace");
+    lbl1.setAttribute('font-size', '12');
+    lbl1.setAttribute('font-weight', '700');
+    lbl1.textContent = combined;
+    svg.appendChild(lbl1);
+
+    // FARS dot + label
+    const cy2 = yScale(d.fars);
+    const dot2 = document.createElementNS(ns, 'circle');
+    dot2.setAttribute('cx', xScale(d.year)); dot2.setAttribute('cy', cy2);
+    dot2.setAttribute('r', 4); dot2.setAttribute('fill', '#ff5722');
+    svg.appendChild(dot2);
+
+    const lbl2 = document.createElementNS(ns, 'text');
+    lbl2.setAttribute('x', xScale(d.year)); lbl2.setAttribute('y', cy2 + 18);
+    lbl2.setAttribute('text-anchor', 'middle');
+    lbl2.setAttribute('fill', '#ff5722');
+    lbl2.setAttribute('font-family', "'JetBrains Mono', monospace");
+    lbl2.setAttribute('font-size', '11');
+    lbl2.textContent = d.fars;
+    svg.appendChild(lbl2);
+
+    // Year labels
+    const yLabel = document.createElementNS(ns, 'text');
+    yLabel.setAttribute('x', xScale(d.year));
+    yLabel.setAttribute('y', h - pad.bottom + 24);
+    yLabel.setAttribute('text-anchor', 'middle');
+    yLabel.setAttribute('fill', 'rgba(255,255,255,0.5)');
+    yLabel.setAttribute('font-family', "'JetBrains Mono', monospace");
+    yLabel.setAttribute('font-size', '12');
+    yLabel.textContent = d.year;
+    svg.appendChild(yLabel);
+  });
+
+  // Legend
+  const legendY = h - 16;
+  // FARS
+  const r1 = document.createElementNS(ns, 'rect');
+  r1.setAttribute('x', pad.left); r1.setAttribute('y', legendY - 8);
+  r1.setAttribute('width', 14); r1.setAttribute('height', 14);
+  r1.setAttribute('fill', 'rgba(255,87,34,0.5)'); r1.setAttribute('rx', 2);
+  svg.appendChild(r1);
+  const l1 = document.createElementNS(ns, 'text');
+  l1.setAttribute('x', pad.left + 20); l1.setAttribute('y', legendY + 3);
+  l1.setAttribute('fill', 'rgba(255,255,255,0.5)');
+  l1.setAttribute('font-family', "'JetBrains Mono', monospace");
+  l1.setAttribute('font-size', '10');
+  l1.textContent = 'Vehicle–animal collisions (FARS)';
+  svg.appendChild(l1);
+
+  // CDC
+  const r2 = document.createElementNS(ns, 'rect');
+  r2.setAttribute('x', pad.left + 280); r2.setAttribute('y', legendY - 8);
+  r2.setAttribute('width', 14); r2.setAttribute('height', 14);
+  r2.setAttribute('fill', 'rgba(255,179,71,0.4)'); r2.setAttribute('rx', 2);
+  svg.appendChild(r2);
+  const l2 = document.createElementNS(ns, 'text');
+  l2.setAttribute('x', pad.left + 300); l2.setAttribute('y', legendY + 3);
+  l2.setAttribute('fill', 'rgba(255,255,255,0.5)');
+  l2.setAttribute('font-family', "'JetBrains Mono', monospace");
+  l2.setAttribute('font-size', '10');
+  l2.textContent = 'Direct animal contact (CDC WONDER)';
+  svg.appendChild(l2);
+
+  // 2023 callout
+  const calloutX = xScale(2023) + 8;
+  const calloutY = yScale(548) - 24;
+  const callout = document.createElementNS(ns, 'text');
+  callout.setAttribute('x', calloutX - 40); callout.setAttribute('y', calloutY);
+  callout.setAttribute('text-anchor', 'middle');
+  callout.setAttribute('fill', 'rgba(255,60,60,0.6)');
+  callout.setAttribute('font-family', "'JetBrains Mono', monospace");
+  callout.setAttribute('font-size', '9');
+  callout.setAttribute('letter-spacing', '1');
+  callout.textContent = '▲ RECORD HIGH';
+  svg.appendChild(callout);
+})();
+</script>
+
+</body>
+</html>
