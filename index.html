@@ -649,7 +649,31 @@
         .mini-bar:nth-child(4) .mini-bar-value { animation-delay: 1.15s; }
         .mini-bar:nth-child(5) .mini-bar-value { animation-delay: 1.3s; }
         .mini-bar:nth-child(6) .mini-bar-value { animation-delay: 1.45s; }
-        @keyframes fadeVal { to { opacity: 1; } }.featured
+        @keyframes fadeVal { to { opacity: 1; } }
+
+        .featured-source {
+            font-size: 0.5rem; color: var(--text-dim);
+            opacity: 0.4; margin-top: 0.4rem;
+        }
+        .featured-bottom {
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .featured-cta {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem; font-weight: 700; color: var(--neon-red);
+            letter-spacing: 1px; text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .featured-card:hover .featured-cta {
+            gap: 0.75rem; text-shadow: 0 0 12px rgba(255,60,40,0.3);
+        }
+        .featured-cta .arrow { transition: transform 0.3s ease; font-size: 1.1rem; }
+        .featured-card:hover .featured-cta .arrow { transform: translateX(5px); }
+        .featured-meta {
+            font-size: 0.55rem; letter-spacing: 1.5px;
+            text-transform: uppercase; color: var(--text-dim); opacity: 0.5;
+        }
 
     </style>
 </head>
@@ -1005,58 +1029,6 @@
                 <rect x="78" y="19" width="8" height="1" fill="#3A2A1C" opacity="0.3"/>
             </svg>
         </div>
-
-        <!-- ===== FEATURED INVESTIGATION ===== -->
-        <section class="featured">
-            <a href="/americas-deadliest-animal/" class="featured-card">
-                <div class="featured-kicker"><span class="pulse-dot"></span> Now Serving</div>
-                <h2 class="featured-title">America's Deadliest Animal Is a <em>Deer</em> and It's Not Even Close</h2>
-                <p class="featured-hook">We combined two federal databases to build the definitive ranking of which animals actually kill Americans. The results are not what Shark Week prepared you for.</p>
-
-                <div class="featured-viz">
-                    <div class="featured-viz-label">Avg. deaths per year, 2019–2023</div>
-                    <div class="featured-bars" id="featuredBars">
-                        <div class="mini-bar">
-                            <span class="mini-bar-value">~150</span>
-                            <div class="mini-bar-fill" style="height: 55px; background: linear-gradient(180deg, #ff8a65, #e64a19);"></div>
-                            <span class="mini-bar-label">Deer</span>
-                        </div>
-                        <div class="mini-bar">
-                            <span class="mini-bar-value">84</span>
-                            <div class="mini-bar-fill" style="height: 31px; background: linear-gradient(180deg, #ffd54f, #f9a825);"></div>
-                            <span class="mini-bar-label">Bees</span>
-                        </div>
-                        <div class="mini-bar">
-                            <span class="mini-bar-value">77</span>
-                            <div class="mini-bar-fill" style="height: 28px; background: linear-gradient(180deg, #81d4fa, #0288d1);"></div>
-                            <span class="mini-bar-label">Dogs</span>
-                        </div>
-                        <div class="mini-bar">
-                            <span class="mini-bar-value">74</span>
-                            <div class="mini-bar-fill" style="height: 27px; background: linear-gradient(180deg, #ce93d8, #7b1fa2);"></div>
-                            <span class="mini-bar-label">Cows</span>
-                        </div>
-                        <div class="mini-bar">
-                            <span class="mini-bar-value">~7</span>
-                            <div class="mini-bar-fill" style="height: 3px; background: linear-gradient(180deg, #a5d6a7, #2e7d32);"></div>
-                            <span class="mini-bar-label">Snakes</span>
-                        </div>
-                        <div class="mini-bar">
-                            <span class="mini-bar-value">~1</span>
-                            <div class="mini-bar-fill" style="height: 1px; background: linear-gradient(180deg, #b0bec5, #546e7a);"></div>
-                            <span class="mini-bar-label">Sharks</span>
-                        </div>
-                    </div>
-                    <div class="featured-source">CDC WONDER · NHTSA FARS</div>
-                </div>
-
-                <div class="featured-bottom">
-                    <div class="featured-cta">Read the Full Investigation <span class="arrow">→</span></div>
-                    <span class="featured-meta">Investigation No. 001</span>
-                </div>
-            </a>
-        </section>
-        <!-- ===== END FEATURED ===== -->
         <div class="bar-divider">more on tap</div>
 
         <section class="menu-section">
@@ -1090,7 +1062,7 @@
             <p>
                 Got an opinion or suggestion for the website? Drop it here and we may or may not respond back.
             </p>
-            <a href="mailto:hello@datadivebar.com" class="cta-btn">Speak with the Manager</a>
+            <a href="/cdn-cgi/l/email-protection#0b636e6767644b6f6a7f6a6f627d6e696a7925686466" class="cta-btn">Speak with the Manager</a>
         </div>
 
         <footer>
@@ -1101,7 +1073,7 @@
 
     </div>
     
- <script>
+ <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // Animate mini bars on scroll
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -1117,11 +1089,4 @@
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.3 });
-
-        const barsEl = document.getElementById('featuredBars');
-        if (barsEl) observer.observe(barsEl);
-    </script>
-
-</body>
-</html>
+        }, { threshold
