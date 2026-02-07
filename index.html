@@ -532,7 +532,208 @@
             .menu-grid { grid-template-columns: 1fr; }
             .chalkboard { padding: 2.5rem 1.5rem; }
             footer { flex-direction: column; text-align: center; }
+            featured-card { padding: 1.5rem; }
+            .featured-bottom { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+            .featured-meta { order: -1; }
+            .featured-bars { height: 45px; }
         }
+
+          /* ---- FEATURED INVESTIGATION ---- */
+        .featured {
+            margin: 3rem 0 1rem;
+            position: relative;
+        }
+
+        .featured-card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            background:
+                linear-gradient(135deg, rgba(255, 60, 40, 0.05) 0%, rgba(0, 0, 0, 0) 40%, rgba(0, 212, 255, 0.03) 100%);
+            border: 1px solid rgba(255, 60, 40, 0.12);
+            border-radius: 3px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            cursor: pointer;
+        }
+        .featured-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--neon-red), var(--neon-amber), var(--neon-red));
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        .featured-card::after {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(255, 60, 40, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            opacity: 0;
+        }
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .featured-card:hover {
+            border-color: rgba(255, 60, 40, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(255, 60, 40, 0.06), 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .featured-card:hover::after { opacity: 1; }
+
+        .featured-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--neon-amber);
+            margin-bottom: 1.2rem;
+            text-shadow: 0 0 12px rgba(255, 184, 0, 0.2);
+        }
+        .pulse-dot {
+            width: 6px; height: 6px;
+            background: var(--neon-red);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 6px rgba(255, 60, 40, 0.4);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .featured-title {
+            font-family: 'Special Elite', cursive;
+            font-size: clamp(1.3rem, 3.5vw, 1.9rem);
+            color: #fff;
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+            max-width: 600px;
+        }
+        .featured-title em {
+            font-style: normal;
+            color: var(--neon-red);
+            text-shadow: 0 0 20px rgba(255, 60, 40, 0.3);
+        }
+
+        .featured-hook {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            line-height: 1.7;
+            margin-bottom: 1.8rem;
+            max-width: 520px;
+        }
+
+        .featured-viz { margin-bottom: 1.8rem; }
+        .featured-viz-label {
+            font-size: 0.5rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 0.6rem;
+            opacity: 0.6;
+        }
+
+        .featured-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 5px;
+            height: 60px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .mini-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+            max-width: 90px;
+        }
+        .mini-bar-fill {
+            width: 100%;
+            border-radius: 2px 2px 0 0;
+            position: relative;
+            transform-origin: bottom;
+            transform: scaleY(0);
+            transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .mini-bar-fill.animate { transform: scaleY(1); }
+        .mini-bar-fill::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+            border-radius: 2px 2px 0 0;
+        }
+        .mini-bar-label {
+            font-size: 0.5rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+        .mini-bar-value {
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: var(--text-light);
+            opacity: 0;
+            transition: opacity 0.5s ease 1s;
+        }
+        .mini-bar-value.animate { opacity: 1; }
+
+        .featured-source {
+            font-size: 0.5rem;
+            color: var(--text-dim);
+            opacity: 0.4;
+            margin-top: 0.4rem;
+        }
+
+        .featured-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .featured-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--neon-red);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .featured-card:hover .featured-cta {
+            gap: 0.75rem;
+            text-shadow: 0 0 12px rgba(255, 60, 40, 0.3);
+        }
+        .featured-cta .arrow {
+            transition: transform 0.3s ease;
+            font-size: 1.1rem;
+        }
+        .featured-card:hover .featured-cta .arrow {
+            transform: translateX(5px);
+        }
+        .featured-meta {
+            font-size: 0.55rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
     </style>
 </head>
 <body>
@@ -839,7 +1040,58 @@
             </svg>
         </div>
 
-        <div class="bar-divider">what's on tap</div>
+        <!-- ===== FEATURED INVESTIGATION ===== -->
+        <section class="featured">
+            <a href="/americas-deadliest-animal/" class="featured-card">
+                <div class="featured-kicker"><span class="pulse-dot"></span> Now Serving</div>
+                <h2 class="featured-title">America's Deadliest Animal Is a <em>Deer</em> and It's Not Even Close</h2>
+                <p class="featured-hook">We combined two federal databases to build the definitive ranking of which animals actually kill Americans. The results are not what Shark Week prepared you for.</p>
+
+                <div class="featured-viz">
+                    <div class="featured-viz-label">Avg. deaths per year, 2019–2023</div>
+                    <div class="featured-bars" id="featuredBars">
+                        <div class="mini-bar">
+                            <span class="mini-bar-value">~150</span>
+                            <div class="mini-bar-fill" style="height: 55px; background: linear-gradient(180deg, #ff8a65, #e64a19);"></div>
+                            <span class="mini-bar-label">Deer</span>
+                        </div>
+                        <div class="mini-bar">
+                            <span class="mini-bar-value">84</span>
+                            <div class="mini-bar-fill" style="height: 31px; background: linear-gradient(180deg, #ffd54f, #f9a825);"></div>
+                            <span class="mini-bar-label">Bees</span>
+                        </div>
+                        <div class="mini-bar">
+                            <span class="mini-bar-value">77</span>
+                            <div class="mini-bar-fill" style="height: 28px; background: linear-gradient(180deg, #81d4fa, #0288d1);"></div>
+                            <span class="mini-bar-label">Dogs</span>
+                        </div>
+                        <div class="mini-bar">
+                            <span class="mini-bar-value">74</span>
+                            <div class="mini-bar-fill" style="height: 27px; background: linear-gradient(180deg, #ce93d8, #7b1fa2);"></div>
+                            <span class="mini-bar-label">Cows</span>
+                        </div>
+                        <div class="mini-bar">
+                            <span class="mini-bar-value">~7</span>
+                            <div class="mini-bar-fill" style="height: 3px; background: linear-gradient(180deg, #a5d6a7, #2e7d32);"></div>
+                            <span class="mini-bar-label">Snakes</span>
+                        </div>
+                        <div class="mini-bar">
+                            <span class="mini-bar-value">~1</span>
+                            <div class="mini-bar-fill" style="height: 1px; background: linear-gradient(180deg, #b0bec5, #546e7a);"></div>
+                            <span class="mini-bar-label">Sharks</span>
+                        </div>
+                    </div>
+                    <div class="featured-source">CDC WONDER · NHTSA FARS</div>
+                </div>
+
+                <div class="featured-bottom">
+                    <div class="featured-cta">Read the Full Investigation <span class="arrow">→</span></div>
+                    <span class="featured-meta">Investigation No. 001</span>
+                </div>
+            </a>
+        </section>
+        <!-- ===== END FEATURED ===== -->
+        <div class="bar-divider">more on tap</div>
 
         <section class="menu-section">
             <div class="menu-header">The Menu</div>
@@ -882,6 +1134,28 @@
         </footer>
 
     </div>
+    
+ <script>
+        // Animate mini bars on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const bars = entry.target.querySelectorAll('.mini-bar-fill');
+                    const values = entry.target.querySelectorAll('.mini-bar-value');
+                    bars.forEach((bar, i) => {
+                        setTimeout(() => bar.classList.add('animate'), i * 120);
+                    });
+                    values.forEach((val, i) => {
+                        setTimeout(() => val.classList.add('animate'), i * 120 + 400);
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        const barsEl = document.getElementById('featuredBars');
+        if (barsEl) observer.observe(barsEl);
+    </script>
 
 </body>
 </html>
