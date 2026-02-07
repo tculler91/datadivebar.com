@@ -1124,28 +1124,6 @@
         </footer>
 
     </div>
-    
- <script>
-        // Animate mini bars on scroll
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const bars = entry.target.querySelectorAll('.mini-bar-fill');
-                    const values = entry.target.querySelectorAll('.mini-bar-value');
-                    bars.forEach((bar, i) => {
-                        setTimeout(() => bar.classList.add('animate'), i * 120);
-                    });
-                    values.forEach((val, i) => {
-                        setTimeout(() => val.classList.add('animate'), i * 120 + 400);
-                    });
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.3 });
-
-        const barsEl = document.getElementById('featuredBars');
-        if (barsEl) observer.observe(barsEl);
-    </script>
 
 </body>
 </html>
