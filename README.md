@@ -1,6 +1,6 @@
 # Data Dive Bar 🍺📊
 
-**Come for the charts. Stay for the chaos.**
+**A Watering Hole for Data Weirdos**
 
 [datadivebar.com](https://datadivebar.com)
 
