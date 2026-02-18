@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>We Watched a Century of Winter Olympic Data So You Can Keep Half-Watching the Winter Olympics. | Data Dive Bar</title>
+<meta name="description" content="Milan Cortina 2026 is underway. You're probably half-watching it. Here's what a century of Winter Olympic medal data says about the events you've been ignoring since 1924.">
+<meta property="og:title" content="We Watched a Century of Winter Olympic Data So You Can Keep Half-Watching the Winter Olympics.">
+<meta property="og:description" content="Milan Cortina 2026 is underway. You're probably half-watching it. Here's a century of medal data about the events you've been ignoring since 1924.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Data Dive Bar">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="We Watched a Century of Winter Olympic Data So You Can Keep Half-Watching the Winter Olympics.">
+<meta name="twitter:description" content="Milan Cortina 2026 is underway. You're probably half-watching it. Here's a century of medal data about the events you've been ignoring since 1924.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --amber: #ffb347;
+  --red: #ff3c3c;
+  --blue: #4fc3f7;
+  --green: #69f0ae;
+  --pink: #ff6b9d;
+  --bg: #0d0d0d;
+  --panel: #1a1a1a;
+  --chalk: #e8e0d4;
+  --muted: #7a7265;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--chalk);font-family:'DM Sans',sans-serif;line-height:1.75;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.007) 2px,rgba(255,255,255,0.007) 4px);pointer-events:none;z-index:9999}
+.wrap{max-width:800px;margin:0 auto;padding:0 24px 80px}
+
+.nav{text-align:center;padding:28px 0 0}
+.nav a{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--amber);text-decoration:none;opacity:.65;transition:opacity .3s}
+.nav a:hover{opacity:1}
+
+.hero{text-align:center;padding:56px 0 36px;border-bottom:1px solid rgba(255,255,255,.05);margin-bottom:44px}
+.hero-kicker{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--amber);margin-bottom:22px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,5.5vw,3.1rem);font-weight:900;line-height:1.12;color:#fff;margin-bottom:18px}
+.hero h1 em{font-style:italic;color:var(--amber)}
+.hero-sub{font-size:1.02rem;color:var(--muted);max-width:560px;margin:0 auto 18px;line-height:1.55}
+.hero-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px}
+
+.prose{font-size:1.04rem;line-height:1.8;margin-bottom:28px}
+.prose p{margin-bottom:18px}
+.drop p:first-of-type::first-letter{font-family:'Playfair Display',serif;font-size:3.2em;float:left;line-height:.8;margin:4px 12px 0 0;color:var(--amber)}
+
+.group-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--amber);margin-top:68px;margin-bottom:6px;opacity:.7}
+.group-title{font-family:'Playfair Display',serif;font-size:clamp(1.25rem,3vw,1.65rem);font-weight:700;color:#fff;margin-bottom:28px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.05)}
+
+.ev{margin-top:52px;margin-bottom:22px}
+.ev-sport{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:3px}
+.ev-title{font-family:'Playfair Display',serif;font-size:clamp(1.15rem,2.4vw,1.45rem);font-weight:700;color:#fff}
+.ev-sub{font-size:.88rem;color:var(--muted);margin-top:3px;font-style:italic}
+
+.bt{font-size:1.02rem;line-height:1.8;margin-bottom:18px}
+
+.tn{background:var(--panel);border-left:3px solid var(--amber);padding:18px 22px;margin:26px 0 36px;border-radius:0 8px 8px 0}
+.tn-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:3px}
+.tn-val{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:6px}
+.tn-cap{font-size:.9rem;color:var(--muted);line-height:1.5}
+
+.pq{font-family:'Playfair Display',serif;font-size:clamp(1.25rem,2.8vw,1.6rem);font-style:italic;color:#fff;text-align:center;margin:52px 0;padding:28px 20px;position:relative;line-height:1.4}
+.pq::before,.pq::after{content:'';display:block;width:50px;height:2px;background:var(--amber);margin:0 auto 22px}
+.pq::after{margin:22px auto 0}
+
+.viz{margin:52px 0;padding:28px 0}
+.viz-tag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:3px}
+.viz-title{font-family:'Playfair Display',serif;font-size:clamp(1.15rem,2.4vw,1.4rem);font-weight:700;color:#fff;margin-bottom:6px}
+.viz-desc{font-size:.88rem;color:var(--muted);margin-bottom:22px;line-height:1.5;max-width:620px}
+.chart-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+.tl-wrap{position:relative;padding:14px 0 14px 140px}
+.tl-row{position:relative;height:34px;margin-bottom:7px;display:flex;align-items:center}
+.tl-name{position:absolute;left:-140px;width:130px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--chalk);white-space:nowrap}
+.tl-track{flex:1;height:100%;position:relative}
+.tl-bar{position:absolute;height:20px;top:7px;border-radius:3px;opacity:.8;transition:opacity .2s}
+.tl-bar:hover{opacity:1}
+.tl-bar.gap{opacity:.12;border:1px dashed rgba(255,255,255,.3);background:transparent!important}
+.tl-axis{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);padding-top:7px;border-top:1px solid rgba(255,255,255,.05)}
+
+.bar-row{display:grid;grid-template-columns:110px 1fr 55px;align-items:center;gap:10px;height:30px;margin-bottom:5px}
+.bar-c{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--chalk);text-align:right;white-space:nowrap}
+.bar-t{height:18px;background:rgba(255,255,255,.03);border-radius:3px;overflow:hidden}
+.bar-f{height:100%;border-radius:3px;transition:width 1s ease-out}
+.bar-v{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+
+.area-chart{background:var(--panel);border-radius:8px;padding:20px 16px 12px}
+
+.hm-wrap{width:100%;overflow-x:auto}
+.hm{border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:11px;min-width:680px}
+.hm th{padding:5px 7px;color:var(--muted);font-weight:400;font-size:9px;letter-spacing:1px;text-transform:uppercase;text-align:center;border-bottom:1px solid rgba(255,255,255,.05);position:sticky;top:0;background:var(--bg)}
+.hm th:first-child{text-align:left;min-width:95px}
+.hm td{padding:4px 7px;text-align:center;border-bottom:1px solid rgba(255,255,255,.02)}
+.hm td:first-child{text-align:left;color:var(--chalk);font-weight:700;white-space:nowrap}
+.hm-cell{display:inline-block;min-width:30px;padding:2px 5px;border-radius:3px;font-size:11px;font-weight:700}
+
+.chart-note{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:7px;letter-spacing:1px;text-align:right}
+
+.meth{margin-top:68px;padding-top:28px;border-top:1px solid rgba(255,255,255,.05)}
+.meth h3{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.meth p{font-size:.8rem;color:var(--muted);line-height:1.7;margin-bottom:7px}
+
+.foot{text-align:center;padding:44px 0 60px;margin-top:36px}
+.foot .logo{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--amber);text-transform:uppercase}
+.foot .tag{font-size:.8rem;color:var(--muted);margin-top:7px}
+
+@media(max-width:600px){
+  .hero{padding:36px 0 20px}
+  .hero h1{font-size:1.7rem}
+  .tl-wrap{padding-left:105px}
+  .tl-name{left:-105px;width:95px;font-size:9px}
+  .bar-row{grid-template-columns:80px 1fr 45px}
+  .bar-c{font-size:9px}
+  .tn-val{font-size:1.8rem}
+  .ev{margin-top:36px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="nav"><a href="/">← Data Dive Bar</a></nav>
+
+<header class="hero">
+  <div class="hero-kicker">Data Dive Bar — Investigation No. 002</div>
+  <h1>We Watched a Century of Winter Olympic Data So You Can Keep <em>Half-Watching the Winter Olympics.</em></h1>
+  <p class="hero-sub">Milan Cortina 2026 is underway. You're probably half-watching it on your phone while taking a shit. Before the next biathlon you didn't ask for, here's what a century of data says about the events you've been ignoring since 1924.</p>
+  <div class="hero-meta">By Tobias · Olympic Historical Dataset · Olympedia · 1924–2022</div>
+</header>
+
+<!-- ============ COLD OPEN ============ -->
+<div class="prose drop">
+  <p>There is an Olympic sport where you ski through the woods and then shoot a rifle. You do this four times. Nobody is chasing you, nothing is at stake. You're just out there, skiing and shooting. The sport is called biathlon and it was invented by Scandinavian armies who needed to kill people in winter. The Olympics looked at that and said, "Lose the people, keep the skiing and shooting, add a clock." Norway has 45 medals in it. One country has been winning Olympic gold in what amounts to a competitive war crime simulation for sixty straight years and nobody has said shit.</p>
+  <p>In 2002, a 28-year-old Australian who had previously survived having his thigh sliced open by a skate blade (111 stitches) and breaking his neck (C4 and C5 vertebrae, halo brace, four pins screwed into his skull) won Olympic gold in short track speed skating because he was in last place when every other skater ate shit on the final turn. His strategy, by his own admission, was to stay in last and hope for exactly that. It worked. "Doing a Bradbury" is now in the Australian dictionary.</p>
+  <p>We pulled every medal from every Winter Games ever held. The data didn't inform us. It radicalized us. We are now standing on your porch in our underwear with a spreadsheet and a conspiracy board. Let us in.</p>
+</div>
+
+<!-- ============ CHART 1: TIMELINE ============ -->
+<div class="viz">
+  <div class="chart-note" style="text-align:left;margin-bottom:18px">NOTE: ALL MEDAL COUNTS ARE DEDUPLICATED TO EVENT-LEVEL (A HOCKEY GOLD = 1, NOT 25). COUNTRY CODES UNIFIED ACROSS POLITICAL SPLITS (GER/FRG/GDR → GERMANY, URS/RUS/EUN/ROC → RUSSIA).</div>
+  <div class="viz-tag">Chart 01</div>
+  <div class="viz-title">When Did We Decide This Was a Sport?</div>
+  <div class="viz-desc">Olympic debut years for 10 events, 1908–2022. Figure skating and ice hockey predate the Winter Games. Dotted gaps indicate periods when the sport was removed.</div>
+  <div class="chart-scroll"><div class="tl-wrap" id="timeline"></div></div>
+</div>
+
+<p class="bt">Curling was Olympic in 1924. Then it wasn't for 74 years. The IOC didn't officially recognize the 1924 medals until 2006, 82 years after they were awarded and well after the athletes who earned them were dead. A Scottish newspaper (<em>The Herald</em>) basically had to shame them into doing the paperwork. Skeleton was removed for being too dangerous. It came back just as dangerous. Nobody in this organization gives a shit.</p>
+
+<!-- ============ GROUP A: THE MONOPOLIES ============ -->
+<div class="group-tag">Group A</div>
+<div class="group-title">The Monopolies</div>
+
+<p class="bt">Some Winter Olympic events are technically open to all nations. In practice, they belong to one country the way a strip club parking spot at 2 a.m. belongs to the bouncer who's been standing next to it all night. You could try to take it. You're not going to try to take it. The spot has been taken since 1924.</p>
+
+<!-- SPEED SKATING -->
+<div class="ev">
+  <div class="ev-sport">Speed Skating · est. 1924</div>
+  <div class="ev-title">The Netherlands and the Concept of Sharing</div>
+  <div class="ev-sub">A flat country of 17.5 million people vs. everyone else</div>
+</div>
+
+<p class="bt">The Netherlands is flat. No mountains, no glaciers, no real elevation at all. And yet 17.5 million people have decided, collectively and without consulting anyone, that speed skating belongs to them. Not in a competitive sense. In a property rights sense. They've been on the podium since 1924 and nobody has seriously challenged this, in the same way nobody seriously challenges the guy at the bar who's clearly on something and also happens to be right.</p>
+
+<p class="bt">They have 133 Olympic medals in long-track speed skating. Norway is second with 87. That gap, 46 medals, is larger than the total for whoever's in third. At the 2014 Sochi Games the Dutch won 23 of 36 speed skating medals, which is 64 percent of an event that technically has 30+ countries competing in it. NBC paid billions for the broadcast rights to what turned out to be a Dutch national holiday with confused foreign guests. American viewers changed the channel so fast they left skid marks on the remote.</p>
+
+<p class="bt">We kept checking the numbers on this and they kept getting worse. The Netherlands has more speed skating medals than the combined Winter Olympic total of every country in South America, Africa, and Oceania. All of them, added together. The sport is so embedded in Dutch culture that when conditions allow the <em>Elfstedentocht</em>, a 200-kilometer ice skating race through frozen canals, the country just stops. Schools close. Parliament clears out. It's only happened 15 times since 1909, but when it does, 17 million people stop what they're doing to watch other Dutch people skate through canals. Work stops. The entire country goes absolutely feral over frozen water. These people are not OK and they do not care.</p>
+
+<!-- CHART 2: DUTCH TAKEOVER -->
+<div class="viz">
+  <div class="viz-tag">Chart 02</div>
+  <div class="viz-title">The Dutch Takeover</div>
+  <div class="viz-desc">Netherlands' share of all Olympic speed skating medals by Games, 1924–2022. The 2014 Sochi peak and partial regression.</div>
+  <div class="area-chart"><svg id="dutchChart" viewBox="0 0 760 300" style="width:100%;display:block"></svg></div>
+</div>
+
+<p class="bt">Eric Heiden won all five individual speed skating events at 1980 Lake Placid and set a record in every one. The events ranged from 500 to 10,000 meters. To put that in Summer Olympics terms, it would be like one person winning the 100-meter dash and the marathon at the same Games, which has obviously never happened and probably never will. Heiden retired from skating immediately after and became an orthopedic surgeon, like a serial killer who wakes up one morning and decides to become a kindergarten teacher. Just absolute psychopath energy in the other direction.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">90%</div>
+  <div class="tn-cap">The share of the Netherlands' entire Winter Olympic medal haul that comes from speed skating. They have 147 medals total. 133 are from one sport. The other 14 were apparently won by Dutch people who got shitfaced and wandered into the wrong venue.</div>
+</div>
+
+<!-- BIATHLON -->
+<div class="ev">
+  <div class="ev-sport">Biathlon · est. 1960</div>
+  <div class="ev-title">Norway vs. the Concept of Fairness</div>
+  <div class="ev-sub">Population: 5.4 million. Biathlon golds: 22.</div>
+</div>
+
+<p class="bt">Biathlon is cross-country skiing with a rifle. Athletes strap a .22 caliber weapon to their backs, ski until their heart rate is above 180 bpm, then stop and try to shoot targets the size of a golf ball from 50 meters. Every miss adds a 150-meter penalty loop. It is the fifth-most-watched sport in Europe and maybe the least-watched sport in every American household, which says more about Americans than it does about biathlon. The whole thing evolved from Scandinavian military training, where soldiers had to ski through frozen terrain and shoot people. The original name was "military patrol." They changed the name. They did not change the skiing and shooting. The IOC just slapped a logo on a war exercise and called it a sport. Nobody batted an eye. The whole organization has the moral compass of a pawnshop.</p>
+
+<p class="bt">Norway has 55 biathlon medals, 22 of them gold. Norway has 5.4 million people, fewer than the Dallas-Fort Worth metro area. We spent a while looking for a satisfying explanation for how a country this small produces this many Olympic-caliber biathletes and couldn't find one. Per capita, Norwegians produce elite biathletes the way a feral cat produces kittens. Constantly, without planning, and nobody can figure out how to make it stop.</p>
+
+<p class="bt">Ole Einar Bjørndalen competed across six Olympic Games over 20 years, from 1994 to 2014. He won 13 medals, 8 of them gold, which ties the record for most golds in Winter Olympic history. At 2002 Salt Lake City he won all four individual biathlon events. All four. No one had done that before. No one's done it since. He was 28 when he won his first gold and 40 when he won his last, meaning this man was still raw-dogging entire Olympic fields at an age when most athletes are selling insurance. The 20 years in between were mostly him calmly robbing every house on the block while the neighborhood watched from their porches and did nothing.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">24 of 129</div>
+  <div class="tn-cap">Only 24 of the 129 countries that have ever competed at the Winter Olympics have won a biathlon medal. 81 percent of nations: zero, ever, across 60+ years. Norway has 55. You've never watched a full biathlon in your life and you know it.</div>
+</div>
+
+<!-- SHORT TRACK -->
+<div class="ev">
+  <div class="ev-sport">Short Track Speed Skating · est. 1992</div>
+  <div class="ev-title">Organized Violence on Ice</div>
+  <div class="ev-sub">67% of South Korea's Winter Olympic identity, in one sport</div>
+</div>
+
+<p class="bt">Short track is the only Winter Olympic event that reliably delivers as television. You put six people on a 111-meter ice track with no lanes and no barriers. They all have knife blades strapped to their feet. Helmets are mandatory but crashes are basically scheduled. It's a knife fight on ice that everyone has politely agreed to call a sport, and it's the most honestly violent thing in the Winter Olympics, which is saying something given that biathlon is literally skiing with a rifle.</p>
+
+<p class="bt">South Korea has 53 short track medals. That one sport accounts for 67 percent of everything they've ever won at the Winter Games. Without it, a country of 52 million people has 26 Winter medals across a century. Short track isn't South Korea's best Winter sport. It's South Korea's entire Winter personality. Take it away and they're showing up to the Olympics the way you show up to a costume party you forgot about: technically there, visibly unprepared, hoping nobody asks questions.</p>
+
+<p class="bt">Which brings us to Steven Bradbury, who won Olympic gold by doing absolutely fuck-all.</p>
+
+<p class="bt">Some background. Bradbury was 28, in his fourth Olympics, and broadly considered past it. His career to that point included 111 stitches to the thigh after a competitor's blade opened his femoral artery (he almost bled out on the ice) and a broken neck, C4 and C5 vertebrae, that put him in a halo brace with four pins screwed into his skull. Doctors told him his skating career was over. He apparently heard that the way a golden retriever hears "no" and went right back to doing it.</p>
+
+<p class="bt">Quarterfinal: Bradbury finishes third, which should eliminate him, but the defending world champion gets disqualified for being a dickhead. He advances on a technicality. Semifinal: he's in last. Three skaters eat shit on the final lap. He advances again. At this point the universe is clearly fucking with someone and it isn't Bradbury.</p>
+
+<p class="bt">The final had Apolo Anton Ohno, Ahn Hyun-soo, Li Jiajun, Mathieu Turcotte, and Bradbury, who was dead last, 15 meters behind the pack with two laps to go. His plan, which he has confirmed publicly, on television, without an ounce of shame, was to stay in last and hope everyone ahead of him ate shit. That was the whole plan. That was the entire goddamn strategy.</p>
+
+<p class="bt">On the final turn, Li tried to pass Ohno and took out the entire field. Four world-class athletes slid into the boards. Bradbury, the only one still upright, glided across the finish line with the expression of a man who just walked in on his roommate's girlfriend making him a sandwich.</p>
+
+<p class="bt">It was Australia's first Winter Olympic gold. In 2016, the Australian National Dictionary added "to do a Bradbury," defined as achieving success through improbable luck. They did not add entries for the four men who ate shit. History is written by the man who was standing furthest from the wreck.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">67%</div>
+  <div class="tn-cap">South Korea's Winter Olympic medals from short track alone. Two-thirds of everything they've ever won in winter, from one sport that's basically a knife fight on ice. This is not a national sports program. This is one guy's entire retirement account in a single meme stock.</div>
+</div>
+
+<!-- ============ GROUP B: THE SCANDALS ============ -->
+<div class="group-tag">Group B</div>
+<div class="group-title">The Scandals</div>
+
+<p class="bt">The Winter Olympics produce scandal at a rate that would shut down a casino, let alone a sports organization. Judges get caught fixing results. People confess on camera. Evidence surfaces that would end careers in any industry where the dress code isn't a sequined unitard and the governing body isn't run by people who treat accountability the way a cat treats a bath. And then nothing happens. Not once has anything happened. The institution absorbs the hit like a drunk absorbs a curb, messily and in public, and then gets up and does it again four years later.</p>
+
+<!-- FIGURE SKATING -->
+<div class="ev">
+  <div class="ev-sport">Figure Skating · est. 1908</div>
+  <div class="ev-title">Judged by Humans, Which Was the First Mistake</div>
+  <div class="ev-sub">Debuted at the Summer Olympics in October. Has been a litigation risk ever since.</div>
+</div>
+
+<p class="bt">Figure skating is the oldest Winter Olympic sport and, honestly, the only one most people's parents can name. It debuted at the 1908 Summer Olympics in October, sixteen years before the Winter Games even existed. The name comes from skaters tracing geometric figures on the ice, which was a scored component until 1990 when the sport finally admitted nobody wanted to watch that and everyone was just there for the jumps and the ass-hugging costumes. It's now judged on artistic impression and technical difficulty by a panel of international judges who have been, on the whole, completely full of shit for the better part of a century.</p>
+
+<p class="bt">Russia and the Soviet Union won pairs gold at 12 of 18 Olympics between 1964 and 2018. That's 67 percent over 54 years. Some of it was talent. Some of it was organized crime. Telling the two apart has never been a priority for anyone involved.</p>
+
+<p class="bt">At 2002 Salt Lake City, the Canadian pair Jamie Salé and David Pelletier skated what everyone agreed was flawless. The Russian pair, Elena Berezhnaya and Anton Sikharulidze, botched a landing you could see from the parking lot. The kind of landing that makes your drunk friend go "oh, that's not good." Judges voted 5–4 for Russia anyway. The split mapped perfectly along Cold War lines: Russia, China, Poland, Ukraine, and France voted Russian. The US, Canada, Germany, and Japan voted Canadian. The Cold War had been over for eleven years. The judges apparently missed the fucking memo.</p>
+
+<p class="bt">French judge Marie-Reine Le Gougne then admitted, out loud, on the record, like a goddamn Bond villain at the end of act two, that she'd been pressured to vote for Russia as part of a deal: Russia would return the favor by voting for the French ice dance couple. A Russian organized crime boss named Alimzhan Tokhtakhounov was arrested in Italy on U.S. charges of masterminding the fix. He was released without extradition. Just walked out. Just left.</p>
+
+<p class="bt">The IOC responded by giving the Canadians a second gold, so both pairs got one. Then they scrapped the entire scoring system and replaced it. Le Gougne said she was being scapegoated. The mobster walked. The Russian pair kept their medal. No one went to prison. A proven criminal conspiracy involving an actual organized crime boss, and the governing body's response was to hand out participation trophies and pretend it never happened. Absolute clown-shit behavior from an organization that runs on clown-shit the way a car runs on gasoline.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">5 – 4</div>
+  <div class="tn-cap">The judges' vote that blew up Olympic figure skating. The split lined up perfectly with geopolitical alliances drawn in 1945. Russia approaches Olympic compliance the way your uncle approaches an open bar: technically participating, functionally out of control, and someone should have cut them off years ago.</div>
+</div>
+
+<!-- SNOWBOARD -->
+<div class="ev">
+  <div class="ev-sport">Snowboard Halfpipe · est. 1998</div>
+  <div class="ev-title">The Rebagliati Incident</div>
+  <div class="ev-sub">First gold medalist. First drug test. First "wait, that's not actually banned?"</div>
+</div>
+
+<p class="bt">Snowboarding joined the Olympics in 1998 the way a teenager gets dragged to church: under protest, by an institution that didn't understand it, wearing someone else's clothes. The IOC handed governance to the International Ski Federation, which knew about as much about halfpipes as your local homeowners association knows about punk music. Terje Haakonsen, widely considered the best halfpipe rider alive, told the Olympics to go fuck themselves and boycotted.</p>
+
+<p class="bt">Ross Rebagliati of Canada won the first-ever Olympic gold in snowboarding. His piss came back at 17.8 nanograms per milliliter of THC. The threshold was 15. He was over by what amounts to a pharmacological rounding error, the kind of margin that would get thrown out in any lab that wasn't being run by the fun police. The IOC stripped the medal in a 3–2 vote. Canada appealed, and the appeals court gave it back on the grounds that cannabis wasn't actually on the banned substance list. Which it wasn't. The IOC had neglected to ban weed. They just assumed no one would show up high. To snowboarding.</p>
+
+<p class="bt">Rebagliati blamed secondhand smoke from a going-away party, which is the most Canadian excuse anyone has ever given for anything. Japanese police interrogated him for seven hours and filed no charges. Jay Leno probably got the best line out of it: Bill Clinton said he smoked but didn't inhale, and Rebagliati said he inhaled but didn't smoke.</p>
+
+<p class="bt">In April 1998 the IOC added cannabis to the banned list. The press called it "the Rebagliati Rule." In 2013, the threshold was raised to 150 ng/mL, nearly ten times what he tested at. His reading would pass comfortably today. He later started a cannabis company called "Ross' Gold," went broke, lived in a trailer, and ended up on the U.S. No Fly List after September 11. This man's life reads like a Mad Libs written by God during a mental health episode.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">17.8 → 150</div>
+  <div class="tn-cap">Rebagliati's THC level (ng/mL) vs. today's threshold. The reading that nearly killed snowboarding's Olympic career in week one wouldn't trigger a bong water alarm today. The IOC spent more institutional energy on a Canadian snowboarder's secondhand weed than on the actual mafia fixing figure skating results.</div>
+</div>
+
+<div class="pq">"Every four years, the IOC invites the world to compete on ice and snow. Every four years, the same eight countries show up and split the medals like coke at a Wall Street Christmas party: efficiently, among friends, and with zero intention of sharing. The rest of us get figure skating and the opening ceremony."</div>
+
+<!-- ============ GROUP C: THE COMEBACKS ============ -->
+<div class="group-tag">Group C</div>
+<div class="group-title">The Comebacks</div>
+
+<p class="bt">The IOC has spent a century telling sports and entire countries to go fuck themselves. It has never once stuck.</p>
+
+<!-- CURLING -->
+<div class="ev">
+  <div class="ev-sport">Curling · est. 1924 · returned 1998</div>
+  <div class="ev-title">74 Years in Timeout</div>
+  <div class="ev-sub">Medieval Scottish pub game → Olympic sport → removed → 74-year gap → Olympic sport again</div>
+</div>
+
+<p class="bt">Curling was invented in Scotland around 1541. It involves sliding 42-pound granite stones across ice while your teammates furiously sweep the surface with brooms. The stones all come from granite quarried on Ailsa Craig, a volcanic island off the Scottish coast. If you described this sport cold to someone at a bar they'd assume you were either lying or having a stroke. It was Olympic in 1924 and then the IOC removed it for 74 years, which is the organizational equivalent of losing your kid at the mall and not filing a report until the kid is retired.</p>
+
+<p class="bt">The IOC didn't officially recognize the 1924 medals until 2006. Since curling came back in 1998, Canada has won 12 medals. The Norwegian men's team has won fewer medals but considerably more cultural impact, mostly because of their pants. They wear loudly patterned trousers in Norwegian flag colors that look like what would happen if a frat house couch fucked a clown and the baby learned to curl. The pants have their own Wikipedia page. They have their own fashion line. They are, per square inch, the most aggressively visible thing in Olympic history.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">64</div>
+  <div class="tn-cap">The age of Thomas Robertson-Aikman when he won curling gold in 1924, making him the oldest Winter Olympic medalist in history. The IOC got around to recognizing his medal in 2006. Robertson-Aikman was born in 1860. He was not available for comment, on account of being dead for the better part of a century.</div>
+</div>
+
+<!-- SKELETON -->
+<div class="ev">
+  <div class="ev-sport">Skeleton · est. 1928 · returned 2002</div>
+  <div class="ev-title">Face-First at 90 MPH (Removed for Safety, Returned Unchanged)</div>
+  <div class="ev-sub">54 years off. Same chin-to-ice distance when it came back.</div>
+</div>
+
+<p class="bt">Skeleton was Olympic in 1928 and 1948, both at St. Moritz, because St. Moritz was the only venue insane enough to have a track. After 1948 somebody flinched and it got pulled. In 2002 they brought it back without changing anything about it. You still run, dive face-first onto a sled roughly the size of a cafeteria tray, and slide down an ice chute at 146 km/h steering with your shoulders. The world record is 146.4 km/h, set in Vancouver in 2010. That's about 91 mph with your chin two inches from the ice and your only protection being a helmet and whatever arrangement you've made with God.</p>
+
+<p class="bt">Jim Shea Jr. won gold when skeleton came back. His grandfather, Jack Shea, had won two speed skating golds at the 1932 Games, which made them the first family to win Winter gold across generations. Seventeen days before Salt Lake City, Jack was killed by a drunk driver. He was 91. Jim carried his grandfather's photograph in his helmet during the race. The sport took a 54-year break, walked back through the door, and immediately chose violence. Emotionally and at 90 mph.</p>
+
+<p class="bt">Here's a detail we didn't expect to find: Great Britain's best Winter Olympic sport, by medal count, is skeleton. Nine medals, more than any other discipline. The country that produced Eddie the Eagle in ski jumping gets its best results lying face-down on a tea tray at 90 mph. A nation that invented queueing, passive aggression, and apologizing when someone else steps on your foot looked at every Winter Olympic sport and said, "the one where you lie face-down and pray, that's the one for us." Honestly, it makes complete sense.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">54</div>
+  <div class="tn-cap">Years skeleton was absent from the Olympics. During that gap humanity landed on the moon and invented the internet. Then the IOC decided to bring back the face-down ice luge with no brakes. Nobody objected. This organization is unwell.</div>
+</div>
+
+<!-- BOBSLED -->
+<div class="ev">
+  <div class="ev-sport">Bobsled · est. 1924</div>
+  <div class="ev-title">Jamaica, Obviously</div>
+  <div class="ev-sub">Zero medals. Most famous bobsled team in history.</div>
+</div>
+
+<p class="bt">Bobsled has been at every Winter Olympics since 1924. Germany dominates it the way a steroid dominates a urine test. They won 9 of 10 sliding sport golds at 2022 Beijing. This section is not about Germany. Nobody wants to read about Germany winning bobsled. Germany winning bobsled is the missionary position of Winter Olympic storylines.</p>
+
+<p class="bt">In 1987, an American embassy attaché in Kingston named George Fitch watched a local pushcart derby and had a thought that can only be described as aggressively American: Jamaican sprinters are fast, fast people push bobsleds, so Jamaica should have a bobsled team. This is the kind of idea you have at 1 a.m. after too many rum punches except Fitch was sober and he meant it. He spent $92,000 of his own money on it. The athletes were recruited from the Jamaica Defence Force because actual bobsled athletes thought the idea was batshit insane. Dudley Stokes didn't see a bobsled until five months before the Olympics. He had previously seen snow one time.</p>
+
+<p class="bt">At the 1988 Calgary Games they crashed in the four-man event. The sled flipped. All four climbed out and walked it to the finish line. DNF. But the improvement arc is the real story, and it's the part nobody talks about because they're too busy quoting a movie that's 99 percent bullshit. 1988, 30th of 41 in the two-man. 1992, 25th. By 1994, they were finishing ahead of the United States, France, Australia, and Russia. In 2002, Winston Watts posted the fastest push start in Olympic history at 4.78 seconds. A Jamaican, in bobsled, on ice his country has never produced. The start is pure sprinting and Jamaica sent sprinters. The math actually checked out. The premise was insane but the execution was dead serious and it pissed off everyone who'd been laughing.</p>
+
+<p class="bt">Cool Runnings (1993) grossed $154 million. George Fitch says about one percent of it is true. The team did not carry the sled to the finish. There was no coach named Irv Blitzer. In 2014 the Dogecoin cryptocurrency community raised $30,000 to send Jamaica to Sochi. Jamaica has still never won a medal. They keep showing up anyway. Biggest dick energy in the history of winter sports.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">4.78s</div>
+  <div class="tn-cap">Olympic push-start record. Set by a team from a tropical island with no ice, no bobsled infrastructure, and absolutely no goddamn business being there. The start is pure sprinting. Jamaica sent sprinters. The math held up even though the whole idea was batshit.</div>
+</div>
+
+<!-- ============ GROUP D: THE EMPIRE ============ -->
+<div class="group-tag">Group D</div>
+<div class="group-title">The Empire</div>
+
+<p class="bt">Zoom out far enough and the Winter Olympics stop looking like an international competition and start looking like a cartel. Eight countries have been running this thing since 1924. Everyone else shows up, waves a flag, freezes their ass off, goes home empty-handed. It's a poker game where the same five guys win every hand and the rest of the table keeps coming back because the drinks are free and they've already paid for parking.</p>
+
+<!-- ALPINE -->
+<div class="ev">
+  <div class="ev-sport">Alpine Skiing · est. 1936</div>
+  <div class="ev-title">Europe's Private Backyard</div>
+  <div class="ev-sub">Liechtenstein has 10 medals and 39,000 people.</div>
+</div>
+
+<p class="bt">Alpine skiing debuted at the 1936 Games in Nazi Germany, where ski instructors were banned from competing because they were considered professionals. The host nation's state-funded athletes who trained full-time in every other event were, apparently, doing it for the love of the game. The love of the game and the love of a government that would imprison you if you didn't win. But sure. Amateurs.</p>
+
+<p class="bt">Austria has 128 Alpine skiing medals, more in one sport than most countries have across all their Winter events combined. And then there's Liechtenstein, which has 39,000 people, no airport, no military, and a GDP that appears to consist primarily of Alpine skiing medals and money laundering. It has 10 Olympic medals, all in Alpine skiing. That works out to one medal per 3,900 citizens. The United States has roughly one per million. Liechtenstein is outperforming America by a factor of 256 and we're pretty sure no one in Congress has noticed.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">3,900</div>
+  <div class="tn-cap">Liechtenstein citizens per Olympic medal. The country is smaller than most Costco parking lots on a Saturday. It has no military, no airport, and a population you could fit in a mid-size college football stadium. It does have 10 Olympic medals and absolutely no plans to explain itself to anyone.</div>
+</div>
+
+<!-- ICE HOCKEY -->
+<div class="ev">
+  <div class="ev-sport">Ice Hockey · est. 1920</div>
+  <div class="ev-title">Canada Invented It, Then Forgot How to Win for 50 Years</div>
+  <div class="ev-sub">Goal differential of +107 in 1920. Half-century drought.</div>
+</div>
+
+<p class="bt">Ice hockey was played at the 1920 Summer Olympics before the Winter Games even existed. Canada won gold with a combined score of 110–3 across five games, a goal differential of plus-107. They took 6 of the first 7 golds and then didn't win another for 50 years. The country that invented the sport, that has more rinks per capita than anywhere on Earth, that exports more NHL talent than the rest of the world combined, went from 1952 to 2002 without Olympic gold in it. This is like Texas losing a barbecue competition to a vegan co-op in Portland and then not winning another one for half a century. Canada should have been in therapy for this. The whole country should have been on a couch.</p>
+
+<p class="bt">The Soviet Union filled the gap with 7 of 9 golds from 1956 to 1992, using "amateurs" who trained full-time on state salaries, which is a level of institutional bullshit that makes the IOC's own bullshit look quaint. In 1979, the Soviets beat an NHL All-Star team 6–0. Days before the 1980 Olympics, they beat the U.S. team 10–3 in an exhibition. The American roster was college students with an average age of 21. They won 4–3. Sports Illustrated called it the greatest sporting event of the twentieth century, which is less about the hockey and more about the fact that two countries with enough warheads to glass the planet settled the whole thing on ice with college kids who could barely grow facial hair.</p>
+
+<p class="bt">What most people don't know, because this country has the historical attention span of a concussed goldfish, is that the U.S. didn't actually win gold by beating the Soviets. They still had to play Finland two days later and were losing 2–1 after two periods before rallying to win 4–2. Al Michaels did not say "Do you believe in miracles?" twice. Finland has never forgiven him and honestly they shouldn't.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">+107</div>
+  <div class="tn-cap">Canada's goal differential at the 1920 Olympics. 110 scored, 3 allowed, 5 games. One game was 33–0 against Switzerland. Somewhere around goal 15, the Swiss goalie's soul left his body. By goal 25, this was no longer hockey. It was assault with a puck.</div>
+</div>
+
+<!-- ============ CHART 3: ONE-SPORT WONDERS ============ -->
+<div class="viz">
+  <div class="viz-tag">Chart 03</div>
+  <div class="viz-title">One-Sport Wonders</div>
+  <div class="viz-desc">Percentage of each country's total Winter Olympic medals from their single best sport. 1924–2022.</div>
+  <div id="concentrationChart"></div>
+</div>
+
+<!-- ============ CHART 4: PER-CAPITA ============ -->
+<div class="viz">
+  <div class="viz-tag">Chart 04</div>
+  <div class="viz-title">The Norway Problem</div>
+  <div class="viz-desc">All-time Winter Olympic medals per million citizens.</div>
+  <div id="percapitaChart"></div>
+</div>
+
+<p class="bt">Norway has 5.4 million people, fewer than the Dallas-Fort Worth metro area, and 405 Winter Olympic medals with 148 golds. That's the most of any country and the margin doesn't really make sense. The United States, with 330 million people, has roughly one medal per million citizens. Norway has about 75 per million. Three Norwegians are tied for the most Winter Olympic golds ever: Marit Bjørgen, Ole Einar Bjørndalen, and Bjørn Dæhlie. More than half the country's medals come from cross-country skiing and biathlon, which are two sports most Americans could not pick out of a lineup. Both involve skiing through frozen wilderness for long stretches of time while everyone else stays inside like a normal goddamn person.</p>
+
+<!-- ============ CHART 5: LATITUDE ============ -->
+<div class="viz">
+  <div class="viz-tag">Chart 05</div>
+  <div class="viz-title">The Latitude Line</div>
+  <div class="viz-desc">Country latitude vs. all-time medal count. Every top-10 country is above 45°N.</div>
+  <div class="chart-scroll"><svg id="scatterChart" viewBox="0 0 760 400" style="width:100%;display:block"></svg></div>
+</div>
+
+<p class="bt">The latitude chart kind of says it all. Above the 45th parallel: medals. Below it: thoughts and prayers. Austria and Switzerland are the exceptions, but they have the Alps, which amounts to a geographic cheat code for Winter Olympic development. Jamaica and Brazil are technically on this chart. Their dots are sitting on the x-axis at zero like two guys who showed up to an orgy with nothing but enthusiasm and a positive attitude.</p>
+
+<!-- ============ CHART 6: HEATMAP ============ -->
+<div class="viz">
+  <div class="viz-tag">Chart 06</div>
+  <div class="viz-title">Who Owns What</div>
+  <div class="viz-desc">Medal counts by country and event, 1924–2022. Unified country codes (e.g., GER/FRG/GDR → Germany; URS/RUS/EUN/ROC → Russia).</div>
+  <div class="hm-wrap" id="heatmap"></div>
+</div>
+
+<!-- ============ EDDIE THE EAGLE ============ -->
+<div class="group-tag">Bonus</div>
+<div class="group-title">The Eagle</div>
+
+<p class="bt">Eddie Edwards was a plasterer from Cheltenham, England, who in 1988 became the first person to represent Great Britain in Olympic ski jumping. The reason was straightforward: there were no other British ski jumpers. Not one. The bar for making the team was literally "show up" and Eddie was the only person unhinged enough to clear it.</p>
+
+<p class="bt">He financed the whole thing himself. He slept in his mother's car and ate from garbage cans. He once stayed in a Finnish mental hospital because it was the cheapest room he could find, which is the most Eddie Edwards sentence ever written. His boots were hand-me-downs that didn't fit, so he wore six pairs of socks. He weighed 82 kilograms, more than 20 pounds heavier than the next heaviest competitor, and he was severely farsighted. His glasses fogged under his goggles at altitude. This man showed up to the Olympics looking like a Make-A-Wish kid who'd wished too hard.</p>
+
+<p class="bt">In the 70-meter event Edwards scored 69.2 points. The second-to-last finisher scored 140.4. That gap, between last place and second-to-last, was bigger than the gap between second-to-last and the gold medalist. He didn't just lose. He lost by a margin that belonged in a different sport, possibly a different dimension. He finished dead last in both events by distances you could measure in zip codes, and he became more famous than every person who beat him. Every single one.</p>
+
+<p class="bt">The IOC responded by inventing "the Eddie the Eagle Rule," which required athletes to finish in the top 30 percent or top 50 in international competition to qualify. They changed the rules of the Olympic Games, the whole thing, the entire institution, because one plasterer from Cheltenham showed up and scared the shit out of them. Edwards later recorded a Finnish pop single called "Mun nimeni on Eddie" ("My Name Is Eddie") that reached number 2 on the Finnish charts. He doesn't speak Finnish. He learned the lyrics phonetically. The man lost every competition he ever entered and won the entire twentieth century.</p>
+
+<div class="tn">
+  <div class="tn-label">The Number</div>
+  <div class="tn-val">69.2 vs 140.4</div>
+  <div class="tn-cap">Eddie's score vs. the second-to-last finisher. He lost by more than the margin between second-to-last and the gold medalist. The IOC changed the rules of the Olympic Games because of him. He recorded a hit single in a language he doesn't speak. He became more famous than every person who beat him. This man raw-dogged the entire Olympic establishment with nothing but audacity and six pairs of socks and they still can't figure out what happened.</div>
+</div>
+
+<!-- ============ THE CLOSE ============ -->
+<div class="pq">"A hundred years of data and the Winter Olympics have proven exactly one thing: give a Scandinavian a pair of skis and a reason, and they will skull-fuck entire continents. Take away the reason and they'll do it anyway. Most of you weren't watching."</div>
+
+<p class="bt">The 2002 Salt Lake City Games managed to fit all of the following into a single two-week span, as if someone dared the Olympics to speedrun chaos: Steven Bradbury winning gold because everyone else ate shit. A figure skating corruption scandal involving a French judge, a Russian mobster, and the unprecedented issuance of duplicate gold medals because the IOC couldn't figure out who to piss off less. Skeleton returning after 54 years with zero safety upgrades. Bjørndalen sweeping all four individual biathlons. Vonetta Flowers becoming the first Black athlete to win Winter Olympic gold. And Jamaica setting the push-start record in bobsled.</p>
+
+<p class="bt">That was one Olympics. In Utah. A state whose idea of getting fucked up is green Jell-O and a second helping of funeral potatoes.</p>
+
+<p class="bt">Skeleton is still in the program and the athletes' chins are still two inches from the ice. A 64-year-old Scotsman holds the record as the oldest Winter gold medalist. A Canadian snowboarder's THC reading would barely register a contact high today. And somewhere in the Netherlands, a canal is freezing over and Parliament is clearing its schedule because an entire nation is about to lose its collective shit over ice.</p>
+
+<p class="bt">As we write this, Milan Cortina 2026 is in week two. Norway is adding to the count. The Dutch are doing whatever the Dutch do to speed skating. Skeleton athletes are face-down at 90 mph and the IOC has not intervened because the IOC has never intervened in anything that mattered. You are probably not watching any of it. The dataset behind this article is already out of date and it won't get less weird when we update it. Nobody is in charge. Nobody has ever been in charge. The IOC remains fully operational, like a Waffle House in a hurricane, like a cockroach after a nuclear blast, like your uncle after his third divorce. We'll be at the bar.</p>
+
+<!-- METHODOLOGY -->
+<div class="meth">
+  <h3>Methodology & Sources</h3>
+  <p><strong>Olympic Historical Dataset</strong> — Athlete-level event details covering all Olympics through 2022 Beijing. Winter data filtered and deduplicated to unique medal events (Edition × Event × Medal × Country) to correct for team sport roster inflation. Country codes unified across historical splits (GER/FRG/GDR → Germany; URS/RUS/EUN/ROC → Russia). Medal tally cross-referenced against official Olympic Medal Tally History. Charts 2, 3, and 6 built directly from this dataset.</p>
+  <p><strong>Olympedia.org</strong> — Supplemental verification for event histories, athlete biographies, and scoring details.</p>
+  <p><strong>World Bank</strong> — 2023 population estimates for per-capita calculations.</p>
+</div>
+
+<div class="foot">
+  <div class="logo">Data Dive Bar</div>
+  <div class="tag">Pretty charts about ugly truths.</div>
+</div>
+
+</div>
+
+<script>
+// ============ CHART 1: TIMELINE ============
+(function(){
+  var c=document.getElementById('timeline'),mn=1908,mx=2022,rng=mx-mn;
+  var evts=[
+    {n:'Figure Skating',s:[{a:1908,b:2022,c:'#ff6b9d'}]},
+    {n:'Ice Hockey',s:[{a:1920,b:2022,c:'#4fc3f7'}]},
+    {n:'Speed Skating',s:[{a:1924,b:2022,c:'#ffb347'}]},
+    {n:'Bobsled',s:[{a:1924,b:2022,c:'#ef5350'}]},
+    {n:'Curling',s:[{a:1924,b:1924,c:'#69f0ae'},{a:1924,b:1998,c:'gap'},{a:1998,b:2022,c:'#69f0ae'}]},
+    {n:'Alpine Skiing',s:[{a:1936,b:2022,c:'#ab47bc'}]},
+    {n:'Skeleton',s:[{a:1928,b:1948,c:'#78909c'},{a:1948,b:2002,c:'gap'},{a:2002,b:2022,c:'#78909c'}]},
+    {n:'Biathlon',s:[{a:1960,b:2022,c:'#8bc34a'}]},
+    {n:'Short Track',s:[{a:1992,b:2022,c:'#ff9800'}]},
+    {n:'Snowboard',s:[{a:1998,b:2022,c:'#e040fb'}]}
+  ];
+  evts.forEach(function(e){
+    var row=document.createElement('div');row.className='tl-row';
+    var lbl=document.createElement('div');lbl.className='tl-name';lbl.textContent=e.n;row.appendChild(lbl);
+    var trk=document.createElement('div');trk.className='tl-track';
+    e.s.forEach(function(sp){
+      var bar=document.createElement('div');bar.className='tl-bar'+(sp.c==='gap'?' gap':'');
+      var l=((sp.a-mn)/rng)*100,w=Math.max(((sp.b-sp.a)/rng)*100,0.7);
+      bar.style.left=l+'%';bar.style.width=w+'%';
+      if(sp.c!=='gap')bar.style.background=sp.c;
+      trk.appendChild(bar);
+    });
+    row.appendChild(trk);c.appendChild(row);
+  });
+  var ax=document.createElement('div');ax.className='tl-axis';
+  [1908,1924,1936,1948,1960,1972,1984,1998,2010,2022].forEach(function(y){
+    var t=document.createElement('span');t.textContent=y;ax.appendChild(t);
+  });
+  c.appendChild(ax);
+})();
+
+// ============ CHART 2: DUTCH TAKEOVER (through 2022) ============
+(function(){
+  var svg=document.getElementById('dutchChart'),ns='http://www.w3.org/2000/svg';
+  var data=[
+    {y:1924,p:0},{y:1928,p:0},{y:1932,p:0},{y:1936,p:0},{y:1948,p:0},
+    {y:1952,p:23},{y:1956,p:0},{y:1960,p:4},{y:1964,p:4},{y:1968,p:39},
+    {y:1972,p:38},{y:1976,p:19},{y:1980,p:14},{y:1984,p:0},{y:1988,p:23},
+    {y:1992,p:13},{y:1994,p:13},{y:1998,p:37},{y:2002,p:27},{y:2006,p:25},
+    {y:2010,p:19},{y:2014,p:64},{y:2018,p:38},{y:2022,p:29}
+  ];
+  var pad={t:20,r:20,b:36,l:44},w=760,h=300;
+  var iw=w-pad.l-pad.r,ih=h-pad.t-pad.b;
+  var xMin=1924,xMax=2022,yMax=70;
+  function sx(v){return pad.l+((v-xMin)/(xMax-xMin))*iw}
+  function sy(v){return pad.t+ih-(v/yMax)*ih}
+
+  for(var v=0;v<=70;v+=10){
+    var gl=document.createElementNS(ns,'line');
+    gl.setAttribute('x1',pad.l);gl.setAttribute('x2',pad.l+iw);
+    gl.setAttribute('y1',sy(v));gl.setAttribute('y2',sy(v));
+    gl.setAttribute('stroke','rgba(255,255,255,0.06)');svg.appendChild(gl);
+    var gt=document.createElementNS(ns,'text');
+    gt.setAttribute('x',pad.l-6);gt.setAttribute('y',sy(v)+3);
+    gt.setAttribute('text-anchor','end');gt.setAttribute('fill','#7a7265');
+    gt.setAttribute('font-size','10');gt.setAttribute('font-family','JetBrains Mono,monospace');
+    gt.textContent=v+'%';svg.appendChild(gt);
+  }
+  [1924,1940,1960,1980,2000,2022].forEach(function(yr){
+    var xt=document.createElementNS(ns,'text');
+    xt.setAttribute('x',sx(yr));xt.setAttribute('y',h-8);
+    xt.setAttribute('text-anchor','middle');xt.setAttribute('fill','#7a7265');
+    xt.setAttribute('font-size','10');xt.setAttribute('font-family','JetBrains Mono,monospace');
+    xt.textContent=yr;svg.appendChild(xt);
+  });
+
+  var pts=data.map(function(d){return sx(d.y)+','+sy(d.p)}).join(' ');
+  var areaPts=sx(data[0].y)+','+sy(0)+' '+pts+' '+sx(data[data.length-1].y)+','+sy(0);
+  var area=document.createElementNS(ns,'polygon');
+  area.setAttribute('points',areaPts);
+  area.setAttribute('fill','rgba(255,179,71,0.12)');svg.appendChild(area);
+  var line=document.createElementNS(ns,'polyline');
+  line.setAttribute('points',pts);line.setAttribute('fill','none');
+  line.setAttribute('stroke','#ffb347');line.setAttribute('stroke-width','2.5');
+  svg.appendChild(line);
+
+  data.forEach(function(d){
+    var cx=sx(d.y),cy=sy(d.p);
+    var dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('cx',cx);dot.setAttribute('cy',cy);dot.setAttribute('r',d.p>30?5:3);
+    dot.setAttribute('fill','#ffb347');svg.appendChild(dot);
+    if(d.y===2014){
+      var t=document.createElementNS(ns,'text');
+      t.setAttribute('x',cx);t.setAttribute('y',cy-14);
+      t.setAttribute('text-anchor','middle');t.setAttribute('fill','#fff');
+      t.setAttribute('font-size','12');t.setAttribute('font-weight','700');
+      t.setAttribute('font-family','JetBrains Mono,monospace');
+      t.textContent='64%';svg.appendChild(t);
+      var t2=document.createElementNS(ns,'text');
+      t2.setAttribute('x',cx);t2.setAttribute('y',cy-26);
+      t2.setAttribute('text-anchor','middle');t2.setAttribute('fill','#7a7265');
+      t2.setAttribute('font-size','9');t2.setAttribute('font-family','JetBrains Mono,monospace');
+      t2.textContent='SOCHI';svg.appendChild(t2);
+    }
+    if(d.y===2022){
+      var t=document.createElementNS(ns,'text');
+      t.setAttribute('x',cx-2);t.setAttribute('y',cy-10);
+      t.setAttribute('text-anchor','end');t.setAttribute('fill','#7a7265');
+      t.setAttribute('font-size','10');t.setAttribute('font-family','JetBrains Mono,monospace');
+      t.textContent='29%';svg.appendChild(t);
+    }
+  });
+})();
+
+// ============ CHART 3: ONE-SPORT WONDERS (updated through 2022) ============
+(function(){
+  var c=document.getElementById('concentrationChart');
+  var data=[
+    {c:'Netherlands',pct:90,sport:'Speed Skating',n:'133/147'},
+    {c:'South Korea',pct:67,sport:'Short Track',n:'53/79'},
+    {c:'Belarus',pct:55,sport:'Biathlon',n:'11/20'},
+    {c:'Austria',pct:51,sport:'Alpine Skiing',n:'128/250'},
+    {c:'Finland',pct:49,sport:'XC Skiing',n:'86/175'},
+    {c:'Sweden',pct:48,sport:'XC Skiing',n:'84/176'},
+    {c:'China',pct:48,sport:'Short Track',n:'37/77'},
+    {c:'Switzerland',pct:44,sport:'Alpine Skiing',n:'74/167'},
+    {c:'Poland',pct:43,sport:'Ski Jumping',n:'10/23'},
+    {c:'France',pct:37,sport:'Alpine Skiing',n:'51/138'},
+    {c:'Russia',pct:34,sport:'XC Skiing',n:'129/384'},
+    {c:'Japan',pct:34,sport:'Speed Skating',n:'26/76'},
+    {c:'Norway',pct:32,sport:'XC Skiing',n:'128/404'},
+    {c:'Italy',pct:26,sport:'XC Skiing',n:'36/141'},
+    {c:'USA',pct:21,sport:'Speed Skating',n:'68/327'},
+    {c:'Germany',pct:20,sport:'Luge',n:'87/435'}
+  ];
+  var colors=['#ffb347','#ff9800','#ef6c00','#e65100','#d84315','#bf360c','#bf360c','#a1887f','#8d6e63','#795548','#6d4c41','#6d4c41','#5d4037','#5d4037','#4e342e','#3e2723'];
+  data.forEach(function(d,i){
+    var row=document.createElement('div');row.className='bar-row';row.style.gridTemplateColumns='110px 1fr 120px';
+    var name=document.createElement('div');name.className='bar-c';
+    name.textContent=d.c;
+    var track=document.createElement('div');track.className='bar-t';
+    var fill=document.createElement('div');fill.className='bar-f';
+    fill.style.width='0%';fill.style.background=colors[i]||'#5d4037';
+    setTimeout(function(){fill.style.width=d.pct+'%';},80+i*50);
+    track.appendChild(fill);
+    var val=document.createElement('div');val.className='bar-v';
+    val.innerHTML=d.pct+'% <span style="color:#5a5048;font-size:9px">'+d.sport+'</span>';
+    row.appendChild(name);row.appendChild(track);row.appendChild(val);
+    c.appendChild(row);
+  });
+  var lbl=document.createElement('div');lbl.className='chart-note';
+  lbl.textContent='% OF ALL WINTER MEDALS FROM SINGLE BEST SPORT · 1924–2022';
+  c.appendChild(lbl);
+})();
+
+// ============ CHART 4: PER-CAPITA ============
+(function(){
+  var c=document.getElementById('percapitaChart');
+  var data=[
+    {c:'Liechtenstein',v:256.4},{c:'Norway',v:75.0},{c:'Finland',v:31.8},
+    {c:'Austria',v:27.5},{c:'Switzerland',v:19.1},{c:'Sweden',v:16.9},
+    {c:'Slovenia',v:11.4},{c:'Netherlands',v:8.4},{c:'Czech Rep.',v:5.5},
+    {c:'Canada',v:5.9},{c:'Germany',v:3.4},{c:'Russia',v:2.2},
+    {c:'France',v:2.0},{c:'S. Korea',v:1.5},{c:'USA',v:1.0},{c:'China',v:0.06}
+  ];
+  var mx=data[0].v;
+  var cols=['#ffd54f','#ffb347','#ff9800','#ff9800','#ef6c00','#ef6c00','#e65100','#bf360c','#bf360c','#bf360c','#8d6e63','#8d6e63','#6d4c41','#5d4037','#5d4037','#4e342e'];
+  data.forEach(function(d,i){
+    var row=document.createElement('div');row.className='bar-row';
+    var name=document.createElement('div');name.className='bar-c';name.textContent=d.c;
+    var track=document.createElement('div');track.className='bar-t';
+    var fill=document.createElement('div');fill.className='bar-f';
+    var pct=(d.v/mx)*100;
+    fill.style.width='0%';fill.style.background=cols[i]||'#5d4037';
+    setTimeout(function(){fill.style.width=Math.max(pct,0.4)+'%';},80+i*50);
+    track.appendChild(fill);
+    var val=document.createElement('div');val.className='bar-v';
+    val.textContent=d.v>=1?d.v.toFixed(1):d.v.toFixed(2);
+    row.appendChild(name);row.appendChild(track);row.appendChild(val);
+    c.appendChild(row);
+  });
+  var lbl=document.createElement('div');lbl.className='chart-note';
+  lbl.textContent='MEDALS PER MILLION CITIZENS · 2023 POPULATION';
+  c.appendChild(lbl);
+})();
+
+// ============ CHART 5: LATITUDE SCATTER ============
+(function(){
+  var svg=document.getElementById('scatterChart'),ns='http://www.w3.org/2000/svg';
+  var pad={t:25,r:25,b:45,l:55},w=760,h=400;
+  var iw=w-pad.l-pad.r,ih=h-pad.t-pad.b;
+  var data=[
+    {c:'Norway',lat:62,m:405},{c:'Germany',lat:51.2,m:435},{c:'USA',lat:38,m:330},
+    {c:'Russia',lat:61.5,m:363},{c:'Austria',lat:47.3,m:250},{c:'Canada',lat:56.1,m:225},
+    {c:'Sweden',lat:62,m:176},{c:'Finland',lat:64,m:175},{c:'Switzerland',lat:46.8,m:168},
+    {c:'Netherlands',lat:52.1,m:147},{c:'Italy',lat:41.9,m:141},{c:'France',lat:46.2,m:138},
+    {c:'S. Korea',lat:35.9,m:79},{c:'China',lat:35.9,m:77},{c:'Japan',lat:36.2,m:76},
+    {c:'Great Britain',lat:55.4,m:34},{c:'Slovenia',lat:46.2,m:24},
+    {c:'Australia',lat:25.3,m:18},{c:'Liechtenstein',lat:47.2,m:10},
+    {c:'New Zealand',lat:40.9,m:4},{c:'Jamaica',lat:18.1,m:0},{c:'Brazil',lat:14.2,m:0}
+  ];
+  var xMax=450,yMax=70;
+  function sx(x){return pad.l+(x/xMax)*iw}
+  function sy(y){return pad.t+ih-(y/yMax)*ih}
+  for(var v=0;v<=400;v+=100){
+    var gl=document.createElementNS(ns,'line');
+    gl.setAttribute('x1',sx(v));gl.setAttribute('x2',sx(v));
+    gl.setAttribute('y1',pad.t);gl.setAttribute('y2',pad.t+ih);
+    gl.setAttribute('stroke','rgba(255,255,255,0.04)');svg.appendChild(gl);
+    var gt=document.createElementNS(ns,'text');
+    gt.setAttribute('x',sx(v));gt.setAttribute('y',h-8);
+    gt.setAttribute('text-anchor','middle');gt.setAttribute('fill','#7a7265');
+    gt.setAttribute('font-size','10');gt.setAttribute('font-family','JetBrains Mono,monospace');
+    gt.textContent=v;svg.appendChild(gt);
+  }
+  for(var v=0;v<=70;v+=10){
+    var gl=document.createElementNS(ns,'line');
+    gl.setAttribute('x1',pad.l);gl.setAttribute('x2',pad.l+iw);
+    gl.setAttribute('y1',sy(v));gl.setAttribute('y2',sy(v));
+    gl.setAttribute('stroke','rgba(255,255,255,0.04)');svg.appendChild(gl);
+    var gt=document.createElementNS(ns,'text');
+    gt.setAttribute('x',pad.l-7);gt.setAttribute('y',sy(v)+3);
+    gt.setAttribute('text-anchor','end');gt.setAttribute('fill','#7a7265');
+    gt.setAttribute('font-size','10');gt.setAttribute('font-family','JetBrains Mono,monospace');
+    gt.textContent=v+'\u00B0';svg.appendChild(gt);
+  }
+  var ln=document.createElementNS(ns,'line');
+  ln.setAttribute('x1',sx(0));ln.setAttribute('x2',sx(xMax));
+  ln.setAttribute('y1',sy(45));ln.setAttribute('y2',sy(45));
+  ln.setAttribute('stroke','rgba(255,179,71,0.2)');ln.setAttribute('stroke-dasharray','6,4');
+  svg.appendChild(ln);
+  var lt=document.createElementNS(ns,'text');
+  lt.setAttribute('x',sx(xMax)-4);lt.setAttribute('y',sy(45)-6);
+  lt.setAttribute('text-anchor','end');lt.setAttribute('fill','#ffb347');
+  lt.setAttribute('font-size','9');lt.setAttribute('font-family','JetBrains Mono,monospace');
+  lt.setAttribute('opacity','0.5');lt.textContent='45\u00B0N';svg.appendChild(lt);
+  var xl=document.createElementNS(ns,'text');
+  xl.setAttribute('x',sx(xMax/2));xl.setAttribute('y',h-0);
+  xl.setAttribute('text-anchor','middle');xl.setAttribute('fill','#7a7265');
+  xl.setAttribute('font-size','10');xl.setAttribute('font-family','JetBrains Mono,monospace');
+  xl.textContent='ALL-TIME MEDALS';svg.appendChild(xl);
+  var yl=document.createElementNS(ns,'text');
+  yl.setAttribute('x',12);yl.setAttribute('y',sy(yMax/2));
+  yl.setAttribute('text-anchor','middle');yl.setAttribute('fill','#7a7265');
+  yl.setAttribute('font-size','10');yl.setAttribute('font-family','JetBrains Mono,monospace');
+  yl.setAttribute('transform','rotate(-90,12,'+sy(yMax/2)+')');
+  yl.textContent='LATITUDE';svg.appendChild(yl);
+  data.forEach(function(d){
+    var cx=sx(d.m),cy=sy(d.lat),above=d.lat>=45;
+    var r=Math.max(3.5,Math.sqrt(d.m)*0.7);
+    var circle=document.createElementNS(ns,'circle');
+    circle.setAttribute('cx',cx);circle.setAttribute('cy',cy);circle.setAttribute('r',r);
+    circle.setAttribute('fill',above?'#ffb347':'#4fc3f7');
+    circle.setAttribute('opacity','0.75');svg.appendChild(circle);
+    var show=['Norway','Germany','USA','Canada','Austria','Jamaica','Brazil','Australia','Netherlands','S. Korea','Finland','Russia','Liechtenstein'].indexOf(d.c)>=0;
+    if(show){
+      var t=document.createElementNS(ns,'text');
+      var lx=cx+r+4,ly=cy+3,anch='start';
+      if(d.c==='Norway'){ly=cy-9}
+      if(d.c==='Germany'){ly=cy-7}
+      if(d.c==='Russia'){ly=cy+14}
+      if(d.c==='Finland'){lx=cx-r-4;anch='end'}
+      if(d.c==='Jamaica'||d.c==='Brazil'){ly=cy-7}
+      if(d.c==='Liechtenstein'){ly=cy+14}
+      t.setAttribute('x',lx);t.setAttribute('y',ly);
+      t.setAttribute('text-anchor',anch);
+      t.setAttribute('fill',above?'rgba(255,179,71,0.6)':'rgba(79,195,247,0.6)');
+      t.setAttribute('font-size','9');t.setAttribute('font-family','JetBrains Mono,monospace');
+      t.textContent=d.c;svg.appendChild(t);
+    }
+  });
+})();
+
+// ============ CHART 6: HEATMAP (updated through 2022) ============
+(function(){
+  var c=document.getElementById('heatmap');
+  var evts=['Speed','Biath','Alpine','Figure','Hockey','Bob','ShortT','Snow','Curl','Skel'];
+  var full=['Speed Skating','Biathlon','Alpine Skiing','Figure Skating','Ice Hockey','Bobsled','Short Track','Snowboard','Curling','Skeleton'];
+  var data=[
+    {c:'USA',v:[68,0,48,53,17,28,20,35,2,8]},
+    {c:'Germany',v:[72,70,41,22,3,51,0,7,0,6]},
+    {c:'Russia',v:[74,51,2,64,14,5,9,6,0,4]},
+    {c:'Norway',v:[87,55,40,3,0,0,0,5,5,0]},
+    {c:'Canada',v:[42,3,12,29,22,11,37,17,12,4]},
+    {c:'Austria',v:[6,6,128,20,0,3,0,11,0,1]},
+    {c:'Netherlands',v:[133,0,0,3,0,0,9,1,0,1]},
+    {c:'Switzerland',v:[0,1,74,3,3,31,0,14,7,3]},
+    {c:'France',v:[0,32,51,14,0,1,0,13,1,0]},
+    {c:'Sweden',v:[18,18,19,4,11,0,0,1,11,0]},
+    {c:'Italy',v:[7,7,36,2,0,12,15,5,1,1]},
+    {c:'S. Korea',v:[20,0,0,2,0,1,53,1,1,1]},
+    {c:'China',v:[9,0,0,9,0,0,37,3,1,1]},
+    {c:'Japan',v:[26,0,1,11,0,0,3,7,2,0]},
+    {c:'Finland',v:[24,6,1,1,11,0,0,4,1,0]}
+  ];
+  var mx=133;
+  function cc(v){
+    if(!v)return'rgba(255,255,255,0.02)';
+    var i=Math.pow(v/mx,0.5);
+    return'rgb('+Math.round(13+i*242)+','+Math.round(13+i*140)+','+Math.round(13+i*10)+')';
+  }
+  function tc(v){
+    if(!v)return'rgba(255,255,255,0.12)';
+    return v/mx>0.4?'rgba(0,0,0,0.8)':'rgba(255,255,255,0.8)';
+  }
+
+  // Legend
+  var leg=document.createElement('div');
+  leg.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:14px;font-family:JetBrains Mono,monospace;font-size:9px;color:#7a7265;letter-spacing:1px';
+  var ll=document.createElement('span');ll.textContent='0';leg.appendChild(ll);
+  var bar=document.createElement('div');
+  bar.style.cssText='flex:0 0 180px;height:10px;border-radius:3px;background:linear-gradient(to right,rgba(255,255,255,0.02),rgb(90,55,5),rgb(175,100,8),rgb(255,153,10))';
+  leg.appendChild(bar);
+  var lr=document.createElement('span');lr.textContent='133';leg.appendChild(lr);
+  var llab=document.createElement('span');llab.textContent='MEDALS';llab.style.marginLeft='4px';leg.appendChild(llab);
+  c.appendChild(leg);
+
+  var tbl=document.createElement('table');tbl.className='hm';
+  var thead=document.createElement('thead');
+  var hr=document.createElement('tr');
+  var th0=document.createElement('th');th0.textContent='';hr.appendChild(th0);
+  evts.forEach(function(e,i){
+    var th=document.createElement('th');th.textContent=e;th.title=full[i];hr.appendChild(th);
+  });
+  var thT=document.createElement('th');thT.textContent='Total';thT.style.borderLeft='2px solid rgba(255,255,255,0.08)';hr.appendChild(thT);
+  thead.appendChild(hr);tbl.appendChild(thead);
+  var tbody=document.createElement('tbody');
+  data.forEach(function(row){
+    var tr=document.createElement('tr');
+    var td0=document.createElement('td');td0.textContent=row.c;tr.appendChild(td0);
+    var sum=0;
+    row.v.forEach(function(v,i){
+      sum+=v;
+      var td=document.createElement('td');
+      var sp=document.createElement('span');sp.className='hm-cell';
+      sp.textContent=v;sp.style.background=cc(v);sp.style.color=tc(v);
+      sp.title=row.c+': '+v+' '+full[i]+' medals';
+      td.appendChild(sp);tr.appendChild(td);
+    });
+    var tdT=document.createElement('td');
+    tdT.style.cssText='border-left:2px solid rgba(255,255,255,0.08);font-weight:700;color:#e8e0d4;text-align:center;font-size:12px';
+    tdT.textContent=sum;
+    tr.appendChild(tdT);
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);c.appendChild(tbl);
+  var note=document.createElement('div');note.className='chart-note';
+  note.textContent='UNIQUE MEDAL EVENTS PER COUNTRY · 1924–2022 · UNIFIED COUNTRY CODES';
+  c.appendChild(note);
+})();
+</script>
+</body>
+</html>
