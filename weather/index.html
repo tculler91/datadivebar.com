@@ -86,9 +86,10 @@
             background: linear-gradient(180deg, #060f20 0%, #081828 100%);
             border-bottom: 2px solid var(--twc-teal);
             box-shadow: 0 2px 20px rgba(0, 180, 200, 0.15), 0 1px 0 rgba(0,180,200,0.08);
-            display: flex;
+            /* Grid gives true 3-col layout: left auto-sizes, center always centered, right aligns end */
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            justify-content: space-between;
             padding: 0 1.5rem;
             z-index: 600;
         }
@@ -97,9 +98,11 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            min-width: 0; /* prevent overflow */
         }
         .twc-logo-icon {
             font-size: 1.4rem;
+            flex-shrink: 0;
             filter: drop-shadow(0 0 6px rgba(0,212,255,0.5));
         }
         .twc-logo-text {
@@ -109,77 +112,80 @@
             color: var(--twc-white);
             letter-spacing: 0.08em;
             text-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+            white-space: nowrap;
         }
         .twc-logo-sub {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.5rem;
+            font-size: 0.65rem;
             color: var(--twc-teal);
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
             margin-top: 2px;
         }
 
         .clock-area {
             text-align: right;
+            justify-self: end;
         }
         #clock {
             display: block;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 1.35rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--twc-white);
             letter-spacing: 0.05em;
             text-shadow: 0 0 10px rgba(0,212,255,0.25);
             line-height: 1;
+            white-space: nowrap;
         }
         #date-display {
             display: block;
             font-family: 'Special Elite', cursive;
-            font-size: 0.55rem;
+            font-size: 0.65rem;
             color: var(--twc-teal);
-            letter-spacing: 0.15em;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
             margin-top: 3px;
+            white-space: nowrap;
         }
 
         /* ─── TOP CENTER: RADAR LABEL ─────────────────────── */
         .radar-label {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             text-align: center;
+            padding: 0 0.5rem;
         }
         .radar-label-main {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: var(--twc-amber);
             letter-spacing: 0.25em;
             text-transform: uppercase;
             text-shadow: 0 0 10px rgba(255,200,0,0.3);
+            white-space: nowrap;
         }
         .radar-label-sub {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.42rem;
+            font-size: 0.6rem;
             color: var(--twc-dim);
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
             margin-top: 2px;
+            white-space: nowrap;
         }
 
         /* ─── CAMERA STATUS ───────────────────────────────── */
         .camera-status {
             position: fixed;
-            top: calc(var(--bar-h) + 12px);
+            top: calc(var(--bar-h) + 10px);
             left: 14px;
-            background: rgba(4, 20, 40, 0.75);
-            border: 1px solid rgba(0,180,200,0.25);
+            background: rgba(4, 20, 40, 0.8);
+            border: 1px solid rgba(0,180,200,0.3);
             border-left: 2px solid var(--twc-teal);
-            padding: 5px 10px;
+            padding: 5px 12px;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.52rem;
-            letter-spacing: 0.12em;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
             color: var(--twc-teal);
             z-index: 600;
@@ -193,18 +199,18 @@
         /* ─── RADAR REFRESH INDICATOR ─────────────────────── */
         .radar-refresh-dot {
             position: fixed;
-            top: calc(var(--bar-h) + 12px);
+            top: calc(var(--bar-h) + 10px);
             right: 14px;
             display: flex;
             align-items: center;
             gap: 6px;
-            background: rgba(4, 20, 40, 0.75);
-            border: 1px solid rgba(0,180,200,0.25);
+            background: rgba(4, 20, 40, 0.8);
+            border: 1px solid rgba(0,180,200,0.3);
             border-right: 2px solid var(--twc-teal);
-            padding: 5px 10px;
+            padding: 5px 12px;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.48rem;
-            letter-spacing: 0.1em;
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--twc-dim);
             z-index: 600;
@@ -236,19 +242,19 @@
         }
         .ddb-bug-line1 {
             font-family: 'Special Elite', cursive;
-            font-size: 0.58rem;
+            font-size: 0.7rem;
             color: var(--twc-amber);
-            letter-spacing: 0.15em;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
             text-shadow: 0 0 8px rgba(255,200,0,0.3);
         }
         .ddb-bug-line2 {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.45rem;
+            font-size: 0.6rem;
             color: var(--twc-teal);
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            margin-top: 1px;
+            margin-top: 2px;
         }
 
         /* ─── AUDIO CONTROL ───────────────────────────────── */
@@ -263,8 +269,8 @@
             border: 1px solid rgba(0,180,200,0.35);
             color: var(--twc-teal);
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.52rem;
-            letter-spacing: 0.15em;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
             padding: 6px 12px;
             cursor: pointer;
@@ -301,15 +307,16 @@
             background: var(--twc-teal);
             color: var(--twc-navy);
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.5rem;
+            font-size: 0.65rem;
             font-weight: 700;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            padding: 0 14px;
+            padding: 0 16px;
             height: 100%;
             display: flex;
             align-items: center;
             border-right: 2px solid rgba(0,0,0,0.3);
+            white-space: nowrap;
         }
 
         .chyron-content {
@@ -374,16 +381,16 @@
             border-bottom: 1px solid rgba(255,60,40,0.5);
             color: #ff9090;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.55rem;
-            letter-spacing: 0.12em;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
-            padding: 5px 14px;
+            padding: 6px 14px;
             z-index: 650;
             display: none;
             animation: alertpulse 2s ease-in-out infinite;
         }
         .alert-banner.visible { display: flex; align-items: center; gap: 8px; }
-        .alert-icon { color: #ff3c28; font-size: 0.75rem; }
+        .alert-icon { color: #ff3c28; font-size: 0.85rem; }
         @keyframes alertpulse {
             0%, 100% { background: linear-gradient(90deg, #3a0808, #4a0a0a, #3a0808); }
             50% { background: linear-gradient(90deg, #4a0808, #5a1010, #4a0808); }
@@ -466,12 +473,12 @@
         <button id="mute-btn" class="muted">♪ PLAY JAZZ</button>
     </div>
 
-    <!-- Hidden audio -->
-    <audio id="jazz-audio" loop preload="none">
-        <!-- Public domain smooth jazz / easy listening from Internet Archive -->
-        <source src="https://archive.org/download/78_stardust_artie-shaw-and-his-orchestra-hoagy-carmichael-mitchell-parish_gbia0001153b/Artie%20Shaw%20-%20Stardust.mp3" type="audio/mpeg">
-        <source src="https://archive.org/download/78_moonlight-serenade_glenn-miller-and-his-orchestra-parish-miller_gbia0001156b/Glenn%20Miller%20-%20Moonlight%20Serenade.mp3" type="audio/mpeg">
-        <source src="https://archive.org/download/78_in-the-mood_glen-miller-and-his-orchestra-garland-razaf_gbia0001157b/Glenn%20Miller%20-%20In%20The%20Mood.mp3" type="audio/mpeg">
+    <!-- Smooth jazz stream — SomaFM Illinois Street Lounge (free, non-commercial listener radio) -->
+    <!-- Classic 60s/70s easy listening and lounge jazz; perfect TWC vibe -->
+    <audio id="jazz-audio" preload="none">
+        <source src="https://ice1.somafm.com/illstreet-128-mp3" type="audio/mpeg">
+        <source src="https://ice3.somafm.com/illstreet-128-mp3" type="audio/mpeg">
+        <source src="https://ice6.somafm.com/illstreet-128-mp3" type="audio/mpeg">
     </audio>
 
     <!-- Bottom chyron -->
@@ -545,7 +552,11 @@
         const ts = Math.floor(Date.now() / 60000); // changes every minute
         return L.tileLayer(
             `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?ts=${ts}`,
-            { opacity: 0.72, maxZoom: 12 }
+            {
+                opacity: 0.72,
+                maxNativeZoom: 8,  // IEM N0Q tiles top out at z8; Leaflet scales them up beyond
+                maxZoom: 13,
+            }
         );
     }
 
@@ -806,46 +817,58 @@
     // ── AUDIO ─────────────────────────────────────────────────────
     const audio   = document.getElementById('jazz-audio');
     const muteBtn = document.getElementById('mute-btn');
-    let audioStarted = false;
-    let isMuted = true;
 
-    // Set volume to comfortable background level
     audio.volume = 0.4;
 
-    function startAudio() {
-        if (audioStarted) return;
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                audioStarted = true;
-                isMuted = false;
-                muteBtn.textContent = '♪ MUTE JAZZ';
-                muteBtn.classList.remove('muted');
-            }).catch(() => {
-                // Autoplay blocked — that's fine
-            });
-        }
+    function setAudioBtn(state) {
+        // states: 'idle' | 'playing' | 'muted' | 'error'
+        const labels = {
+            idle:    '♪ PLAY JAZZ',
+            playing: '♪ MUTE JAZZ',
+            muted:   '♪ UNMUTE JAZZ',
+            error:   '♪ NO SIGNAL',
+            loading: '♪ TUNING IN…',
+        };
+        muteBtn.textContent = labels[state] || '♪ PLAY JAZZ';
+        muteBtn.classList.toggle('muted', state !== 'playing');
     }
 
-    muteBtn.addEventListener('click', () => {
-        if (!audioStarted || audio.paused) {
-            startAudio();
-        } else if (audio.muted) {
-            audio.muted = false;
-            isMuted = false;
-            muteBtn.textContent = '♪ MUTE JAZZ';
-            muteBtn.classList.remove('muted');
-        } else {
-            audio.muted = true;
-            isMuted = true;
-            muteBtn.textContent = '♪ UNMUTE JAZZ';
-            muteBtn.classList.add('muted');
-        }
+    function tryPlay() {
+        setAudioBtn('loading');
+        audio.load(); // re-initialize the source list
+        audio.play()
+            .then(() => setAudioBtn('playing'))
+            .catch(err => {
+                if (err.name === 'NotAllowedError') {
+                    // Browser blocked autoplay — user must click
+                    setAudioBtn('idle');
+                } else {
+                    // Source failed to load or network error
+                    setAudioBtn('error');
+                }
+            });
+    }
+
+    // Surface media errors visibly rather than silent failure
+    audio.addEventListener('error', () => {
+        if (!audio.paused) return; // ignore mid-play glitches
+        setAudioBtn('error');
     });
 
-    // Try to start audio on any user interaction
-    document.addEventListener('click', startAudio, { once: true });
-    document.addEventListener('keydown', startAudio, { once: true });
+    muteBtn.addEventListener('click', () => {
+        if (audio.error || audio.readyState === 0) {
+            // Previous attempt failed or never started — retry
+            tryPlay();
+        } else if (audio.paused) {
+            tryPlay();
+        } else if (audio.muted) {
+            audio.muted = false;
+            setAudioBtn('playing');
+        } else {
+            audio.muted = true;
+            setAudioBtn('muted');
+        }
+    });
 
     // ── MEMORY LEAK PREVENTION ────────────────────────────────────
     // Leaflet handles its own cleanup, intervals are long-lived intentionally.
