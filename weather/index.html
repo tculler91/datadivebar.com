@@ -3,478 +3,434 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Dive Bar Weather Desk — Ohio Doppler</title>
-    <meta name="description" content="1990s Weather Channel, resurrected. Ohio NEXRAD radar, ambient smooth jazz, current conditions.">
+    <title>Weather Desk — Data Dive Bar</title>
+    <meta name="description" content="Live Doppler radar and conditions for Ohio. Ambient weather display by Data Dive Bar.">
 
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Retro fonts -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --twc-navy:   #041428;
-            --twc-blue:   #0a2040;
-            --twc-teal:   #00b4c8;
-            --twc-cyan:   #00d4ff;
-            --twc-amber:  #ffcc00;
-            --twc-white:  #e8f4ff;
-            --twc-dim:    #6888a8;
-            --bar-h:      52px;
-            --chyron-h:   46px;
+            --bg: #080c14;
+            --panel: rgba(10, 16, 28, 0.82);
+            --panel-solid: #0c1220;
+            --panel-border: rgba(80, 180, 200, 0.10);
+            --accent: #5ab8c8;
+            --accent-dim: rgba(90, 184, 200, 0.12);
+            --amber: #c9a84c;
+            --amber-dim: rgba(201, 168, 76, 0.15);
+            --text: #d8e0ea;
+            --text-secondary: #8a9bb2;
+            --text-dim: #4e6178;
+            --bar-h: 52px;
+            --chyron-h: 48px;
+            --radius: 10px;
+            --radius-sm: 7px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         html, body {
             width: 100%; height: 100%;
-            background: var(--twc-navy);
+            background: var(--bg);
             overflow: hidden;
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* ─── MAP ─────────────────────────────────────────── */
+        /* ── MAP ─────────────────────────────────────────────── */
         #map {
             position: fixed;
             inset: 0;
-            top: var(--bar-h);
-            bottom: var(--chyron-h);
             z-index: 1;
         }
 
-        /* Hide default Leaflet UI chrome */
         .leaflet-control-zoom,
         .leaflet-control-attribution { display: none !important; }
 
-        /* ─── CRT SCANLINES ───────────────────────────────── */
-        .crt-scanlines {
-            position: fixed;
-            inset: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent 0px,
-                transparent 1px,
-                rgba(0, 0, 0, 0.08) 1px,
-                rgba(0, 0, 0, 0.08) 2px
-            );
-            pointer-events: none;
-            z-index: 500;
-        }
-
-        /* ─── VIGNETTE ────────────────────────────────────── */
+        /* ── SUBTLE VIGNETTE ─────────────────────────────────── */
         .vignette {
             position: fixed;
             inset: 0;
             background: radial-gradient(
                 ellipse at 50% 50%,
-                transparent 40%,
-                rgba(4, 20, 40, 0.55) 70%,
-                rgba(2, 8, 20, 0.85) 100%
+                transparent 45%,
+                rgba(8, 12, 20, 0.5) 100%
             );
             pointer-events: none;
             z-index: 490;
         }
 
-        /* ─── TOP BAR ─────────────────────────────────────── */
+        /* ── TOP BAR ─────────────────────────────────────────── */
         .top-bar {
             position: fixed;
             top: 0; left: 0; right: 0;
             height: var(--bar-h);
-            background: linear-gradient(180deg, #060f20 0%, #081828 100%);
-            border-bottom: 2px solid var(--twc-teal);
-            box-shadow: 0 2px 20px rgba(0, 180, 200, 0.15), 0 1px 0 rgba(0,180,200,0.08);
-            /* Grid gives true 3-col layout: left auto-sizes, center always centered, right aligns end */
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            background: var(--panel);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
             align-items: center;
-            padding: 0 1.5rem;
+            justify-content: space-between;
+            padding: 0 24px;
             z-index: 600;
         }
 
-        .twc-logo {
+        .logo {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            min-width: 0; /* prevent overflow */
+            gap: 12px;
         }
-        .twc-logo-icon {
-            font-size: 1.4rem;
-            flex-shrink: 0;
-            filter: drop-shadow(0 0 6px rgba(0,212,255,0.5));
+        .logo-icon {
+            font-size: 1.3rem;
+            opacity: 0.9;
         }
-        .twc-logo-text {
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .logo-title {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 700;
-            color: var(--twc-white);
-            letter-spacing: 0.08em;
-            text-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
-            white-space: nowrap;
+            color: var(--text);
+            letter-spacing: 0.02em;
+            line-height: 1.2;
         }
-        .twc-logo-sub {
+        .logo-sub {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--twc-teal);
-            letter-spacing: 0.15em;
+            font-size: 0.58rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            letter-spacing: 0.14em;
             text-transform: uppercase;
-            margin-top: 2px;
+        }
+
+        .top-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+        .top-center-main {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
         }
 
         .clock-area {
             text-align: right;
-            justify-self: end;
         }
         #clock {
-            display: block;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--twc-white);
-            letter-spacing: 0.05em;
-            text-shadow: 0 0 10px rgba(0,212,255,0.25);
-            line-height: 1;
-            white-space: nowrap;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.04em;
+            line-height: 1.2;
         }
         #date-display {
-            display: block;
-            font-family: 'Special Elite', cursive;
-            font-size: 0.65rem;
-            color: var(--twc-teal);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-top: 3px;
-            white-space: nowrap;
-        }
-
-        /* ─── TOP CENTER: RADAR LABEL ─────────────────────── */
-        .radar-label {
-            text-align: center;
-            padding: 0 0.5rem;
-        }
-        .radar-label-main {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--twc-amber);
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(255,200,0,0.3);
-            white-space: nowrap;
-        }
-        .radar-label-sub {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.6rem;
-            color: var(--twc-dim);
-            letter-spacing: 0.15em;
+            font-size: 0.56rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            letter-spacing: 0.12em;
             text-transform: uppercase;
             margin-top: 2px;
-            white-space: nowrap;
         }
 
-        /* ─── CAMERA STATUS ───────────────────────────────── */
-        .camera-status {
+        /* ── CONTROLS (bottom-left) ──────────────────────────── */
+        .controls {
             position: fixed;
-            top: calc(var(--bar-h) + 10px);
-            left: 14px;
-            background: rgba(4, 20, 40, 0.8);
-            border: 1px solid rgba(0,180,200,0.3);
-            border-left: 2px solid var(--twc-teal);
-            padding: 5px 12px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.68rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--twc-teal);
+            bottom: calc(var(--chyron-h) + 16px);
+            left: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
             z-index: 600;
-            backdrop-filter: blur(4px);
-        }
-        .camera-status .cam-loc {
-            color: var(--twc-white);
-            font-weight: 700;
         }
 
-        /* ─── RADAR REFRESH INDICATOR ─────────────────────── */
-        .radar-refresh-dot {
-            position: fixed;
-            top: calc(var(--bar-h) + 10px);
-            right: 14px;
+        /* Radar segmented control */
+        .control-group {
             display: flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(4, 20, 40, 0.8);
-            border: 1px solid rgba(0,180,200,0.3);
-            border-right: 2px solid var(--twc-teal);
-            padding: 5px 12px;
+            gap: 8px;
+        }
+        .control-label {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.68rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--twc-dim);
-            z-index: 600;
-            backdrop-filter: blur(4px);
-        }
-        .rdot {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: var(--twc-teal);
-            box-shadow: 0 0 6px var(--twc-teal);
-            animation: rdotpulse 3s ease-in-out infinite;
-        }
-        @keyframes rdotpulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* ─── DDB CORNER BUG ──────────────────────────────── */
-        .ddb-bug {
-            position: fixed;
-            bottom: calc(var(--chyron-h) + 12px);
-            right: 14px;
-            text-align: right;
-            z-index: 600;
-            background: rgba(4, 20, 40, 0.65);
-            border: 1px solid rgba(0,180,200,0.2);
-            padding: 5px 10px;
-            backdrop-filter: blur(4px);
-        }
-        .ddb-bug-line1 {
-            font-family: 'Special Elite', cursive;
-            font-size: 0.7rem;
-            color: var(--twc-amber);
+            font-size: 0.58rem;
+            font-weight: 600;
+            color: var(--text-dim);
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            text-shadow: 0 0 8px rgba(255,200,0,0.3);
+            white-space: nowrap;
         }
-        .ddb-bug-line2 {
+        .segmented {
+            background: var(--panel);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius);
+            padding: 3px;
+            display: inline-flex;
+            gap: 2px;
+        }
+        .seg-btn {
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            color: var(--text-dim);
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.6rem;
-            color: var(--twc-teal);
-            letter-spacing: 0.15em;
+            font-size: 0.62rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .seg-btn:hover {
+            color: var(--text-secondary);
+        }
+        .seg-btn.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        /* Audio button */
+        .audio-btn {
+            background: var(--panel);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius);
+            color: var(--text-dim);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.64rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .audio-btn:hover {
+            color: var(--text-secondary);
+            border-color: rgba(80, 180, 200, 0.2);
+        }
+        .audio-btn.active {
+            color: var(--accent);
+            border-color: rgba(90, 184, 200, 0.25);
+        }
+
+        /* ── WATERMARK (bottom-right) ────────────────────────── */
+        .watermark {
+            position: fixed;
+            bottom: calc(var(--chyron-h) + 20px);
+            right: 20px;
+            text-align: right;
+            z-index: 600;
+            opacity: 0.45;
+            transition: opacity 0.3s ease;
+        }
+        .watermark:hover {
+            opacity: 0.7;
+        }
+        .watermark-line1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 0.68rem;
+            font-weight: 500;
+            color: var(--amber);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .watermark-line2 {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.52rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            letter-spacing: 0.14em;
             text-transform: uppercase;
             margin-top: 2px;
         }
 
-        /* ─── AUDIO CONTROL ───────────────────────────────── */
-        .audio-control {
-            position: fixed;
-            bottom: calc(var(--chyron-h) + 12px);
-            left: 14px;
-            z-index: 600;
-        }
-        #mute-btn {
-            background: rgba(4, 20, 40, 0.8);
-            border: 1px solid rgba(0,180,200,0.35);
-            color: var(--twc-teal);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.68rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            padding: 6px 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(4px);
-        }
-        #mute-btn:hover {
-            background: rgba(0, 180, 200, 0.12);
-            border-color: var(--twc-teal);
-            color: var(--twc-white);
-            box-shadow: 0 0 10px rgba(0,180,200,0.2);
-        }
-        #mute-btn.muted {
-            color: var(--twc-dim);
-            border-color: rgba(0,180,200,0.15);
-        }
-
-        /* ─── BOTTOM CHYRON ───────────────────────────────── */
-        .chyron-bar {
+        /* ── BOTTOM CHYRON ───────────────────────────────────── */
+        .chyron {
             position: fixed;
             bottom: 0; left: 0; right: 0;
             height: var(--chyron-h);
-            background: linear-gradient(180deg, #051830 0%, #040f22 100%);
-            border-top: 2px solid var(--twc-teal);
-            box-shadow: 0 -2px 20px rgba(0, 180, 200, 0.12);
+            background: var(--panel);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-top: 1px solid var(--panel-border);
             display: flex;
             align-items: center;
             overflow: hidden;
             z-index: 600;
         }
-
         .chyron-label {
             flex-shrink: 0;
-            background: var(--twc-teal);
-            color: var(--twc-navy);
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 0.15em;
+            font-size: 0.58rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
             text-transform: uppercase;
-            padding: 0 16px;
+            color: var(--accent);
+            padding: 0 20px;
+            border-right: 1px solid var(--panel-border);
             height: 100%;
             display: flex;
             align-items: center;
-            border-right: 2px solid rgba(0,0,0,0.3);
-            white-space: nowrap;
         }
-
         .chyron-content {
             flex: 1;
             overflow: hidden;
             height: 100%;
             position: relative;
         }
-
         .chyron-item {
             position: absolute;
             inset: 0;
             display: flex;
             align-items: center;
-            padding: 0 1.5rem;
+            padding: 0 24px;
             opacity: 0;
-            transition: opacity 0.8s ease;
+            transition: opacity 0.7s ease;
         }
         .chyron-item.active { opacity: 1; }
-
         .chyron-city {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 700;
-            color: var(--twc-amber);
-            letter-spacing: 0.08em;
-            margin-right: 1rem;
-            text-shadow: 0 0 8px rgba(255,200,0,0.25);
+            color: var(--amber);
+            letter-spacing: 0.04em;
+            margin-right: 14px;
             white-space: nowrap;
         }
-
         .chyron-sep {
-            color: var(--twc-teal);
-            margin-right: 1rem;
-            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-right: 14px;
+            font-size: 0.65rem;
+            opacity: 0.5;
         }
-
         .chyron-conditions {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.72rem;
-            color: var(--twc-white);
-            letter-spacing: 0.05em;
+            font-size: 0.68rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            letter-spacing: 0.02em;
             white-space: nowrap;
         }
-
         .chyron-val {
-            color: var(--twc-cyan);
-            font-weight: 700;
+            color: var(--text);
+            font-weight: 600;
         }
-
         .chyron-divider {
-            color: var(--twc-dim);
-            margin: 0 0.75rem;
+            color: var(--text-dim);
+            margin: 0 10px;
+            opacity: 0.4;
         }
 
-        /* ─── ALERT BANNER ────────────────────────────────── */
+        /* ── ALERT BANNER ────────────────────────────────────── */
         .alert-banner {
             position: fixed;
             top: var(--bar-h);
             left: 0; right: 0;
-            background: linear-gradient(90deg, #3a0808, #4a0a0a, #3a0808);
-            border-bottom: 1px solid rgba(255,60,40,0.5);
-            color: #ff9090;
+            background: rgba(50, 12, 12, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 60, 40, 0.2);
+            color: #e88080;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.7rem;
+            font-size: 0.62rem;
+            font-weight: 500;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            padding: 6px 14px;
+            padding: 8px 24px;
             z-index: 650;
             display: none;
-            animation: alertpulse 2s ease-in-out infinite;
         }
-        .alert-banner.visible { display: flex; align-items: center; gap: 8px; }
-        .alert-icon { color: #ff3c28; font-size: 0.85rem; }
-        @keyframes alertpulse {
-            0%, 100% { background: linear-gradient(90deg, #3a0808, #4a0a0a, #3a0808); }
-            50% { background: linear-gradient(90deg, #4a0808, #5a1010, #4a0808); }
-        }
+        .alert-banner.visible { display: flex; align-items: center; gap: 10px; }
+        .alert-icon { color: #e06050; font-size: 0.8rem; }
 
-        /* ─── STATIC/NOISE EFFECT ON LOAD ────────────────── */
-        @keyframes static-flicker {
-            0%  { opacity: 0.12; }
-            25% { opacity: 0.06; }
-            50% { opacity: 0.10; }
-            75% { opacity: 0.04; }
-            100%{ opacity: 0.08; }
-        }
-        .noise-overlay {
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 480;
-            animation: static-flicker 0.15s steps(1) infinite;
+        /* ── RESPONSIVE ──────────────────────────────────────── */
+        @media (max-width: 640px) {
+            .top-bar { padding: 0 14px; }
+            .top-center { display: none; }
+            .logo-title { font-size: 0.92rem; }
+            #clock { font-size: 1rem; }
+            .controls { bottom: calc(var(--chyron-h) + 10px); left: 10px; }
+            .watermark { bottom: calc(var(--chyron-h) + 14px); right: 12px; }
+            .chyron-label { padding: 0 12px; font-size: 0.52rem; }
+            .chyron-item { padding: 0 14px; }
+            .chyron-city { font-size: 0.78rem; }
+            .chyron-conditions { font-size: 0.6rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Atmospheric layers -->
-    <div class="crt-scanlines"></div>
     <div class="vignette"></div>
-    <div class="noise-overlay"></div>
-
-    <!-- Map -->
     <div id="map"></div>
 
-    <!-- Alert banner (hidden until active alerts) -->
+    <!-- Alert banner -->
     <div class="alert-banner" id="alert-banner">
-        <span class="alert-icon">⚠</span>
-        <span id="alert-text">SEVERE WEATHER ALERT — OHIO</span>
+        <span class="alert-icon">&#9888;</span>
+        <span id="alert-text"></span>
     </div>
 
     <!-- Top bar -->
     <div class="top-bar">
-        <div class="twc-logo">
-            <span class="twc-logo-icon">⛈</span>
-            <div>
-                <div class="twc-logo-text">Ohio Doppler Radar</div>
-                <div class="twc-logo-sub">NEXRAD · Live Reflectivity</div>
+        <div class="logo">
+            <span class="logo-icon">&#9928;</span>
+            <div class="logo-text">
+                <div class="logo-title">Weather Desk</div>
+                <div class="logo-sub">Ohio Doppler Radar</div>
             </div>
         </div>
 
-        <div class="radar-label">
-            <div class="radar-label-main">Local on the 8s</div>
-            <div class="radar-label-sub">Data Dive Bar Weather Desk</div>
+        <div class="top-center">
+            <div class="top-center-main">Data Dive Bar &middot; Local on the 8s</div>
         </div>
 
         <div class="clock-area">
-            <span id="clock">12:00:00 AM</span>
-            <span id="date-display">LOADING...</span>
+            <div id="clock">12:00:00 AM</div>
+            <div id="date-display">Loading&hellip;</div>
         </div>
     </div>
 
-    <!-- Camera status overlay -->
-    <div class="camera-status">
-        Camera · <span class="cam-loc" id="cam-loc-display">Ohio</span>
+    <!-- Controls -->
+    <div class="controls">
+        <div class="control-group">
+            <span class="control-label">Radar</span>
+            <div class="segmented" id="radar-seg">
+                <button class="seg-btn active" data-opacity="0.72">On</button>
+                <button class="seg-btn" data-opacity="0.35">50%</button>
+                <button class="seg-btn" data-opacity="0">Off</button>
+            </div>
+        </div>
+        <button class="audio-btn" id="audio-btn">&#9834; Play Jazz</button>
     </div>
 
-    <!-- Radar refresh indicator -->
-    <div class="radar-refresh-dot">
-        <div class="rdot"></div>
-        <span id="radar-status">Radar Live</span>
+    <!-- Watermark -->
+    <div class="watermark">
+        <div class="watermark-line1">Data Dive Bar</div>
+        <div class="watermark-line2">Weather Desk</div>
     </div>
 
-    <!-- DDB bug -->
-    <div class="ddb-bug">
-        <div class="ddb-bug-line1">Data Dive Bar</div>
-        <div class="ddb-bug-line2">Weather Desk</div>
-    </div>
-
-    <!-- Audio control -->
-    <div class="audio-control">
-        <button id="mute-btn" class="muted">♪ PLAY JAZZ</button>
-    </div>
-
-    <!-- Smooth jazz stream — SomaFM Illinois Street Lounge (free, non-commercial listener radio) -->
-    <!-- Classic 60s/70s easy listening and lounge jazz; perfect TWC vibe -->
+    <!-- Audio -->
     <audio id="jazz-audio" preload="none">
         <source src="https://ice1.somafm.com/illstreet-128-mp3" type="audio/mpeg">
         <source src="https://ice3.somafm.com/illstreet-128-mp3" type="audio/mpeg">
@@ -482,398 +438,256 @@
     </audio>
 
     <!-- Bottom chyron -->
-    <div class="chyron-bar">
-        <div class="chyron-label">Current Conditions</div>
-        <div class="chyron-content" id="chyron-content">
-            <!-- Injected by JS -->
-        </div>
+    <div class="chyron">
+        <div class="chyron-label">Conditions</div>
+        <div class="chyron-content" id="chyron-content"></div>
     </div>
 
     <script>
     // ══════════════════════════════════════════════════════════════
     //  DATA DIVE BAR WEATHER DESK — OHIO DOPPLER
-    //  1990s Weather Channel Experience
+    //  Clean ambient display
     // ══════════════════════════════════════════════════════════════
 
-    // ── CONSTANTS ─────────────────────────────────────────────────
-    const OHIO_CENTER      = [40.4173, -82.9071];
-    const OHIO_ZOOM        = 7;
-    const RADAR_REFRESH_MS = 2.5 * 60 * 1000;  // 2.5 minutes
-    const CAMERA_DWELL_MS  = 18 * 1000;         // 18 seconds per zone
-    const ALERT_CHECK_MS   = 5 * 60 * 1000;     // 5 minutes
-    const WEATHER_REFRESH_MS = 10 * 60 * 1000;  // 10 minutes
-
-    const PATROL_ZONES = [
-        { lat: 40.4173, lon: -82.9071, zoom: 7,  name: 'Ohio'         },
-        { lat: 41.4993, lon: -81.6944, zoom: 9,  name: 'Cleveland'    },
-        { lat: 39.9612, lon: -82.9988, zoom: 9,  name: 'Columbus'     },
-        { lat: 39.1031, lon: -84.5120, zoom: 9,  name: 'Cincinnati'   },
-        { lat: 41.6528, lon: -83.5379, zoom: 9,  name: 'Toledo'       },
-        { lat: 41.0814, lon: -81.5190, zoom: 9,  name: 'Akron'        },
-        { lat: 39.7589, lon: -84.1916, zoom: 9,  name: 'Dayton'       },
-        { lat: 40.7989, lon: -81.3784, zoom: 9,  name: 'Canton'       },
-    ];
-
-    const WEATHER_STATIONS = [
-        { id: 'KCMH', name: 'Columbus',   lat: 39.9612, lon: -82.9988 },
-        { id: 'KCLE', name: 'Cleveland',  lat: 41.4993, lon: -81.6944 },
-        { id: 'KCVG', name: 'Cincinnati', lat: 39.0617, lon: -84.6629 },
-        { id: 'KTOL', name: 'Toledo',     lat: 41.5868, lon: -83.8023 },
-        { id: 'KAKR', name: 'Akron',      lat: 41.0375, lon: -81.4667 },
-    ];
-
+    // ── CONSTANTS ────────────────────────────────────────────────
+    const COLUMBUS         = [39.9612, -82.9988];
+    const DEFAULT_ZOOM     = 8;
+    const RADAR_REFRESH_MS = 2.5 * 60 * 1000;   // 2.5 min
+    const ALERT_CHECK_MS   = 5 * 60 * 1000;     // 5 min
+    const WEATHER_REFRESH_MS = 10 * 60 * 1000;  // 10 min
     const NWS_UA = 'DataDiveBarWeatherDesk/1.0 github.com/datadivebar';
 
-    // ── MAP INIT ──────────────────────────────────────────────────
+    const WEATHER_STATIONS = [
+        { id: 'KCMH', name: 'Columbus' },
+        { id: 'KCLE', name: 'Cleveland' },
+        { id: 'KCVG', name: 'Cincinnati' },
+        { id: 'KTOL', name: 'Toledo' },
+        { id: 'KAKR', name: 'Akron' },
+    ];
+
+    // ── MAP ──────────────────────────────────────────────────────
+    // Centered on Columbus, full manual interaction enabled
     const map = L.map('map', {
-        center: OHIO_CENTER,
-        zoom: OHIO_ZOOM,
+        center: COLUMBUS,
+        zoom: DEFAULT_ZOOM,
         zoomControl: false,
         attributionControl: false,
-        dragging: false,
-        touchZoom: false,
-        scrollWheelZoom: false,
-        doubleClickZoom: false,
-        keyboard: false,
-        boxZoom: false,
     });
 
-    // Base layer: dark CartoDB
+    // Dark base tiles
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
         maxZoom: 19,
     }).addTo(map);
 
-    // NEXRAD radar tile layer
-    let radarLayer = null;
-    let radarCacheBust = Date.now();
-
-    function buildRadarLayer() {
-        const ts = Math.floor(Date.now() / 60000); // changes every minute
-        return L.tileLayer(
-            `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?ts=${ts}`,
-            {
-                opacity: 0.72,
-                maxNativeZoom: 8,  // IEM N0Q tiles top out at z8; Leaflet scales them up beyond
-                maxZoom: 13,
-            }
-        );
-    }
+    // ── RADAR LAYER ──────────────────────────────────────────────
+    // Persistent layer — refreshed via setUrl(), never removed.
+    // maxNativeZoom: 8 tells Leaflet to request z8 tiles max and
+    // upscale them at higher zoom levels so radar never vanishes.
+    const radarLayer = L.tileLayer(
+        'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
+        {
+            opacity: 0.72,
+            maxNativeZoom: 8,
+            maxZoom: 19,
+        }
+    ).addTo(map);
 
     function refreshRadar() {
-        const statusEl = document.getElementById('radar-status');
-        if (statusEl) statusEl.textContent = 'Refreshing…';
-
-        const newLayer = buildRadarLayer();
-        newLayer.on('load', () => {
-            if (radarLayer) map.removeLayer(radarLayer);
-            radarLayer = newLayer;
-            if (statusEl) statusEl.textContent = 'Radar Live';
-        });
-        newLayer.addTo(map);
+        radarLayer.setUrl(
+            'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now()
+        );
     }
-
-    refreshRadar();
     setInterval(refreshRadar, RADAR_REFRESH_MS);
 
-    // ── CLOCK ─────────────────────────────────────────────────────
-    const DAYS  = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
-    const MONTHS = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE',
-                    'JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+    // ── RADAR CONTROLS ───────────────────────────────────────────
+    document.querySelectorAll('#radar-seg .seg-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#radar-seg .seg-btn').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+            radarLayer.setOpacity(parseFloat(btn.dataset.opacity));
+        });
+    });
+
+    // ── CLOCK ────────────────────────────────────────────────────
+    var DAYS  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
 
     function updateClock() {
-        const now  = new Date();
-        let hours  = now.getHours();
-        const mins = String(now.getMinutes()).padStart(2,'0');
-        const secs = String(now.getSeconds()).padStart(2,'0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12 || 12;
-        const hStr = String(hours).padStart(2,'0');
-
-        document.getElementById('clock').textContent = `${hStr}:${mins}:${secs} ${ampm}`;
+        var now = new Date();
+        var h = now.getHours();
+        var m = String(now.getMinutes()).padStart(2, '0');
+        var s = String(now.getSeconds()).padStart(2, '0');
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        document.getElementById('clock').textContent = h + ':' + m + ':' + s + ' ' + ampm;
         document.getElementById('date-display').textContent =
-            `${DAYS[now.getDay()]} ${MONTHS[now.getMonth()]} ${now.getDate()} ${now.getFullYear()}`;
+            DAYS[now.getDay()] + ' ' + MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
     }
-
     updateClock();
     setInterval(updateClock, 1000);
 
-    // ── CAMERA DIRECTOR ───────────────────────────────────────────
-    let cameraQueue   = [...PATROL_ZONES];
-    let cameraIndex   = 0;
-    let cameraTimer   = null;
-    let alertZones    = [];
-
-    function setCameraLocation(name) {
-        const el = document.getElementById('cam-loc-display');
-        if (el) el.textContent = name;
-    }
-
-    function flyToZone(zone) {
-        setCameraLocation(zone.name);
-        map.flyTo([zone.lat, zone.lon], zone.zoom, {
-            animate: true,
-            duration: 3.5,
-            easeLinearity: 0.15,
-        });
-    }
-
-    function nextCamera() {
-        // Build queue: alert zones first, then patrol zones
-        const queue = [...alertZones, ...PATROL_ZONES];
-        if (queue.length === 0) return;
-
-        const zone = queue[cameraIndex % queue.length];
-        cameraIndex = (cameraIndex + 1) % queue.length;
-        flyToZone(zone);
-    }
-
-    function startCameraDirector() {
-        nextCamera();
-        cameraTimer = setInterval(nextCamera, CAMERA_DWELL_MS);
-    }
-
-    // Wait for map tiles to load before starting camera
-    setTimeout(startCameraDirector, 2000);
-
-    // ── NWS ALERTS ────────────────────────────────────────────────
-    async function fetchOhioAlerts() {
+    // ── NWS ALERTS ───────────────────────────────────────────────
+    async function fetchAlerts() {
         try {
-            const res = await fetch('https://api.weather.gov/alerts/active?area=OH', {
+            var res = await fetch('https://api.weather.gov/alerts/active?area=OH', {
                 headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' }
             });
             if (!res.ok) return;
-            const data = await res.json();
-            const features = data.features || [];
-
-            // Filter to severe or tornado alerts
-            const severe = features.filter(f => {
-                const ev = (f.properties.event || '').toLowerCase();
+            var data = await res.json();
+            var severe = (data.features || []).filter(function(f) {
+                var ev = (f.properties.event || '').toLowerCase();
                 return ev.includes('tornado') || ev.includes('severe') || ev.includes('flash flood');
             });
-
-            alertZones = [];
-            if (severe.length > 0) {
-                // Extract centroids from alert polygons
-                severe.forEach(f => {
-                    const geo = f.geometry;
-                    if (geo && geo.type === 'Polygon' && geo.coordinates[0]) {
-                        const coords = geo.coordinates[0];
-                        const lats = coords.map(c => c[1]);
-                        const lons = coords.map(c => c[0]);
-                        const centLat = (Math.min(...lats) + Math.max(...lats)) / 2;
-                        const centLon = (Math.min(...lons) + Math.max(...lons)) / 2;
-                        alertZones.push({
-                            lat: centLat, lon: centLon, zoom: 9,
-                            name: f.properties.headline || 'Alert Zone'
-                        });
-                    }
-                });
-
-                // Show alert banner
-                const banner = document.getElementById('alert-banner');
-                const alertText = document.getElementById('alert-text');
-                if (banner && alertText) {
-                    const headline = severe[0].properties.headline || 'SEVERE WEATHER ALERT — OHIO';
-                    alertText.textContent = headline.toUpperCase();
-                    banner.classList.add('visible');
-                }
-            } else {
-                // Clear alert banner
-                const banner = document.getElementById('alert-banner');
-                if (banner) banner.classList.remove('visible');
-                alertZones = [];
+            var banner = document.getElementById('alert-banner');
+            var alertText = document.getElementById('alert-text');
+            if (severe.length > 0 && banner && alertText) {
+                alertText.textContent = (severe[0].properties.headline || 'SEVERE WEATHER ALERT').toUpperCase();
+                banner.classList.add('visible');
+            } else if (banner) {
+                banner.classList.remove('visible');
             }
-        } catch (err) {
-            // Silently fail — alerts are a bonus feature
-        }
+        } catch (e) { /* alerts are a bonus */ }
     }
+    fetchAlerts();
+    setInterval(fetchAlerts, ALERT_CHECK_MS);
 
-    fetchOhioAlerts();
-    setInterval(fetchOhioAlerts, ALERT_CHECK_MS);
+    // ── WEATHER DATA ─────────────────────────────────────────────
+    var weatherData = [];
+    var chyronIndex = 0;
 
-    // ── NWS WEATHER DATA ──────────────────────────────────────────
-    let weatherData = [];
-    let chyronIndex = 0;
-
-    function cToF(c) {
-        return c != null ? Math.round((c * 9/5) + 32) : null;
-    }
-    function msToMph(ms) {
-        return ms != null ? Math.round(ms * 2.23694) : null;
-    }
-    function degreesToCompass(deg) {
-        if (deg == null) return '—';
-        const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    function cToF(c)  { return c != null ? Math.round(c * 9/5 + 32) : null; }
+    function msToMph(ms) { return ms != null ? Math.round(ms * 2.23694) : null; }
+    function degToDir(deg) {
+        if (deg == null) return '';
+        var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
         return dirs[Math.round(deg / 22.5) % 16];
     }
 
-    async function fetchStationObs(stationId) {
-        const res = await fetch(
-            `https://api.weather.gov/stations/${stationId}/observations/latest`,
-            { headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' } }
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        return json.properties;
-    }
-
-    async function fetchAllWeather() {
-        const results = [];
-        for (const station of WEATHER_STATIONS) {
+    async function fetchWeather() {
+        var results = [];
+        for (var i = 0; i < WEATHER_STATIONS.length; i++) {
+            var s = WEATHER_STATIONS[i];
             try {
-                const obs = await fetchStationObs(station.id);
-                const tempF  = cToF(obs.temperature?.value);
-                const humid  = obs.relativeHumidity?.value != null
-                    ? Math.round(obs.relativeHumidity.value) : null;
-                const windMph = msToMph(obs.windSpeed?.value);
-                const windDir = degreesToCompass(obs.windDirection?.value);
-                const desc    = obs.textDescription || '';
-
-                results.push({
-                    name:    station.name,
-                    tempF,
-                    humid,
-                    windMph,
-                    windDir,
-                    desc,
+                var res = await fetch('https://api.weather.gov/stations/' + s.id + '/observations/latest', {
+                    headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' }
                 });
-            } catch (err) {
-                // Station may be unavailable — push placeholder
+                if (!res.ok) throw new Error();
+                var obs = (await res.json()).properties;
                 results.push({
-                    name: station.name, tempF: null, humid: null, windMph: null, windDir: '—', desc: '—'
+                    name: s.name,
+                    tempF: cToF(obs.temperature && obs.temperature.value),
+                    humid: obs.relativeHumidity && obs.relativeHumidity.value != null
+                        ? Math.round(obs.relativeHumidity.value) : null,
+                    windMph: msToMph(obs.windSpeed && obs.windSpeed.value),
+                    windDir: degToDir(obs.windDirection && obs.windDirection.value),
+                    desc: obs.textDescription || '',
                 });
+            } catch (e) {
+                results.push({ name: s.name, tempF: null, humid: null, windMph: null, windDir: '', desc: '' });
             }
         }
         weatherData = results;
         renderChyron();
     }
 
-    // ── CHYRON ────────────────────────────────────────────────────
-    function makeChyronItem(d, idx) {
-        const div = document.createElement('div');
-        div.className = 'chyron-item';
-        div.dataset.idx = idx;
-
-        const temp  = d.tempF  != null ? `<span class="chyron-val">${d.tempF}°F</span>` : '<span class="chyron-val">—</span>';
-        const humid = d.humid  != null ? `<span class="chyron-val">${d.humid}%</span> RH` : '';
-        const wind  = d.windMph != null
-            ? `<span class="chyron-val">${d.windDir} ${d.windMph} MPH</span>`
-            : '<span class="chyron-val">CALM</span>';
-        const desc  = d.desc && d.desc !== '—' ? `<span class="chyron-divider">·</span> ${d.desc}` : '';
-
-        div.innerHTML = `
-            <span class="chyron-city">${d.name.toUpperCase()}</span>
-            <span class="chyron-sep">//</span>
-            <span class="chyron-conditions">
-                ${temp}
-                ${humid ? `<span class="chyron-divider">·</span> HUMIDITY ${humid}` : ''}
-                <span class="chyron-divider">·</span> WIND ${wind}
-                ${desc}
-            </span>
-        `;
-        return div;
-    }
-
+    // ── CHYRON ───────────────────────────────────────────────────
     function renderChyron() {
-        const container = document.getElementById('chyron-content');
-        if (!container) return;
-        container.innerHTML = '';
-
+        var el = document.getElementById('chyron-content');
+        if (!el) return;
+        el.innerHTML = '';
         if (weatherData.length === 0) {
-            const placeholder = document.createElement('div');
+            var placeholder = document.createElement('div');
             placeholder.className = 'chyron-item active';
-            placeholder.innerHTML = '<span class="chyron-conditions">Fetching current conditions…</span>';
-            container.appendChild(placeholder);
+            placeholder.innerHTML = '<span class="chyron-conditions">Fetching conditions&hellip;</span>';
+            el.appendChild(placeholder);
             return;
         }
-
-        weatherData.forEach((d, i) => {
-            const item = makeChyronItem(d, i);
-            if (i === 0) item.classList.add('active');
-            container.appendChild(item);
+        weatherData.forEach(function(d, i) {
+            var item = document.createElement('div');
+            item.className = 'chyron-item' + (i === 0 ? ' active' : '');
+            var temp  = d.tempF != null
+                ? '<span class="chyron-val">' + d.tempF + '&deg;F</span>'
+                : '<span class="chyron-val">&mdash;</span>';
+            var humid = d.humid != null
+                ? '<span class="chyron-divider">&middot;</span>Humidity <span class="chyron-val">' + d.humid + '%</span>'
+                : '';
+            var wind  = d.windMph != null
+                ? 'Wind <span class="chyron-val">' + d.windDir + ' ' + d.windMph + ' mph</span>'
+                : '<span class="chyron-val">Calm</span>';
+            var desc  = d.desc
+                ? '<span class="chyron-divider">&middot;</span>' + d.desc
+                : '';
+            item.innerHTML =
+                '<span class="chyron-city">' + d.name + '</span>' +
+                '<span class="chyron-sep">/</span>' +
+                '<span class="chyron-conditions">' + temp + humid +
+                '<span class="chyron-divider">&middot;</span>' + wind + desc + '</span>';
+            el.appendChild(item);
         });
         chyronIndex = 0;
     }
 
     function advanceChyron() {
-        const items = document.querySelectorAll('.chyron-item');
+        var items = document.querySelectorAll('.chyron-item');
         if (items.length < 2) return;
         items[chyronIndex % items.length].classList.remove('active');
         chyronIndex = (chyronIndex + 1) % items.length;
         items[chyronIndex].classList.add('active');
     }
 
-    // Init chyron with loading placeholder
     renderChyron();
-
-    // Fetch weather data
-    fetchAllWeather();
-    setInterval(fetchAllWeather, WEATHER_REFRESH_MS);
-
-    // Cycle chyron every 5 seconds
+    fetchWeather();
+    setInterval(fetchWeather, WEATHER_REFRESH_MS);
     setInterval(advanceChyron, 5000);
 
-    // ── AUDIO ─────────────────────────────────────────────────────
-    const audio   = document.getElementById('jazz-audio');
-    const muteBtn = document.getElementById('mute-btn');
-
+    // ── AUDIO ────────────────────────────────────────────────────
+    var audio = document.getElementById('jazz-audio');
+    var audioBtn = document.getElementById('audio-btn');
     audio.volume = 0.4;
 
-    function setAudioBtn(state) {
-        // states: 'idle' | 'playing' | 'muted' | 'error'
-        const labels = {
-            idle:    '♪ PLAY JAZZ',
-            playing: '♪ MUTE JAZZ',
-            muted:   '♪ UNMUTE JAZZ',
-            error:   '♪ NO SIGNAL',
-            loading: '♪ TUNING IN…',
+    function setAudioState(state) {
+        var labels = {
+            idle:    '\u266A Play Jazz',
+            playing: '\u266A Mute Jazz',
+            muted:   '\u266A Unmute',
+            error:   '\u266A No Signal',
+            loading: '\u266A Tuning\u2026',
         };
-        muteBtn.textContent = labels[state] || '♪ PLAY JAZZ';
-        muteBtn.classList.toggle('muted', state !== 'playing');
+        audioBtn.textContent = labels[state] || labels.idle;
+        audioBtn.classList.toggle('active', state === 'playing');
     }
 
     function tryPlay() {
-        setAudioBtn('loading');
-        audio.load(); // re-initialize the source list
+        setAudioState('loading');
+        audio.load();
         audio.play()
-            .then(() => setAudioBtn('playing'))
-            .catch(err => {
-                if (err.name === 'NotAllowedError') {
-                    // Browser blocked autoplay — user must click
-                    setAudioBtn('idle');
-                } else {
-                    // Source failed to load or network error
-                    setAudioBtn('error');
-                }
+            .then(function() { setAudioState('playing'); })
+            .catch(function(e) {
+                setAudioState(e.name === 'NotAllowedError' ? 'idle' : 'error');
             });
     }
 
-    // Surface media errors visibly rather than silent failure
-    audio.addEventListener('error', () => {
-        if (!audio.paused) return; // ignore mid-play glitches
-        setAudioBtn('error');
+    audio.addEventListener('error', function() {
+        if (audio.paused) setAudioState('error');
     });
 
-    muteBtn.addEventListener('click', () => {
+    audioBtn.addEventListener('click', function() {
         if (audio.error || audio.readyState === 0) {
-            // Previous attempt failed or never started — retry
             tryPlay();
         } else if (audio.paused) {
             tryPlay();
         } else if (audio.muted) {
             audio.muted = false;
-            setAudioBtn('playing');
+            setAudioState('playing');
         } else {
             audio.muted = true;
-            setAudioBtn('muted');
+            setAudioState('muted');
         }
     });
-
-    // ── MEMORY LEAK PREVENTION ────────────────────────────────────
-    // Leaflet handles its own cleanup, intervals are long-lived intentionally.
-    // The page is designed as an ambient display — long-running is the point.
-    // We avoid accumulating DOM nodes by re-rendering chyron cleanly.
 
     </script>
 </body>
