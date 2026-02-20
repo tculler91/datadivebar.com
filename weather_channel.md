@@ -49,6 +49,21 @@ Then build a new "/weather" page that recreates the 1990s overnight Weather Chan
 - Everything must use free, no-API-key-required data sources
 - Page should work as a long-running ambient display
 
+### Success Criteria
+
+The page is complete when ALL of the following are true:
+
+1. The Leaflet map loads centered on Ohio with working NEXRAD radar tile overlay
+2. Radar data auto-refreshes every 2-3 minutes
+3. The auto-camera logic smoothly pans/zooms to areas of high reflectivity, or drifts across the state when weather is calm
+4. The retro Weather Channel aesthetic is fully applied — scan lines, vignette, dark blue/teal gradients, serif fonts, top clock bar, bottom chyron
+5. The chyron scrolls/rotates real current conditions (temp, humidity, wind) for Columbus, Cleveland, Cincinnati, Toledo, and Akron pulled from api.weather.gov
+6. Smooth jazz audio plays on loop with a working mute/unmute toggle
+7. The page is consistent with the rest of the Data Dive Bar site's build process and can be accessed at /weather
+8. The page runs indefinitely as an ambient display without errors or memory leaks
+
+**Keep working on this until you're completely done. Do not stop, do not pause. No hacks, no shortcuts, no giving up. Validate each piece works before moving to the next. Add this success criteria to your todo list as a reminder.**
+
 ---
 
 ## Technical Discussion & Architecture Notes
