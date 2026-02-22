@@ -17,18 +17,17 @@
     <style>
         :root {
             --bg: #080c14;
-            --panel: rgba(10, 16, 28, 0.82);
+            --panel: rgba(10, 16, 28, 0.90);
             --panel-solid: #0c1220;
             --panel-border: rgba(80, 180, 200, 0.10);
             --accent: #5ab8c8;
             --accent-dim: rgba(90, 184, 200, 0.12);
             --amber: #c9a84c;
-            --amber-dim: rgba(201, 168, 76, 0.15);
             --text: #d8e0ea;
             --text-secondary: #8a9bb2;
             --text-dim: #4e6178;
             --bar-h: 52px;
-            --chyron-h: 48px;
+            --cities-h: 86px;
             --radius: 10px;
             --radius-sm: 7px;
         }
@@ -54,7 +53,7 @@
         .leaflet-control-zoom,
         .leaflet-control-attribution { display: none !important; }
 
-        /* ── SUBTLE VIGNETTE ─────────────────────────────────── */
+        /* ── VIGNETTE ────────────────────────────────────────── */
         .vignette {
             position: fixed;
             inset: 0;
@@ -88,15 +87,8 @@
             align-items: center;
             gap: 12px;
         }
-        .logo-icon {
-            font-size: 1.3rem;
-            opacity: 0.9;
-        }
-        .logo-text {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-        }
+        .logo-icon { font-size: 1.3rem; opacity: 0.9; }
+        .logo-text { display: flex; flex-direction: column; gap: 1px; }
         .logo-title {
             font-family: 'Playfair Display', Georgia, serif;
             font-size: 1.05rem;
@@ -127,11 +119,33 @@
             color: var(--text-secondary);
             letter-spacing: 0.18em;
             text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--accent);
+            border-radius: 50%;
+            flex-shrink: 0;
+            animation: livepulse 2.4s ease-in-out infinite;
+        }
+        @keyframes livepulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(90,184,200,0.5); }
+            50% { opacity: 0.5; box-shadow: 0 0 0 4px rgba(90,184,200,0); }
+        }
+        .top-center-sub {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.52rem;
+            font-weight: 400;
+            color: var(--text-dim);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 3px;
         }
 
-        .clock-area {
-            text-align: right;
-        }
+        .clock-area { text-align: right; }
         #clock {
             font-family: 'IBM Plex Mono', monospace;
             font-size: 1.15rem;
@@ -153,7 +167,7 @@
         /* ── CONTROLS (bottom-left) ──────────────────────────── */
         .controls {
             position: fixed;
-            bottom: calc(var(--chyron-h) + 16px);
+            bottom: calc(var(--cities-h) + 16px);
             left: 16px;
             display: flex;
             flex-direction: column;
@@ -161,7 +175,6 @@
             z-index: 600;
         }
 
-        /* Radar segmented control */
         .control-group {
             display: flex;
             align-items: center;
@@ -201,15 +214,12 @@
             transition: all 0.25s ease;
             white-space: nowrap;
         }
-        .seg-btn:hover {
-            color: var(--text-secondary);
-        }
+        .seg-btn:hover { color: var(--text-secondary); }
         .seg-btn.active {
             background: var(--accent-dim);
             color: var(--accent);
         }
 
-        /* Audio button */
         .audio-btn {
             background: var(--panel);
             backdrop-filter: blur(24px) saturate(180%);
@@ -235,112 +245,178 @@
             border-color: rgba(90, 184, 200, 0.25);
         }
 
-        /* ── WATERMARK (bottom-right) ────────────────────────── */
-        .watermark {
+        /* ── RADAR LEGEND (bottom-right) ─────────────────────── */
+        .radar-legend {
             position: fixed;
-            bottom: calc(var(--chyron-h) + 20px);
-            right: 20px;
-            text-align: right;
+            bottom: calc(var(--cities-h) + 16px);
+            right: 16px;
             z-index: 600;
-            opacity: 0.45;
-            transition: opacity 0.3s ease;
+            background: var(--panel);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius);
+            padding: 10px 14px;
         }
-        .watermark:hover {
-            opacity: 0.7;
-        }
-        .watermark-line1 {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 0.68rem;
-            font-weight: 500;
-            color: var(--amber);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-        .watermark-line2 {
+        .radar-legend-title {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.52rem;
-            font-weight: 500;
+            font-size: 0.50rem;
+            font-weight: 600;
             color: var(--text-dim);
-            letter-spacing: 0.14em;
+            letter-spacing: 0.16em;
             text-transform: uppercase;
-            margin-top: 2px;
+            margin-bottom: 7px;
+        }
+        .radar-legend-bar {
+            width: 148px;
+            height: 7px;
+            border-radius: 4px;
+            /* Standard NEXRAD WSR-88D color scale from light to heavy */
+            background: linear-gradient(to right,
+                #04e9e7 0%,   /* 5 dBZ  – drizzle */
+                #019ff4 11%,  /* 15 dBZ – light rain */
+                #0300f4 22%,  /* 25 dBZ */
+                #02fd02 33%,  /* 30 dBZ – moderate */
+                #01c501 44%,  /* 40 dBZ */
+                #fdf802 55%,  /* 45 dBZ – heavy */
+                #e5bc00 62%,
+                #fd9500 70%,  /* 50 dBZ */
+                #fd0000 80%,  /* 55 dBZ – very heavy */
+                #bc0000 90%,
+                #f800fd 100%  /* 65+ dBZ – hail */
+            );
+        }
+        .radar-legend-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        .radar-legend-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.47rem;
+            color: var(--text-dim);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
         }
 
-        /* ── BOTTOM CHYRON ───────────────────────────────────── */
-        .chyron {
+        /* ── CITY MAP MARKERS ────────────────────────────────── */
+        .city-marker {
+            background: rgba(8, 12, 20, 0.92);
+            border: 1.5px solid rgba(90, 184, 200, 0.45);
+            border-radius: 22px;
+            padding: 5px 10px 5px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.65), 0 0 0 1px rgba(90,184,200,0.08);
+            white-space: nowrap;
+            backdrop-filter: blur(8px);
+        }
+        .city-marker-name {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.48rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            letter-spacing: 0.13em;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+        .city-marker-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            line-height: 1;
+        }
+        .city-marker-icon { font-size: 0.72rem; }
+        .city-marker-temp {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        /* ── CITY CONDITIONS BAR ─────────────────────────────── */
+        .cities-bar {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: var(--chyron-h);
+            height: var(--cities-h);
             background: var(--panel);
             backdrop-filter: blur(24px) saturate(180%);
             -webkit-backdrop-filter: blur(24px) saturate(180%);
             border-top: 1px solid var(--panel-border);
-            display: flex;
-            align-items: center;
-            overflow: hidden;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
             z-index: 600;
         }
-        .chyron-label {
-            flex-shrink: 0;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.58rem;
-            font-weight: 600;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--accent);
-            padding: 0 20px;
+
+        .city-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 11px 18px;
             border-right: 1px solid var(--panel-border);
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
-        .chyron-content {
-            flex: 1;
+            transition: background 0.2s ease;
+            cursor: default;
+            min-width: 0;
             overflow: hidden;
-            height: 100%;
-            position: relative;
         }
-        .chyron-item {
-            position: absolute;
-            inset: 0;
+        .city-card:last-child { border-right: none; }
+        .city-card:hover { background: rgba(90, 184, 200, 0.05); }
+
+        .city-card-header {
             display: flex;
-            align-items: center;
-            padding: 0 24px;
-            opacity: 0;
-            transition: opacity 0.7s ease;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 5px;
         }
-        .chyron-item.active { opacity: 1; }
-        .chyron-city {
+        .city-card-name {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 0.88rem;
+            font-size: 0.84rem;
             font-weight: 700;
             color: var(--amber);
-            letter-spacing: 0.04em;
-            margin-right: 14px;
+            letter-spacing: 0.02em;
             white-space: nowrap;
+            flex-shrink: 0;
         }
-        .chyron-sep {
-            color: var(--text-dim);
-            margin-right: 14px;
-            font-size: 0.65rem;
-            opacity: 0.5;
+        .city-card-right {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
         }
-        .chyron-conditions {
+        .city-card-icon { font-size: 1rem; line-height: 1; }
+        .city-card-temp {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.68rem;
-            font-weight: 400;
+            font-size: 1.08rem;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.01em;
+        }
+        .city-card-desc {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.59rem;
             color: var(--text-secondary);
             letter-spacing: 0.02em;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2px;
         }
-        .chyron-val {
-            color: var(--text);
-            font-weight: 600;
-        }
-        .chyron-divider {
+        .city-card-meta {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.54rem;
             color: var(--text-dim);
-            margin: 0 10px;
-            opacity: 0.4;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .city-card-skeleton .city-card-temp {
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            font-weight: 400;
         }
 
         /* ── ALERT BANNER ────────────────────────────────────── */
@@ -348,10 +424,10 @@
             position: fixed;
             top: var(--bar-h);
             left: 0; right: 0;
-            background: rgba(50, 12, 12, 0.88);
+            background: rgba(50, 12, 12, 0.90);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(255, 60, 40, 0.2);
+            border-bottom: 1px solid rgba(255, 60, 40, 0.22);
             color: #e88080;
             font-family: 'IBM Plex Mono', monospace;
             font-size: 0.62rem;
@@ -363,20 +439,31 @@
             display: none;
         }
         .alert-banner.visible { display: flex; align-items: center; gap: 10px; }
-        .alert-icon { color: #e06050; font-size: 0.8rem; }
+        .alert-icon {
+            color: #e06050;
+            font-size: 0.82rem;
+            animation: livepulse 1.2s ease-in-out infinite;
+        }
 
         /* ── RESPONSIVE ──────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .city-card { padding: 9px 12px; }
+            .city-card-name { font-size: 0.74rem; }
+            .city-card-temp { font-size: 0.95rem; }
+        }
         @media (max-width: 640px) {
+            :root { --cities-h: 72px; }
             .top-bar { padding: 0 14px; }
             .top-center { display: none; }
             .logo-title { font-size: 0.92rem; }
             #clock { font-size: 1rem; }
-            .controls { bottom: calc(var(--chyron-h) + 10px); left: 10px; }
-            .watermark { bottom: calc(var(--chyron-h) + 14px); right: 12px; }
-            .chyron-label { padding: 0 12px; font-size: 0.52rem; }
-            .chyron-item { padding: 0 14px; }
-            .chyron-city { font-size: 0.78rem; }
-            .chyron-conditions { font-size: 0.6rem; }
+            .controls { bottom: calc(var(--cities-h) + 10px); left: 10px; }
+            .radar-legend { display: none; }
+            .cities-bar {
+                grid-template-columns: repeat(5, minmax(110px, 1fr));
+                overflow-x: auto;
+            }
+            .city-card-icon { display: none; }
         }
     </style>
 </head>
@@ -402,7 +489,11 @@
         </div>
 
         <div class="top-center">
-            <div class="top-center-main">Data Dive Bar &middot; Local on the 8s</div>
+            <div class="top-center-main">
+                <span class="live-dot"></span>
+                Data Dive Bar &middot; Local on the 8s
+            </div>
+            <div class="top-center-sub" id="updated-display">&nbsp;</div>
         </div>
 
         <div class="clock-area">
@@ -424,10 +515,15 @@
         <button class="audio-btn" id="audio-btn">&#9834; Play Jazz</button>
     </div>
 
-    <!-- Watermark -->
-    <div class="watermark">
-        <div class="watermark-line1">Data Dive Bar</div>
-        <div class="watermark-line2">Weather Desk</div>
+    <!-- Radar legend -->
+    <div class="radar-legend">
+        <div class="radar-legend-title">Radar Intensity</div>
+        <div class="radar-legend-bar"></div>
+        <div class="radar-legend-labels">
+            <span class="radar-legend-label">Light</span>
+            <span class="radar-legend-label">Moderate</span>
+            <span class="radar-legend-label">Heavy</span>
+        </div>
     </div>
 
     <!-- Audio -->
@@ -437,36 +533,32 @@
         <source src="https://ice6.somafm.com/illstreet-128-mp3" type="audio/mpeg">
     </audio>
 
-    <!-- Bottom chyron -->
-    <div class="chyron">
-        <div class="chyron-label">Conditions</div>
-        <div class="chyron-content" id="chyron-content"></div>
+    <!-- City conditions bar — all 5 cities always visible -->
+    <div class="cities-bar" id="cities-bar">
+        <!-- skeleton cards rendered immediately by JS -->
     </div>
 
     <script>
     // ══════════════════════════════════════════════════════════════
-    //  DATA DIVE BAR WEATHER DESK — OHIO DOPPLER
-    //  Clean ambient display
+    //  DATA DIVE BAR — WEATHER DESK — OHIO DOPPLER
     // ══════════════════════════════════════════════════════════════
 
-    // ── CONSTANTS ────────────────────────────────────────────────
-    const COLUMBUS         = [39.9612, -82.9988];
-    const DEFAULT_ZOOM     = 8;
-    const RADAR_REFRESH_MS = 2.5 * 60 * 1000;   // 2.5 min
-    const ALERT_CHECK_MS   = 5 * 60 * 1000;     // 5 min
-    const WEATHER_REFRESH_MS = 10 * 60 * 1000;  // 10 min
+    const COLUMBUS           = [39.9612, -82.9988];
+    const DEFAULT_ZOOM       = 7;
+    const RADAR_REFRESH_MS   = 2.5 * 60 * 1000;
+    const ALERT_CHECK_MS     = 5  * 60 * 1000;
+    const WEATHER_REFRESH_MS = 10 * 60 * 1000;
     const NWS_UA = 'DataDiveBarWeatherDesk/1.0 github.com/datadivebar';
 
     const WEATHER_STATIONS = [
-        { id: 'KCMH', name: 'Columbus' },
-        { id: 'KCLE', name: 'Cleveland' },
-        { id: 'KCVG', name: 'Cincinnati' },
-        { id: 'KTOL', name: 'Toledo' },
-        { id: 'KAKR', name: 'Akron' },
+        { id: 'KCMH', name: 'Columbus',   lat: 39.9612, lng: -82.9988 },
+        { id: 'KCLE', name: 'Cleveland',  lat: 41.4993, lng: -81.6944 },
+        { id: 'KCVG', name: 'Cincinnati', lat: 39.1031, lng: -84.5120 },
+        { id: 'KTOL', name: 'Toledo',     lat: 41.6528, lng: -83.5379 },
+        { id: 'KAKR', name: 'Akron',      lat: 41.0814, lng: -81.5190 },
     ];
 
     // ── MAP ──────────────────────────────────────────────────────
-    // Centered on Columbus, full manual interaction enabled
     const map = L.map('map', {
         center: COLUMBUS,
         zoom: DEFAULT_ZOOM,
@@ -474,23 +566,15 @@
         attributionControl: false,
     });
 
-    // Dark base tiles
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
         maxZoom: 19,
     }).addTo(map);
 
     // ── RADAR LAYER ──────────────────────────────────────────────
-    // Persistent layer — refreshed via setUrl(), never removed.
-    // maxNativeZoom: 8 tells Leaflet to request z8 tiles max and
-    // upscale them at higher zoom levels so radar never vanishes.
     const radarLayer = L.tileLayer(
         'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
-        {
-            opacity: 0.72,
-            maxNativeZoom: 8,
-            maxZoom: 19,
-        }
+        { opacity: 0.72, maxNativeZoom: 8, maxZoom: 19 }
     ).addTo(map);
 
     function refreshRadar() {
@@ -503,18 +587,16 @@
     // ── RADAR CONTROLS ───────────────────────────────────────────
     document.querySelectorAll('#radar-seg .seg-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            document.querySelectorAll('#radar-seg .seg-btn').forEach(function(b) {
-                b.classList.remove('active');
-            });
+            document.querySelectorAll('#radar-seg .seg-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             radarLayer.setOpacity(parseFloat(btn.dataset.opacity));
         });
     });
 
     // ── CLOCK ────────────────────────────────────────────────────
-    var DAYS  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    var MONTHS = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
+    const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
 
     function updateClock() {
         var now = new Date();
@@ -525,10 +607,39 @@
         h = h % 12 || 12;
         document.getElementById('clock').textContent = h + ':' + m + ':' + s + ' ' + ampm;
         document.getElementById('date-display').textContent =
-            DAYS[now.getDay()] + ' ' + MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+            DAYS[now.getDay()] + ' \xB7 ' + MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
     }
     updateClock();
     setInterval(updateClock, 1000);
+
+    // ── CONDITION ICON ───────────────────────────────────────────
+    function getConditionIcon(desc) {
+        if (!desc) return '\uD83C\uDF21\uFE0F'; // 🌡️
+        var d = desc.toLowerCase();
+        if (d.includes('thunder') || d.includes('tstm'))              return '\u26C8\uFE0F'; // ⛈️
+        if (d.includes('blizzard'))                                    return '\u2744\uFE0F'; // ❄️
+        if (d.includes('snow') || d.includes('flurr'))                return '\uD83C\uDF28\uFE0F'; // 🌨️
+        if (d.includes('sleet') || d.includes('freezing rain'))       return '\uD83C\uDF27\uFE0F'; // 🌧️
+        if (d.includes('rain') || d.includes('shower') || d.includes('drizzle')) return '\uD83C\uDF27\uFE0F'; // 🌧️
+        if (d.includes('fog') || d.includes('mist') || d.includes('haze'))       return '\uD83C\uDF2B\uFE0F'; // 🌫️
+        if (d.includes('partly') || d.includes('mostly sunny'))       return '\u26C5'; // ⛅
+        if (d.includes('cloud') || d.includes('overcast'))            return '\u2601\uFE0F'; // ☁️
+        if (d.includes('clear') || d.includes('sunny') || d.includes('fair'))    return '\u2600\uFE0F'; // ☀️
+        if (d.includes('wind') || d.includes('breezy') || d.includes('gust'))    return '\uD83D\uDCA8'; // 💨
+        return '\uD83C\uDF21\uFE0F'; // 🌡️
+    }
+
+    // ── TEMPERATURE COLOR ────────────────────────────────────────
+    // Cool → Neutral → Warm color scale for instant temperature triage
+    function getTempColor(tempF) {
+        if (tempF == null) return 'var(--text-dim)';
+        if (tempF < 20)  return '#7ab4f5'; // frigid – bright blue
+        if (tempF < 32)  return '#5ab8c8'; // freezing – cyan
+        if (tempF < 50)  return '#6dbdaa'; // cold – teal-green
+        if (tempF < 68)  return '#a8c87a'; // mild – green
+        if (tempF < 85)  return '#c9a84c'; // warm – amber
+        return '#e07050';                  // hot – orange
+    }
 
     // ── NWS ALERTS ───────────────────────────────────────────────
     async function fetchAlerts() {
@@ -550,21 +661,53 @@
             } else if (banner) {
                 banner.classList.remove('visible');
             }
-        } catch (e) { /* alerts are a bonus */ }
+        } catch(e) {}
     }
     fetchAlerts();
     setInterval(fetchAlerts, ALERT_CHECK_MS);
 
     // ── WEATHER DATA ─────────────────────────────────────────────
     var weatherData = [];
-    var chyronIndex = 0;
+    var cityMarkers = [];
+    var lastUpdated = null;
 
-    function cToF(c)  { return c != null ? Math.round(c * 9/5 + 32) : null; }
-    function msToMph(ms) { return ms != null ? Math.round(ms * 2.23694) : null; }
+    function cToF(c)    { return c != null ? Math.round(c * 9/5 + 32) : null; }
+    function msToMph(ms){ return ms != null ? Math.round(ms * 2.23694) : null; }
     function degToDir(deg) {
         if (deg == null) return '';
         var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
         return dirs[Math.round(deg / 22.5) % 16];
+    }
+
+    // ── CITY MAP MARKERS ─────────────────────────────────────────
+    function updateMapMarkers(data) {
+        cityMarkers.forEach(m => map.removeLayer(m));
+        cityMarkers = [];
+
+        WEATHER_STATIONS.forEach(function(station, i) {
+            var d = data[i];
+            var tempF   = d ? d.tempF   : null;
+            var desc    = d ? d.desc    : '';
+            var tempStr = tempF != null ? tempF + '\xB0F' : '\u2014';
+            var icon    = getConditionIcon(desc);
+            var color   = getTempColor(tempF);
+
+            var marker = L.marker([station.lat, station.lng], {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div class="city-marker">' +
+                          '<div class="city-marker-name">' + station.name + '</div>' +
+                          '<div class="city-marker-row">' +
+                          '<span class="city-marker-icon">' + icon + '</span>' +
+                          '<span class="city-marker-temp" style="color:' + color + '">' + tempStr + '</span>' +
+                          '</div></div>',
+                    iconSize: [90, 44],
+                    iconAnchor: [45, 22],
+                }),
+                interactive: false,
+            }).addTo(map);
+            cityMarkers.push(marker);
+        });
     }
 
     async function fetchWeather() {
@@ -578,74 +721,97 @@
                 if (!res.ok) throw new Error();
                 var obs = (await res.json()).properties;
                 results.push({
-                    name: s.name,
-                    tempF: cToF(obs.temperature && obs.temperature.value),
-                    humid: obs.relativeHumidity && obs.relativeHumidity.value != null
-                        ? Math.round(obs.relativeHumidity.value) : null,
+                    name:    s.name,
+                    tempF:   cToF(obs.temperature && obs.temperature.value),
+                    humid:   obs.relativeHumidity && obs.relativeHumidity.value != null
+                             ? Math.round(obs.relativeHumidity.value) : null,
                     windMph: msToMph(obs.windSpeed && obs.windSpeed.value),
                     windDir: degToDir(obs.windDirection && obs.windDirection.value),
-                    desc: obs.textDescription || '',
+                    desc:    obs.textDescription || '',
                 });
-            } catch (e) {
+            } catch(e) {
                 results.push({ name: s.name, tempF: null, humid: null, windMph: null, windDir: '', desc: '' });
             }
         }
         weatherData = results;
-        renderChyron();
+        lastUpdated = new Date();
+        renderCityCards(results);
+        updateMapMarkers(results);
+        updateTimestamp();
     }
 
-    // ── CHYRON ───────────────────────────────────────────────────
-    function renderChyron() {
-        var el = document.getElementById('chyron-content');
-        if (!el) return;
-        el.innerHTML = '';
-        if (weatherData.length === 0) {
-            var placeholder = document.createElement('div');
-            placeholder.className = 'chyron-item active';
-            placeholder.innerHTML = '<span class="chyron-conditions">Fetching conditions&hellip;</span>';
-            el.appendChild(placeholder);
-            return;
-        }
-        weatherData.forEach(function(d, i) {
-            var item = document.createElement('div');
-            item.className = 'chyron-item' + (i === 0 ? ' active' : '');
-            var temp  = d.tempF != null
-                ? '<span class="chyron-val">' + d.tempF + '&deg;F</span>'
-                : '<span class="chyron-val">&mdash;</span>';
-            var humid = d.humid != null
-                ? '<span class="chyron-divider">&middot;</span>Humidity <span class="chyron-val">' + d.humid + '%</span>'
-                : '';
-            var wind  = d.windMph != null
-                ? 'Wind <span class="chyron-val">' + d.windDir + ' ' + d.windMph + ' mph</span>'
-                : '<span class="chyron-val">Calm</span>';
-            var desc  = d.desc
-                ? '<span class="chyron-divider">&middot;</span>' + d.desc
-                : '';
-            item.innerHTML =
-                '<span class="chyron-city">' + d.name + '</span>' +
-                '<span class="chyron-sep">/</span>' +
-                '<span class="chyron-conditions">' + temp + humid +
-                '<span class="chyron-divider">&middot;</span>' + wind + desc + '</span>';
-            el.appendChild(item);
+    // ── LAST UPDATED ─────────────────────────────────────────────
+    function updateTimestamp() {
+        var el = document.getElementById('updated-display');
+        if (!el || !lastUpdated) return;
+        var mins = Math.floor((Date.now() - lastUpdated.getTime()) / 60000);
+        el.textContent = mins < 1 ? 'Conditions updated just now' : 'Conditions updated ' + mins + ' min ago';
+    }
+    setInterval(updateTimestamp, 30000);
+
+    // ── CITY CARDS ───────────────────────────────────────────────
+    function renderCityCards(data) {
+        var bar = document.getElementById('cities-bar');
+        if (!bar) return;
+        bar.innerHTML = '';
+
+        data.forEach(function(d) {
+            var card = document.createElement('div');
+            card.className = 'city-card';
+
+            var icon    = getConditionIcon(d.desc);
+            var tempF   = d.tempF;
+            var tempStr = tempF != null ? tempF + '\xB0F' : '\u2014';
+            var color   = getTempColor(tempF);
+            var desc    = d.desc || '\u2014';
+            var wind    = d.windMph != null
+                ? (d.windDir ? d.windDir + '\u00A0' : '') + d.windMph + ' mph'
+                : 'Calm';
+            var metaParts = [];
+            if (d.humid != null) metaParts.push('Hum\u00A0' + d.humid + '%');
+            metaParts.push(wind);
+
+            card.innerHTML =
+                '<div class="city-card-header">' +
+                  '<span class="city-card-name">' + d.name + '</span>' +
+                  '<div class="city-card-right">' +
+                    '<span class="city-card-icon">' + icon + '</span>' +
+                    '<span class="city-card-temp" style="color:' + color + '">' + tempStr + '</span>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="city-card-desc">' + desc + '</div>' +
+                '<div class="city-card-meta">' + metaParts.join(' \xB7 ') + '</div>';
+
+            bar.appendChild(card);
         });
-        chyronIndex = 0;
     }
 
-    function advanceChyron() {
-        var items = document.querySelectorAll('.chyron-item');
-        if (items.length < 2) return;
-        items[chyronIndex % items.length].classList.remove('active');
-        chyronIndex = (chyronIndex + 1) % items.length;
-        items[chyronIndex].classList.add('active');
-    }
+    // Skeleton cards while data loads
+    (function initSkeletons() {
+        var bar = document.getElementById('cities-bar');
+        if (!bar) return;
+        WEATHER_STATIONS.forEach(function(s) {
+            var card = document.createElement('div');
+            card.className = 'city-card city-card-skeleton';
+            card.innerHTML =
+                '<div class="city-card-header">' +
+                  '<span class="city-card-name">' + s.name + '</span>' +
+                '</div>' +
+                '<div class="city-card-desc" style="color:var(--text-dim);letter-spacing:0.1em">Loading\u2026</div>';
+            bar.appendChild(card);
+        });
+    })();
 
-    renderChyron();
+    // Initialize map markers with skeleton state
+    updateMapMarkers(WEATHER_STATIONS.map(function(s) {
+        return { name: s.name, tempF: null, desc: '', humid: null, windMph: null, windDir: '' };
+    }));
+
     fetchWeather();
     setInterval(fetchWeather, WEATHER_REFRESH_MS);
-    setInterval(advanceChyron, 5000);
 
     // ── AUDIO ────────────────────────────────────────────────────
-    var audio = document.getElementById('jazz-audio');
+    var audio    = document.getElementById('jazz-audio');
     var audioBtn = document.getElementById('audio-btn');
     audio.volume = 0.4;
 
@@ -671,9 +837,7 @@
             });
     }
 
-    audio.addEventListener('error', function() {
-        if (audio.paused) setAudioState('error');
-    });
+    audio.addEventListener('error', function() { if (audio.paused) setAudioState('error'); });
 
     audioBtn.addEventListener('click', function() {
         if (audio.error || audio.readyState === 0) {
