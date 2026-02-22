@@ -59,8 +59,8 @@
             inset: 0;
             background: radial-gradient(
                 ellipse at 50% 50%,
-                transparent 45%,
-                rgba(8, 12, 20, 0.5) 100%
+                transparent 55%,
+                rgba(8, 12, 20, 0.38) 100%
             );
             pointer-events: none;
             z-index: 490;
@@ -509,6 +509,7 @@
             <div class="segmented" id="radar-seg">
                 <button class="seg-btn active" data-opacity="0.72">On</button>
                 <button class="seg-btn" data-opacity="0.35">50%</button>
+                <button class="seg-btn" data-opacity="0.10">10%</button>
                 <button class="seg-btn" data-opacity="0">Off</button>
             </div>
         </div>
@@ -566,9 +567,16 @@
         attributionControl: false,
     });
 
+    // Custom pane for the base map so the brightness filter doesn't
+    // bleed into the radar overlay or city markers
+    map.createPane('basemapPane');
+    map.getPane('basemapPane').style.zIndex = 150;
+    map.getPane('basemapPane').style.filter = 'brightness(1.9) contrast(1.15) saturate(0.85)';
+
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
         maxZoom: 19,
+        pane: 'basemapPane',
     }).addTo(map);
 
     // ── RADAR LAYER ──────────────────────────────────────────────
