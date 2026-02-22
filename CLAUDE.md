@@ -17,6 +17,7 @@ datadivebar.com is a fun, interactive data visualization website hosted on GitHu
 - `americas-deadliest-animal/` – Data viz about America's deadliest animals
 - `bar_invaders/` – Space Invaders-style data game
 - `barcade/` – Arcade-themed interactive data experiences
+- `weather/` – 1990s Weather Channel-style ambient radar display for Ohio
 - `CNAME` – Custom domain config pointing to datadivebar.com
 
 ## Design Guidelines
@@ -93,3 +94,27 @@ datadivebar.com is a fun, interactive data visualization website hosted on GitHu
 - **Simplicity First**: Make every change as simple as possible. Impact minimal code.
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+
+## Weather Desk (`weather/`)
+
+A 1990s Weather Channel-inspired ambient radar display for Ohio. Designed as a "set it and forget it" page you can leave running on a screen all night.
+
+### What It Does
+
+- Full-screen Leaflet map centered on Columbus, OH with dark CartoDB base tiles
+- Live NEXRAD radar reflectivity overlay via Iowa Environmental Mesonet (IEM) tile service, auto-refreshing every 2.5 minutes
+- Bottom chyron cycles through real-time conditions (temperature, humidity, wind, description) for 5 Ohio cities: Columbus, Cleveland, Cincinnati, Toledo, and Akron
+- Weather data pulled from the free NWS `api.weather.gov` API (no key required), refreshed every 10 minutes
+- NWS severe weather alert banner for Ohio (tornado, severe thunderstorm, flash flood)
+- Live clock and date display in the top bar
+- Smooth jazz audio stream from SomaFM (Ill Street Blues) with play/mute toggle
+- Radar opacity controls (On / 50% / Off)
+- Subtle vignette overlay for a CRT-like feel
+
+### Key Technical Details
+
+- **Single file**: `weather/index.html` — fully self-contained, no build step
+- **External dependencies**: Leaflet 1.9.4 (CDN), Google Fonts (IBM Plex Mono, Playfair Display)
+- **Data sources**: IEM NEXRAD tiles, NWS observations API, NWS alerts API — all free, no API keys
+- **Audio**: SomaFM streaming (not bundled files); multiple fallback stream URLs
+- **Spec file**: `weather_channel.md` in repo root contains the original design spec and future plans (e.g., potential 24/7 YouTube live stream)
