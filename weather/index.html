@@ -660,7 +660,7 @@
     </div>
 
     <!-- Audio -->
-    <!-- Jazz24 (KNKX): public radio smooth jazz -->
+    <!-- Jazz24 (KNKX Seattle): smooth jazz, free, no key required -->
     <audio id="jazz-audio" preload="none"></audio>
 
     <!-- Scrolling chyron -->
@@ -1033,12 +1033,20 @@
     var audioBtn = document.getElementById('audio-btn');
     audio.volume = 0.38;
 
-    var jazz24Streams = [
+    // Jazz24 (KNKX Seattle) — smooth jazz, confirmed working CDN URLs
+    // amperwave.net = Jazz24's official streaming CDN (confirmed Oct 2023)
+    // audiocdn.com  = URLs from jazz24.org's own web player
+    // WBGO fallback = Jazz 88.3 Newark (official stream URLs)
+    var streams = [
         'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',
         'https://live.amperwave.net/direct/ppm-jazz24aac256-ibc1',
-        'https://playerservices.streamtheworld.com/api/livestream-redirect/JAZZ24.mp3',
+        'https://knkx-live-a.edge.audiocdn.com/6285_128k',
+        'https://knkx-live-a.edge.audiocdn.com/6285_256k',
+        'https://ais-sa8.cdnstream1.com/3629_128.mp3',
     ];
     var streamIndex = 0;
+    var isPlaying = false;
+    var autoplayBlocked = false;
 
     function setAudioState(state) {
         var labels = {
@@ -1053,17 +1061,25 @@
     }
 
     function tryPlay(index) {
-        index = index || 0;
+        if (index === undefined) index = 0;
         streamIndex = index;
         setAudioState('loading');
-        audio.src = jazz24Streams[index];
+        audio.src = streams[index];
         audio.load();
         audio.play()
-            .then(function() { setAudioState('playing'); })
+            .then(function() {
+                isPlaying = true;
+                autoplayBlocked = false;
+                setAudioState('playing');
+            })
             .catch(function(e) {
+                isPlaying = false;
                 if (e.name === 'NotAllowedError') {
+                    // Browser blocked autoplay — will retry on first user interaction
+                    autoplayBlocked = true;
+                    audio.src = '';
                     setAudioState('idle');
-                } else if (index + 1 < jazz24Streams.length) {
+                } else if (index + 1 < streams.length) {
                     tryPlay(index + 1);
                 } else {
                     setAudioState('error');
@@ -1072,20 +1088,22 @@
     }
 
     audio.addEventListener('error', function() {
-        if (audio.paused) {
-            if (streamIndex + 1 < jazz24Streams.length) {
-                tryPlay(streamIndex + 1);
-            } else {
-                setAudioState('error');
-            }
+        if (streamIndex + 1 < streams.length) {
+            tryPlay(streamIndex + 1);
+        } else {
+            isPlaying = false;
+            setAudioState('error');
         }
     });
 
     audioBtn.addEventListener('click', function() {
-        if (!audio.src || audio.error || audio.readyState === 0) {
+        autoplayBlocked = false;
+        if (!audio.src || audio.readyState === 0) {
             tryPlay(0);
         } else if (audio.paused) {
-            tryPlay(streamIndex);
+            audio.play()
+                .then(function() { isPlaying = true; setAudioState('playing'); })
+                .catch(function() { tryPlay(0); });
         } else if (audio.muted) {
             audio.muted = false;
             setAudioState('playing');
@@ -1094,6 +1112,17 @@
             setAudioState('muted');
         }
     });
+
+    // Try autoplay immediately on load.
+    // Browsers often block this without prior interaction — if blocked,
+    // retry automatically on the first user click anywhere on the page.
+    tryPlay(0);
+    document.addEventListener('click', function() {
+        if (autoplayBlocked) {
+            autoplayBlocked = false;
+            tryPlay(0);
+        }
+    }, { once: true });
 
     </script>
 </body>
