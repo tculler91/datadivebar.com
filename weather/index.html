@@ -10,26 +10,30 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Fonts -->
+    <!-- Fonts: VT323 for that CRT terminal glow, Playfair for city names -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg: #080c14;
-            --panel: rgba(10, 16, 28, 0.90);
-            --panel-solid: #0c1220;
-            --panel-border: rgba(80, 180, 200, 0.10);
-            --accent: #5ab8c8;
-            --accent-dim: rgba(90, 184, 200, 0.12);
-            --amber: #c9a84c;
-            --text: #d8e0ea;
-            --text-secondary: #8a9bb2;
-            --text-dim: #4e6178;
-            --bar-h: 52px;
-            --cities-h: 86px;
-            --radius: 10px;
-            --radius-sm: 7px;
+            --bg:             #020510;
+            --navy:           #04082a;
+            --panel:          rgba(4, 8, 38, 0.94);
+            --panel-border:   rgba(48, 148, 220, 0.18);
+            --blue:           #3888c8;
+            --teal:           #30c8d4;
+            --teal-dim:       rgba(48, 200, 212, 0.12);
+            --amber:          #e4a83c;
+            --amber-bright:   #f0c060;
+            --purple:         #8868c0;
+            --text:           #b8d0f0;
+            --text-secondary: #6888b0;
+            --text-dim:       #2e4868;
+            --bar-h:          54px;
+            --chyron-h:       48px;
+            --glow-blue:      0 0 8px rgba(48, 136, 200, 0.6), 0 0 20px rgba(48, 136, 200, 0.2);
+            --glow-teal:      0 0 8px rgba(48, 200, 212, 0.7), 0 0 20px rgba(48, 200, 212, 0.25);
+            --glow-amber:     0 0 8px rgba(228, 168, 60, 0.7), 0 0 24px rgba(228, 168, 60, 0.2);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,9 +42,8 @@
             width: 100%; height: 100%;
             background: var(--bg);
             overflow: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
         /* ── MAP ─────────────────────────────────────────────── */
@@ -53,17 +56,83 @@
         .leaflet-control-zoom,
         .leaflet-control-attribution { display: none !important; }
 
+        /* ── CRT SCAN LINES ─────────────────────────────────── */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0px,
+                transparent 3px,
+                rgba(0, 0, 8, 0.10) 3px,
+                rgba(0, 0, 8, 0.10) 4px
+            );
+            pointer-events: none;
+            z-index: 491;
+        }
+
+        /* ── FILM GRAIN ──────────────────────────────────────── */
+        .grain {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 492;
+            opacity: 0.028;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
+            background-size: 300px 300px;
+            animation: grain-shift 0.8s steps(1) infinite;
+        }
+        @keyframes grain-shift {
+            0%   { background-position: 0 0; }
+            20%  { background-position: -80px -40px; }
+            40%  { background-position: 60px -90px; }
+            60%  { background-position: -30px 70px; }
+            80%  { background-position: 100px 20px; }
+            100% { background-position: -50px -60px; }
+        }
+
         /* ── VIGNETTE ────────────────────────────────────────── */
         .vignette {
             position: fixed;
             inset: 0;
             background: radial-gradient(
                 ellipse at 50% 50%,
-                transparent 55%,
-                rgba(8, 12, 20, 0.38) 100%
+                transparent 38%,
+                rgba(2, 5, 16, 0.45) 65%,
+                rgba(2, 5, 16, 0.82) 100%
             );
             pointer-events: none;
-            z-index: 490;
+            z-index: 493;
+        }
+
+        /* subtle CRT corner darkening */
+        .vignette::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 120% 140% at 0% 0%,   rgba(2,5,16,0.35) 0%, transparent 55%),
+                radial-gradient(ellipse 120% 140% at 100% 0%,  rgba(2,5,16,0.35) 0%, transparent 55%),
+                radial-gradient(ellipse 120% 140% at 0% 100%,  rgba(2,5,16,0.35) 0%, transparent 55%),
+                radial-gradient(ellipse 120% 140% at 100% 100%,rgba(2,5,16,0.35) 0%, transparent 55%);
+        }
+
+        /* ── SUBTLE FLICKER ──────────────────────────────────── */
+        .flicker-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 494;
+            animation: crt-flicker 12s ease-in-out infinite;
+            opacity: 0;
+            background: rgba(180, 220, 255, 0.012);
+        }
+        @keyframes crt-flicker {
+            0%, 92%, 100%   { opacity: 0; }
+            93%             { opacity: 1; }
+            93.5%           { opacity: 0; }
+            94%             { opacity: 0.8; }
+            94.5%           { opacity: 0; }
         }
 
         /* ── TOP BAR ─────────────────────────────────────────── */
@@ -71,41 +140,55 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             height: var(--bar-h);
-            background: var(--panel);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border-bottom: 1px solid var(--panel-border);
+            background: linear-gradient(to bottom, rgba(4,8,42,0.97), rgba(4,8,32,0.93));
+            border-bottom: 1px solid rgba(48, 148, 220, 0.22);
+            box-shadow: 0 1px 0 rgba(48, 200, 212, 0.08), 0 4px 24px rgba(2, 5, 16, 0.8);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
+            padding: 0 22px;
             z-index: 600;
         }
 
+        /* left: logo bug */
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
-        .logo-icon { font-size: 1.3rem; opacity: 0.9; }
-        .logo-text { display: flex; flex-direction: column; gap: 1px; }
+        .logo-bug {
+            width: 32px; height: 32px;
+            border: 1.5px solid rgba(48, 200, 212, 0.5);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            background: rgba(48, 200, 212, 0.07);
+            box-shadow: var(--glow-teal), inset 0 0 8px rgba(48,200,212,0.05);
+            flex-shrink: 0;
+        }
+        .logo-text { display: flex; flex-direction: column; gap: 2px; }
         .logo-title {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 1.05rem;
+            font-size: 0.92rem;
             font-weight: 700;
             color: var(--text);
-            letter-spacing: 0.02em;
-            line-height: 1.2;
+            letter-spacing: 0.04em;
+            line-height: 1.1;
+            text-shadow: 0 0 12px rgba(48, 200, 212, 0.3);
         }
         .logo-sub {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.58rem;
-            font-weight: 500;
-            color: var(--text-dim);
-            letter-spacing: 0.14em;
+            font-family: 'VT323', monospace;
+            font-size: 0.75rem;
+            color: var(--teal);
+            letter-spacing: 0.16em;
             text-transform: uppercase;
+            text-shadow: var(--glow-teal);
+            opacity: 0.85;
         }
 
+        /* center: LIVE / LOCAL ON THE 8s */
         .top-center {
             position: absolute;
             left: 50%;
@@ -113,62 +196,100 @@
             text-align: center;
         }
         .top-center-main {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.62rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            letter-spacing: 0.18em;
+            font-family: 'VT323', monospace;
+            font-size: 1.0rem;
+            color: var(--teal);
+            letter-spacing: 0.22em;
             text-transform: uppercase;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            text-shadow: var(--glow-teal);
         }
         .live-dot {
-            width: 7px;
-            height: 7px;
-            background: var(--accent);
+            width: 7px; height: 7px;
+            background: #e84040;
             border-radius: 50%;
             flex-shrink: 0;
-            animation: livepulse 2.4s ease-in-out infinite;
+            box-shadow: 0 0 6px rgba(232, 64, 64, 0.8), 0 0 14px rgba(232, 64, 64, 0.4);
+            animation: livepulse 2s ease-in-out infinite;
         }
         @keyframes livepulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(90,184,200,0.5); }
-            50% { opacity: 0.5; box-shadow: 0 0 0 4px rgba(90,184,200,0); }
+            0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(232,64,64,0.9), 0 0 14px rgba(232,64,64,0.5); }
+            50%       { opacity: 0.5; box-shadow: 0 0 3px rgba(232,64,64,0.4); }
         }
         .top-center-sub {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.52rem;
-            font-weight: 400;
+            font-size: 0.50rem;
+            font-weight: 500;
             color: var(--text-dim);
-            letter-spacing: 0.12em;
+            letter-spacing: 0.14em;
             text-transform: uppercase;
             margin-top: 3px;
         }
 
+        /* right: clock */
         .clock-area { text-align: right; }
         #clock {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: var(--text);
-            letter-spacing: 0.04em;
-            line-height: 1.2;
+            font-family: 'VT323', monospace;
+            font-size: 1.7rem;
+            color: var(--amber-bright);
+            letter-spacing: 0.06em;
+            line-height: 1;
+            text-shadow: var(--glow-amber);
         }
         #date-display {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.56rem;
+            font-size: 0.50rem;
             font-weight: 500;
             color: var(--text-dim);
-            letter-spacing: 0.12em;
+            letter-spacing: 0.14em;
             text-transform: uppercase;
-            margin-top: 2px;
+            margin-top: 3px;
+        }
+
+        /* ── NOW VIEWING OVERLAY ─────────────────────────────── */
+        .now-viewing {
+            position: fixed;
+            top: calc(var(--bar-h) + 14px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(4, 8, 42, 0.88);
+            border: 1px solid rgba(48, 148, 220, 0.35);
+            border-radius: 3px;
+            padding: 6px 20px;
+            z-index: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+            pointer-events: none;
+        }
+        .now-viewing.visible { opacity: 1; }
+        .now-viewing-label {
+            font-family: 'VT323', monospace;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+        }
+        .now-viewing-name {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-style: italic;
+            color: var(--amber);
+            letter-spacing: 0.05em;
+            text-shadow: var(--glow-amber);
         }
 
         /* ── CONTROLS (bottom-left) ──────────────────────────── */
         .controls {
             position: fixed;
-            bottom: calc(var(--cities-h) + 16px);
-            left: 16px;
+            bottom: calc(var(--chyron-h) + 14px);
+            left: 14px;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -181,20 +302,16 @@
             gap: 8px;
         }
         .control-label {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.58rem;
-            font-weight: 600;
+            font-family: 'VT323', monospace;
+            font-size: 0.85rem;
             color: var(--text-dim);
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            white-space: nowrap;
         }
         .segmented {
-            background: var(--panel);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--panel-border);
-            border-radius: var(--radius);
+            background: rgba(4, 8, 42, 0.88);
+            border: 1px solid rgba(48, 148, 220, 0.2);
+            border-radius: 3px;
             padding: 3px;
             display: inline-flex;
             gap: 2px;
@@ -202,88 +319,80 @@
         .seg-btn {
             background: transparent;
             border: none;
-            border-radius: var(--radius-sm);
+            border-radius: 2px;
             color: var(--text-dim);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.62rem;
-            font-weight: 500;
-            letter-spacing: 0.06em;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            padding: 6px 14px;
+            padding: 3px 12px;
             cursor: pointer;
-            transition: all 0.25s ease;
-            white-space: nowrap;
+            transition: all 0.3s ease;
         }
         .seg-btn:hover { color: var(--text-secondary); }
         .seg-btn.active {
-            background: var(--accent-dim);
-            color: var(--accent);
+            background: rgba(48, 200, 212, 0.12);
+            color: var(--teal);
+            text-shadow: var(--glow-teal);
         }
 
         .audio-btn {
-            background: var(--panel);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--panel-border);
-            border-radius: var(--radius);
+            background: rgba(4, 8, 42, 0.88);
+            border: 1px solid rgba(48, 148, 220, 0.2);
+            border-radius: 3px;
             color: var(--text-dim);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.64rem;
-            font-weight: 500;
-            letter-spacing: 0.08em;
-            padding: 8px 16px;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            padding: 6px 14px;
             cursor: pointer;
-            transition: all 0.25s ease;
-            white-space: nowrap;
+            transition: all 0.3s ease;
         }
         .audio-btn:hover {
             color: var(--text-secondary);
-            border-color: rgba(80, 180, 200, 0.2);
+            border-color: rgba(48, 200, 212, 0.3);
         }
         .audio-btn.active {
-            color: var(--accent);
-            border-color: rgba(90, 184, 200, 0.25);
+            color: var(--teal);
+            border-color: rgba(48, 200, 212, 0.35);
+            text-shadow: var(--glow-teal);
         }
 
         /* ── RADAR LEGEND (bottom-right) ─────────────────────── */
         .radar-legend {
             position: fixed;
-            bottom: calc(var(--cities-h) + 16px);
-            right: 16px;
+            bottom: calc(var(--chyron-h) + 14px);
+            right: 14px;
             z-index: 600;
-            background: var(--panel);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--panel-border);
-            border-radius: var(--radius);
-            padding: 10px 14px;
+            background: rgba(4, 8, 42, 0.88);
+            border: 1px solid rgba(48, 148, 220, 0.2);
+            border-radius: 3px;
+            padding: 9px 13px;
         }
         .radar-legend-title {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.50rem;
-            font-weight: 600;
+            font-family: 'VT323', monospace;
+            font-size: 0.75rem;
             color: var(--text-dim);
-            letter-spacing: 0.16em;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
             margin-bottom: 7px;
         }
         .radar-legend-bar {
-            width: 148px;
-            height: 7px;
-            border-radius: 4px;
-            /* Standard NEXRAD WSR-88D color scale from light to heavy */
+            width: 140px;
+            height: 6px;
+            border-radius: 3px;
             background: linear-gradient(to right,
-                #04e9e7 0%,   /* 5 dBZ  – drizzle */
-                #019ff4 11%,  /* 15 dBZ – light rain */
-                #0300f4 22%,  /* 25 dBZ */
-                #02fd02 33%,  /* 30 dBZ – moderate */
-                #01c501 44%,  /* 40 dBZ */
-                #fdf802 55%,  /* 45 dBZ – heavy */
+                #04e9e7 0%,
+                #019ff4 11%,
+                #0300f4 22%,
+                #02fd02 33%,
+                #01c501 44%,
+                #fdf802 55%,
                 #e5bc00 62%,
-                #fd9500 70%,  /* 50 dBZ */
-                #fd0000 80%,  /* 55 dBZ – very heavy */
+                #fd9500 70%,
+                #fd0000 80%,
                 #bc0000 90%,
-                #f800fd 100%  /* 65+ dBZ – hail */
+                #f800fd 100%
             );
         }
         .radar-legend-labels {
@@ -292,8 +401,8 @@
             margin-top: 5px;
         }
         .radar-legend-label {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.47rem;
+            font-family: 'VT323', monospace;
+            font-size: 0.65rem;
             color: var(--text-dim);
             letter-spacing: 0.06em;
             text-transform: uppercase;
@@ -301,24 +410,22 @@
 
         /* ── CITY MAP MARKERS ────────────────────────────────── */
         .city-marker {
-            background: rgba(8, 12, 20, 0.92);
-            border: 1.5px solid rgba(90, 184, 200, 0.45);
-            border-radius: 22px;
-            padding: 5px 10px 5px 10px;
+            background: rgba(4, 8, 42, 0.92);
+            border: 1px solid rgba(48, 148, 220, 0.4);
+            border-radius: 3px;
+            padding: 4px 9px;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 1px;
-            box-shadow: 0 2px 16px rgba(0,0,0,0.65), 0 0 0 1px rgba(90,184,200,0.08);
+            box-shadow: 0 2px 16px rgba(0,0,0,0.7), var(--glow-blue);
             white-space: nowrap;
-            backdrop-filter: blur(8px);
         }
         .city-marker-name {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.48rem;
-            font-weight: 600;
-            color: var(--text-dim);
-            letter-spacing: 0.13em;
+            font-family: 'VT323', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.14em;
             text-transform: uppercase;
             line-height: 1;
         }
@@ -330,93 +437,117 @@
         }
         .city-marker-icon { font-size: 0.72rem; }
         .city-marker-temp {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.85rem;
-            font-weight: 700;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            font-weight: 400;
             line-height: 1;
         }
 
-        /* ── CITY CONDITIONS BAR ─────────────────────────────── */
-        .cities-bar {
+        /* ── SCROLLING CHYRON ────────────────────────────────── */
+        .chyron-bar {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            height: var(--cities-h);
-            background: var(--panel);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border-top: 1px solid var(--panel-border);
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            z-index: 600;
-        }
-
-        .city-card {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 11px 18px;
-            border-right: 1px solid var(--panel-border);
-            transition: background 0.2s ease;
-            cursor: default;
-            min-width: 0;
-            overflow: hidden;
-        }
-        .city-card:last-child { border-right: none; }
-        .city-card:hover { background: rgba(90, 184, 200, 0.05); }
-
-        .city-card-header {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 5px;
-        }
-        .city-card-name {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 0.84rem;
-            font-weight: 700;
-            color: var(--amber);
-            letter-spacing: 0.02em;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .city-card-right {
+            height: var(--chyron-h);
+            background: linear-gradient(to bottom, rgba(3,6,34,0.98), rgba(2,4,26,0.99));
+            border-top: 1.5px solid var(--blue);
+            box-shadow: 0 -1px 0 rgba(48,200,212,0.08), 0 -8px 32px rgba(2,5,16,0.9);
             display: flex;
             align-items: center;
-            gap: 5px;
+            z-index: 600;
+            overflow: hidden;
+        }
+
+        .chyron-label {
+            background: var(--blue);
+            color: #ffffff;
+            font-family: 'VT323', monospace;
+            font-size: 0.95rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            padding: 0 16px;
+            height: 100%;
+            display: flex;
+            align-items: center;
             flex-shrink: 0;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 2px 0 12px rgba(56,136,200,0.4);
         }
-        .city-card-icon { font-size: 1rem; line-height: 1; }
-        .city-card-temp {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 1.08rem;
+
+        .chyron-scroll-mask {
+            flex: 1;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        /* left fade */
+        .chyron-scroll-mask::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 40px;
+            background: linear-gradient(to right, rgba(3,6,34,0.98), transparent);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .chyron-scroll {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            will-change: transform;
+        }
+
+        .chyron-city {
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            padding: 0 28px;
+        }
+        .chyron-city-name {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 0.88rem;
             font-weight: 700;
-            line-height: 1;
-            letter-spacing: -0.01em;
+            color: var(--amber);
+            letter-spacing: 0.04em;
+            margin-right: 10px;
+            text-shadow: var(--glow-amber);
         }
-        .city-card-desc {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.59rem;
-            color: var(--text-secondary);
-            letter-spacing: 0.02em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 2px;
+        .chyron-city-data {
+            font-family: 'VT323', monospace;
+            font-size: 1.0rem;
+            color: var(--text);
+            letter-spacing: 0.06em;
+            text-shadow: 0 0 8px rgba(184, 208, 240, 0.3);
         }
-        .city-card-meta {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.54rem;
+        .chyron-sep {
+            color: var(--teal);
+            font-family: 'VT323', monospace;
+            font-size: 1.0rem;
+            padding: 0 4px;
+            opacity: 0.6;
+            text-shadow: var(--glow-teal);
+        }
+        .chyron-divider {
+            color: var(--blue);
+            font-family: 'VT323', monospace;
+            font-size: 1.4rem;
+            opacity: 0.5;
+            padding: 0 8px;
+        }
+        .chyron-loading {
+            font-family: 'VT323', monospace;
+            font-size: 1.0rem;
             color: var(--text-dim);
-            letter-spacing: 0.02em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            letter-spacing: 0.18em;
+            padding: 0 20px;
+            animation: chyron-blink 1.4s ease-in-out infinite;
         }
-        .city-card-skeleton .city-card-temp {
-            color: var(--text-dim);
-            font-size: 0.7rem;
-            font-weight: 400;
+        @keyframes chyron-blink {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
         }
 
         /* ── ALERT BANNER ────────────────────────────────────── */
@@ -424,52 +555,47 @@
             position: fixed;
             top: var(--bar-h);
             left: 0; right: 0;
-            background: rgba(50, 12, 12, 0.90);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(255, 60, 40, 0.22);
-            color: #e88080;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.62rem;
-            font-weight: 500;
-            letter-spacing: 0.1em;
+            background: rgba(50, 8, 8, 0.95);
+            border-bottom: 1.5px solid rgba(255, 60, 40, 0.35);
+            box-shadow: 0 2px 20px rgba(232, 64, 64, 0.2);
+            color: #ff8888;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.14em;
             text-transform: uppercase;
-            padding: 8px 24px;
+            padding: 7px 22px;
             z-index: 650;
             display: none;
         }
         .alert-banner.visible { display: flex; align-items: center; gap: 10px; }
         .alert-icon {
-            color: #e06050;
-            font-size: 0.82rem;
-            animation: livepulse 1.2s ease-in-out infinite;
+            color: #ff5050;
+            font-size: 1rem;
+            animation: livepulse 1s ease-in-out infinite;
         }
 
         /* ── RESPONSIVE ──────────────────────────────────────── */
         @media (max-width: 900px) {
-            .city-card { padding: 9px 12px; }
-            .city-card-name { font-size: 0.74rem; }
-            .city-card-temp { font-size: 0.95rem; }
+            .chyron-city { padding: 0 18px; }
         }
         @media (max-width: 640px) {
-            :root { --cities-h: 72px; }
-            .top-bar { padding: 0 14px; }
+            .top-bar { padding: 0 12px; }
             .top-center { display: none; }
-            .logo-title { font-size: 0.92rem; }
-            #clock { font-size: 1rem; }
-            .controls { bottom: calc(var(--cities-h) + 10px); left: 10px; }
+            #clock { font-size: 1.4rem; }
+            .controls { bottom: calc(var(--chyron-h) + 8px); left: 8px; }
             .radar-legend { display: none; }
-            .cities-bar {
-                grid-template-columns: repeat(5, minmax(110px, 1fr));
-                overflow-x: auto;
-            }
-            .city-card-icon { display: none; }
+            .now-viewing { display: none; }
         }
     </style>
 </head>
 <body>
 
+    <!-- CRT effects layered bottom to top -->
+    <div class="scanlines"></div>
+    <div class="grain"></div>
     <div class="vignette"></div>
+    <div class="flicker-overlay"></div>
+
     <div id="map"></div>
 
     <!-- Alert banner -->
@@ -481,25 +607,31 @@
     <!-- Top bar -->
     <div class="top-bar">
         <div class="logo">
-            <span class="logo-icon">&#9928;</span>
+            <div class="logo-bug">&#9928;</div>
             <div class="logo-text">
                 <div class="logo-title">Weather Desk</div>
-                <div class="logo-sub">Ohio Doppler Radar</div>
+                <div class="logo-sub">Ohio Doppler</div>
             </div>
         </div>
 
         <div class="top-center">
             <div class="top-center-main">
                 <span class="live-dot"></span>
-                Data Dive Bar &middot; Local on the 8s
+                DATA DIVE BAR &bull; LOCAL ON THE 8s
             </div>
             <div class="top-center-sub" id="updated-display">&nbsp;</div>
         </div>
 
         <div class="clock-area">
-            <div id="clock">12:00:00 AM</div>
+            <div id="clock">12:00 AM</div>
             <div id="date-display">Loading&hellip;</div>
         </div>
+    </div>
+
+    <!-- Now Viewing overlay -->
+    <div class="now-viewing" id="now-viewing">
+        <div class="now-viewing-label">Now Viewing</div>
+        <div class="now-viewing-name" id="now-viewing-name">Ohio Overview</div>
     </div>
 
     <!-- Controls -->
@@ -534,24 +666,28 @@
         <source src="https://ice6.somafm.com/illstreet-128-mp3" type="audio/mpeg">
     </audio>
 
-    <!-- City conditions bar — all 5 cities always visible -->
-    <div class="cities-bar" id="cities-bar">
-        <!-- skeleton cards rendered immediately by JS -->
+    <!-- Scrolling chyron -->
+    <div class="chyron-bar">
+        <div class="chyron-label">Conditions</div>
+        <div class="chyron-scroll-mask">
+            <div class="chyron-scroll" id="chyron-scroll">
+                <span class="chyron-loading">Acquiring signal&hellip;</span>
+            </div>
+        </div>
     </div>
 
     <script>
     // ══════════════════════════════════════════════════════════════
     //  DATA DIVE BAR — WEATHER DESK — OHIO DOPPLER
+    //  90s Weather Channel ASMR Experience
     // ══════════════════════════════════════════════════════════════
 
-    const COLUMBUS           = [39.9612, -82.9988];
-    const DEFAULT_ZOOM       = 7;
-    const RADAR_REFRESH_MS   = 2.5 * 60 * 1000;
-    const ALERT_CHECK_MS     = 5  * 60 * 1000;
-    const WEATHER_REFRESH_MS = 10 * 60 * 1000;
-    const NWS_UA = 'DataDiveBarWeatherDesk/1.0 github.com/datadivebar';
+    var RADAR_REFRESH_MS   = 2.5 * 60 * 1000;
+    var ALERT_CHECK_MS     = 5   * 60 * 1000;
+    var WEATHER_REFRESH_MS = 10  * 60 * 1000;
+    var NWS_UA = 'DataDiveBarWeatherDesk/1.0 github.com/datadivebar';
 
-    const WEATHER_STATIONS = [
+    var WEATHER_STATIONS = [
         { id: 'KCMH', name: 'Columbus',   lat: 39.9612, lng: -82.9988 },
         { id: 'KCLE', name: 'Cleveland',  lat: 41.4993, lng: -81.6944 },
         { id: 'KCVG', name: 'Cincinnati', lat: 39.1031, lng: -84.5120 },
@@ -559,19 +695,41 @@
         { id: 'KAKR', name: 'Akron',      lat: 41.0814, lng: -81.5190 },
     ];
 
+    // ── CAMERA DIRECTOR ──────────────────────────────────────────
+    // Slow dreamy panning across Ohio — the heart of the ASMR experience
+    var CAMERA_SHOTS = [
+        { label: 'Ohio Overview',  lat: 40.4173, lng: -82.9071, zoom: 7,  dwell: 32000 },
+        { label: 'Columbus',       lat: 39.9612, lng: -82.9988, zoom: 9,  dwell: 22000 },
+        { label: 'Northeast Ohio', lat: 41.3,    lng: -81.2,   zoom: 8,  dwell: 26000 },
+        { label: 'Cleveland',      lat: 41.4993, lng: -81.6944, zoom: 9,  dwell: 22000 },
+        { label: 'Toledo',         lat: 41.6528, lng: -83.5379, zoom: 9,  dwell: 22000 },
+        { label: 'Northwest Ohio', lat: 41.2,    lng: -83.8,   zoom: 8,  dwell: 26000 },
+        { label: 'Cincinnati',     lat: 39.1031, lng: -84.5120, zoom: 9,  dwell: 22000 },
+        { label: 'Southwest Ohio', lat: 39.5,    lng: -84.1,   zoom: 8,  dwell: 26000 },
+        { label: 'Dayton',         lat: 39.7589, lng: -84.1916, zoom: 9,  dwell: 22000 },
+        { label: 'Akron / Canton', lat: 40.9,    lng: -81.55,  zoom: 9,  dwell: 22000 },
+        { label: 'Southeast Ohio', lat: 39.4,    lng: -82.0,   zoom: 8,  dwell: 26000 },
+    ];
+
+    var currentShot = 0;
+    var cameraTimer = null;
+    var nowViewingEl = document.getElementById('now-viewing');
+    var nowViewingName = document.getElementById('now-viewing-name');
+
     // ── MAP ──────────────────────────────────────────────────────
-    const map = L.map('map', {
-        center: COLUMBUS,
-        zoom: DEFAULT_ZOOM,
+    var map = L.map('map', {
+        center: [40.4173, -82.9071],
+        zoom: 7,
         zoomControl: false,
         attributionControl: false,
+        zoomAnimation: true,
+        fadeAnimation: true,
     });
 
-    // Custom pane for the base map so the brightness filter doesn't
-    // bleed into the radar overlay or city markers
+    // Basemap pane — keep dark map atmospheric, just slightly brighter
     map.createPane('basemapPane');
     map.getPane('basemapPane').style.zIndex = 150;
-    map.getPane('basemapPane').style.filter = 'brightness(1.9) contrast(1.15) saturate(0.85)';
+    map.getPane('basemapPane').style.filter = 'brightness(1.55) contrast(1.08) saturate(0.7) hue-rotate(10deg)';
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
@@ -580,7 +738,7 @@
     }).addTo(map);
 
     // ── RADAR LAYER ──────────────────────────────────────────────
-    const radarLayer = L.tileLayer(
+    var radarLayer = L.tileLayer(
         'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
         { opacity: 0.72, maxNativeZoom: 8, maxZoom: 19 }
     ).addTo(map);
@@ -595,25 +753,48 @@
     // ── RADAR CONTROLS ───────────────────────────────────────────
     document.querySelectorAll('#radar-seg .seg-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            document.querySelectorAll('#radar-seg .seg-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#radar-seg .seg-btn').forEach(function(b) { b.classList.remove('active'); });
             btn.classList.add('active');
             radarLayer.setOpacity(parseFloat(btn.dataset.opacity));
         });
     });
 
+    // ── CAMERA DIRECTOR ──────────────────────────────────────────
+    function showNowViewing(label) {
+        nowViewingName.textContent = label;
+        nowViewingEl.classList.add('visible');
+        setTimeout(function() { nowViewingEl.classList.remove('visible'); }, 4500);
+    }
+
+    function flyToShot(index) {
+        var shot = CAMERA_SHOTS[index];
+        map.flyTo([shot.lat, shot.lng], shot.zoom, {
+            duration: 3.5,
+            easeLinearity: 0.18,
+        });
+        showNowViewing(shot.label);
+        clearTimeout(cameraTimer);
+        cameraTimer = setTimeout(function() {
+            currentShot = (currentShot + 1) % CAMERA_SHOTS.length;
+            flyToShot(currentShot);
+        }, shot.dwell);
+    }
+
+    // Start camera after a short pause on load
+    setTimeout(function() { flyToShot(0); }, 4000);
+
     // ── CLOCK ────────────────────────────────────────────────────
-    const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const MONTHS = ['January','February','March','April','May','June',
-                    'July','August','September','October','November','December'];
+    var DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
 
     function updateClock() {
         var now = new Date();
         var h = now.getHours();
         var m = String(now.getMinutes()).padStart(2, '0');
-        var s = String(now.getSeconds()).padStart(2, '0');
         var ampm = h >= 12 ? 'PM' : 'AM';
         h = h % 12 || 12;
-        document.getElementById('clock').textContent = h + ':' + m + ':' + s + ' ' + ampm;
+        document.getElementById('clock').textContent = h + ':' + m + ' ' + ampm;
         document.getElementById('date-display').textContent =
             DAYS[now.getDay()] + ' \xB7 ' + MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
     }
@@ -622,31 +803,30 @@
 
     // ── CONDITION ICON ───────────────────────────────────────────
     function getConditionIcon(desc) {
-        if (!desc) return '\uD83C\uDF21\uFE0F'; // 🌡️
+        if (!desc) return '\uD83C\uDF21\uFE0F';
         var d = desc.toLowerCase();
-        if (d.includes('thunder') || d.includes('tstm'))              return '\u26C8\uFE0F'; // ⛈️
-        if (d.includes('blizzard'))                                    return '\u2744\uFE0F'; // ❄️
-        if (d.includes('snow') || d.includes('flurr'))                return '\uD83C\uDF28\uFE0F'; // 🌨️
-        if (d.includes('sleet') || d.includes('freezing rain'))       return '\uD83C\uDF27\uFE0F'; // 🌧️
-        if (d.includes('rain') || d.includes('shower') || d.includes('drizzle')) return '\uD83C\uDF27\uFE0F'; // 🌧️
-        if (d.includes('fog') || d.includes('mist') || d.includes('haze'))       return '\uD83C\uDF2B\uFE0F'; // 🌫️
-        if (d.includes('partly') || d.includes('mostly sunny'))       return '\u26C5'; // ⛅
-        if (d.includes('cloud') || d.includes('overcast'))            return '\u2601\uFE0F'; // ☁️
-        if (d.includes('clear') || d.includes('sunny') || d.includes('fair'))    return '\u2600\uFE0F'; // ☀️
-        if (d.includes('wind') || d.includes('breezy') || d.includes('gust'))    return '\uD83D\uDCA8'; // 💨
-        return '\uD83C\uDF21\uFE0F'; // 🌡️
+        if (d.includes('thunder') || d.includes('tstm'))              return '\u26C8\uFE0F';
+        if (d.includes('blizzard'))                                    return '\u2744\uFE0F';
+        if (d.includes('snow') || d.includes('flurr'))                return '\uD83C\uDF28\uFE0F';
+        if (d.includes('sleet') || d.includes('freezing'))            return '\uD83C\uDF27\uFE0F';
+        if (d.includes('rain') || d.includes('shower') || d.includes('drizzle')) return '\uD83C\uDF27\uFE0F';
+        if (d.includes('fog') || d.includes('mist') || d.includes('haze'))       return '\uD83C\uDF2B\uFE0F';
+        if (d.includes('partly') || d.includes('mostly sunny'))       return '\u26C5';
+        if (d.includes('cloud') || d.includes('overcast'))            return '\u2601\uFE0F';
+        if (d.includes('clear') || d.includes('sunny') || d.includes('fair'))    return '\u2600\uFE0F';
+        if (d.includes('wind') || d.includes('breezy') || d.includes('gust'))    return '\uD83D\uDCA8';
+        return '\uD83C\uDF21\uFE0F';
     }
 
     // ── TEMPERATURE COLOR ────────────────────────────────────────
-    // Cool → Neutral → Warm color scale for instant temperature triage
     function getTempColor(tempF) {
         if (tempF == null) return 'var(--text-dim)';
-        if (tempF < 20)  return '#7ab4f5'; // frigid – bright blue
-        if (tempF < 32)  return '#5ab8c8'; // freezing – cyan
-        if (tempF < 50)  return '#6dbdaa'; // cold – teal-green
-        if (tempF < 68)  return '#a8c87a'; // mild – green
-        if (tempF < 85)  return '#c9a84c'; // warm – amber
-        return '#e07050';                  // hot – orange
+        if (tempF < 20)  return '#7ab4f5';
+        if (tempF < 32)  return '#4ab8d8';
+        if (tempF < 50)  return '#5ab8aa';
+        if (tempF < 68)  return '#88c870';
+        if (tempF < 85)  return '#e4a83c';
+        return '#e87050';
     }
 
     // ── NWS ALERTS ───────────────────────────────────────────────
@@ -689,17 +869,15 @@
 
     // ── CITY MAP MARKERS ─────────────────────────────────────────
     function updateMapMarkers(data) {
-        cityMarkers.forEach(m => map.removeLayer(m));
+        cityMarkers.forEach(function(m) { map.removeLayer(m); });
         cityMarkers = [];
-
         WEATHER_STATIONS.forEach(function(station, i) {
             var d = data[i];
-            var tempF   = d ? d.tempF   : null;
-            var desc    = d ? d.desc    : '';
+            var tempF   = d ? d.tempF : null;
+            var desc    = d ? d.desc  : '';
             var tempStr = tempF != null ? tempF + '\xB0F' : '\u2014';
             var icon    = getConditionIcon(desc);
             var color   = getTempColor(tempF);
-
             var marker = L.marker([station.lat, station.lng], {
                 icon: L.divIcon({
                     className: '',
@@ -709,8 +887,8 @@
                           '<span class="city-marker-icon">' + icon + '</span>' +
                           '<span class="city-marker-temp" style="color:' + color + '">' + tempStr + '</span>' +
                           '</div></div>',
-                    iconSize: [90, 44],
-                    iconAnchor: [45, 22],
+                    iconSize: [88, 42],
+                    iconAnchor: [44, 21],
                 }),
                 interactive: false,
             }).addTo(map);
@@ -743,8 +921,8 @@
         }
         weatherData = results;
         lastUpdated = new Date();
-        renderCityCards(results);
         updateMapMarkers(results);
+        renderChyron(results);
         updateTimestamp();
     }
 
@@ -753,64 +931,81 @@
         var el = document.getElementById('updated-display');
         if (!el || !lastUpdated) return;
         var mins = Math.floor((Date.now() - lastUpdated.getTime()) / 60000);
-        el.textContent = mins < 1 ? 'Conditions updated just now' : 'Conditions updated ' + mins + ' min ago';
+        el.textContent = mins < 1 ? 'Conditions updated just now' : 'Updated ' + mins + ' min ago';
     }
     setInterval(updateTimestamp, 30000);
 
-    // ── CITY CARDS ───────────────────────────────────────────────
-    function renderCityCards(data) {
-        var bar = document.getElementById('cities-bar');
-        if (!bar) return;
-        bar.innerHTML = '';
+    // ── SCROLLING CHYRON ─────────────────────────────────────────
+    function renderChyron(data) {
+        var scroll = document.getElementById('chyron-scroll');
+        if (!scroll) return;
 
-        data.forEach(function(d) {
-            var card = document.createElement('div');
-            card.className = 'city-card';
+        // Build two copies for seamless loop
+        var html = '';
+        for (var pass = 0; pass < 2; pass++) {
+            data.forEach(function(d, i) {
+                var tempStr  = d.tempF != null ? d.tempF + '\xB0F' : '\u2014';
+                var color    = getTempColor(d.tempF);
+                var desc     = d.desc || 'No data';
+                var wind     = d.windMph != null
+                    ? (d.windDir ? d.windDir + ' ' : '') + d.windMph + ' mph'
+                    : 'Calm';
+                var humid    = d.humid != null ? d.humid + '%' : '\u2014';
+                var icon     = getConditionIcon(d.desc);
 
-            var icon    = getConditionIcon(d.desc);
-            var tempF   = d.tempF;
-            var tempStr = tempF != null ? tempF + '\xB0F' : '\u2014';
-            var color   = getTempColor(tempF);
-            var desc    = d.desc || '\u2014';
-            var wind    = d.windMph != null
-                ? (d.windDir ? d.windDir + '\u00A0' : '') + d.windMph + ' mph'
-                : 'Calm';
-            var metaParts = [];
-            if (d.humid != null) metaParts.push('Hum\u00A0' + d.humid + '%');
-            metaParts.push(wind);
-
-            card.innerHTML =
-                '<div class="city-card-header">' +
-                  '<span class="city-card-name">' + d.name + '</span>' +
-                  '<div class="city-card-right">' +
-                    '<span class="city-card-icon">' + icon + '</span>' +
-                    '<span class="city-card-temp" style="color:' + color + '">' + tempStr + '</span>' +
-                  '</div>' +
-                '</div>' +
-                '<div class="city-card-desc">' + desc + '</div>' +
-                '<div class="city-card-meta">' + metaParts.join(' \xB7 ') + '</div>';
-
-            bar.appendChild(card);
-        });
+                html +=
+                    '<span class="chyron-city">' +
+                    '<span class="chyron-city-name">' + d.name + '</span>' +
+                    '<span class="chyron-city-data">' + icon + ' ' +
+                    '<span style="color:' + color + '">' + tempStr + '</span>' +
+                    '<span class="chyron-sep"> · </span>' + desc +
+                    '<span class="chyron-sep"> · </span>Wind ' + wind +
+                    '<span class="chyron-sep"> · </span>Hum ' + humid +
+                    '</span>' +
+                    '</span>' +
+                    '<span class="chyron-divider">&#9475;</span>';
+            });
+        }
+        scroll.innerHTML = html;
+        startChyronAnimation(scroll);
     }
 
-    // Skeleton cards while data loads
-    (function initSkeletons() {
-        var bar = document.getElementById('cities-bar');
-        if (!bar) return;
-        WEATHER_STATIONS.forEach(function(s) {
-            var card = document.createElement('div');
-            card.className = 'city-card city-card-skeleton';
-            card.innerHTML =
-                '<div class="city-card-header">' +
-                  '<span class="city-card-name">' + s.name + '</span>' +
-                '</div>' +
-                '<div class="city-card-desc" style="color:var(--text-dim);letter-spacing:0.1em">Loading\u2026</div>';
-            bar.appendChild(card);
-        });
-    })();
+    var chyronAnimId = null;
+    var chyronPos = null;
 
-    // Initialize map markers with skeleton state
+    function startChyronAnimation(el) {
+        if (chyronAnimId) cancelAnimationFrame(chyronAnimId);
+
+        // pixels per second — slow and dreamy
+        var speed = 38;
+        var halfWidth = null;
+        var lastTime = null;
+
+        if (chyronPos === null) {
+            chyronPos = 0;
+        }
+
+        function animate(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            var delta = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            // Measure half-width on first frame after render
+            if (halfWidth === null) {
+                halfWidth = el.scrollWidth / 2;
+            }
+
+            chyronPos += speed * delta;
+            if (chyronPos >= halfWidth) {
+                chyronPos -= halfWidth;
+            }
+            el.style.transform = 'translateX(-' + chyronPos + 'px)';
+            chyronAnimId = requestAnimationFrame(animate);
+        }
+        chyronAnimId = requestAnimationFrame(animate);
+    }
+
+    // ── SKELETON MARKERS ─────────────────────────────────────────
     updateMapMarkers(WEATHER_STATIONS.map(function(s) {
         return { name: s.name, tempF: null, desc: '', humid: null, windMph: null, windDir: '' };
     }));
@@ -821,12 +1016,12 @@
     // ── AUDIO ────────────────────────────────────────────────────
     var audio    = document.getElementById('jazz-audio');
     var audioBtn = document.getElementById('audio-btn');
-    audio.volume = 0.4;
+    audio.volume = 0.38;
 
     function setAudioState(state) {
         var labels = {
             idle:    '\u266A Play Jazz',
-            playing: '\u266A Mute Jazz',
+            playing: '\u266A Mute',
             muted:   '\u266A Unmute',
             error:   '\u266A No Signal',
             loading: '\u266A Tuning\u2026',
