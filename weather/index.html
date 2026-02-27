@@ -661,9 +661,7 @@
 
     <!-- Audio -->
     <!-- Jazz24 (KNKX): public radio smooth jazz -->
-    <audio id="jazz-audio" preload="none">
-        <source src="https://playerservices.streamtheworld.com/api/livestream-redirect/JAZZ24.mp3" type="audio/mpeg">
-    </audio>
+    <audio id="jazz-audio" preload="none"></audio>
 
     <!-- Scrolling chyron -->
     <div class="chyron-bar">
@@ -1017,6 +1015,13 @@
     var audioBtn = document.getElementById('audio-btn');
     audio.volume = 0.38;
 
+    var jazz24Streams = [
+        'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',
+        'https://live.amperwave.net/direct/ppm-jazz24aac256-ibc1',
+        'https://playerservices.streamtheworld.com/api/livestream-redirect/JAZZ24.mp3',
+    ];
+    var streamIndex = 0;
+
     function setAudioState(state) {
         var labels = {
             idle:    '\u266A Play Sax',
@@ -1029,23 +1034,40 @@
         audioBtn.classList.toggle('active', state === 'playing');
     }
 
-    function tryPlay() {
+    function tryPlay(index) {
+        index = index || 0;
+        streamIndex = index;
         setAudioState('loading');
+        audio.src = jazz24Streams[index];
         audio.load();
         audio.play()
             .then(function() { setAudioState('playing'); })
             .catch(function(e) {
-                setAudioState(e.name === 'NotAllowedError' ? 'idle' : 'error');
+                if (e.name === 'NotAllowedError') {
+                    setAudioState('idle');
+                } else if (index + 1 < jazz24Streams.length) {
+                    tryPlay(index + 1);
+                } else {
+                    setAudioState('error');
+                }
             });
     }
 
-    audio.addEventListener('error', function() { if (audio.paused) setAudioState('error'); });
+    audio.addEventListener('error', function() {
+        if (audio.paused) {
+            if (streamIndex + 1 < jazz24Streams.length) {
+                tryPlay(streamIndex + 1);
+            } else {
+                setAudioState('error');
+            }
+        }
+    });
 
     audioBtn.addEventListener('click', function() {
-        if (audio.error || audio.readyState === 0) {
-            tryPlay();
+        if (!audio.src || audio.error || audio.readyState === 0) {
+            tryPlay(0);
         } else if (audio.paused) {
-            tryPlay();
+            tryPlay(streamIndex);
         } else if (audio.muted) {
             audio.muted = false;
             setAudioState('playing');
