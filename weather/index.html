@@ -661,9 +661,7 @@
 
     <!-- Audio -->
     <!-- Jazz24 (KNKX): public radio smooth jazz -->
-    <audio id="jazz-audio" preload="none">
-        <source src="https://playerservices.streamtheworld.com/api/livestream-redirect/JAZZ24.mp3" type="audio/mpeg">
-    </audio>
+    <audio id="jazz-audio" preload="none"></audio>
 
     <!-- Scrolling chyron -->
     <div class="chyron-bar">
@@ -697,17 +695,35 @@
     // ── CAMERA DIRECTOR ──────────────────────────────────────────
     // Slow dreamy panning across Ohio — the heart of the ASMR experience
     var CAMERA_SHOTS = [
-        { label: 'Ohio Overview',  lat: 40.4173, lng: -82.9071, zoom: 7,  dwell: 32000 },
-        { label: 'Columbus',       lat: 39.9612, lng: -82.9988, zoom: 9,  dwell: 22000 },
-        { label: 'Northeast Ohio', lat: 41.3,    lng: -81.2,   zoom: 8,  dwell: 26000 },
-        { label: 'Cleveland',      lat: 41.4993, lng: -81.6944, zoom: 9,  dwell: 22000 },
-        { label: 'Toledo',         lat: 41.6528, lng: -83.5379, zoom: 9,  dwell: 22000 },
-        { label: 'Northwest Ohio', lat: 41.2,    lng: -83.8,   zoom: 8,  dwell: 26000 },
-        { label: 'Cincinnati',     lat: 39.1031, lng: -84.5120, zoom: 9,  dwell: 22000 },
-        { label: 'Southwest Ohio', lat: 39.5,    lng: -84.1,   zoom: 8,  dwell: 26000 },
-        { label: 'Dayton',         lat: 39.7589, lng: -84.1916, zoom: 9,  dwell: 22000 },
-        { label: 'Akron / Canton', lat: 40.9,    lng: -81.55,  zoom: 9,  dwell: 22000 },
-        { label: 'Southeast Ohio', lat: 39.4,    lng: -82.0,   zoom: 8,  dwell: 26000 },
+        // ── Ohio statewide passes ──────────────────────────────────
+        { label: 'Ohio Overview',         lat: 40.4173, lng: -82.9071, zoom: 7,  dwell: 32000 },
+
+        // ── Greater Columbus Metro — Dayton ↔ Zanesville / Mansfield ↔ Chillicothe ──
+        { label: 'Central Ohio Corridor', lat: 39.96,   lng: -83.30,  zoom: 8,  dwell: 28000 },
+        { label: 'Columbus',              lat: 39.9612, lng: -82.9988, zoom: 10, dwell: 22000 },
+        { label: 'Columbus — Downtown',   lat: 39.9600, lng: -83.0007, zoom: 12, dwell: 18000 },
+        { label: 'Worthington / Dublin',  lat: 40.0900, lng: -83.0680, zoom: 11, dwell: 18000 },
+        { label: 'Westerville / Easton',  lat: 40.1000, lng: -82.9000, zoom: 11, dwell: 18000 },
+        { label: 'Grove City / Hilliard', lat: 39.8800, lng: -83.0750, zoom: 11, dwell: 18000 },
+        { label: 'Pickerington / Canal',  lat: 39.9000, lng: -82.7600, zoom: 11, dwell: 18000 },
+        { label: 'Newark',                lat: 40.0584, lng: -82.4013, zoom: 10, dwell: 20000 },
+        { label: 'Zanesville',            lat: 39.9403, lng: -82.0132, zoom: 10, dwell: 20000 },
+        { label: 'Mansfield',             lat: 40.7584, lng: -82.5154, zoom: 10, dwell: 20000 },
+        { label: 'Lancaster',             lat: 39.7137, lng: -82.5996, zoom: 10, dwell: 18000 },
+        { label: 'Chillicothe',           lat: 39.3331, lng: -82.9824, zoom: 10, dwell: 20000 },
+        { label: 'Springfield',           lat: 39.9242, lng: -83.8088, zoom: 10, dwell: 18000 },
+        { label: 'Dayton',                lat: 39.7589, lng: -84.1916, zoom: 10, dwell: 22000 },
+        { label: 'Dayton — Downtown',     lat: 39.7590, lng: -84.1920, zoom: 12, dwell: 18000 },
+
+        // ── Rest of Ohio ───────────────────────────────────────────
+        { label: 'Northeast Ohio',        lat: 41.3,    lng: -81.2,   zoom: 8,  dwell: 26000 },
+        { label: 'Cleveland',             lat: 41.4993, lng: -81.6944, zoom: 9,  dwell: 22000 },
+        { label: 'Akron / Canton',        lat: 40.9,    lng: -81.55,  zoom: 9,  dwell: 22000 },
+        { label: 'Toledo',                lat: 41.6528, lng: -83.5379, zoom: 9,  dwell: 22000 },
+        { label: 'Northwest Ohio',        lat: 41.2,    lng: -83.8,   zoom: 8,  dwell: 26000 },
+        { label: 'Cincinnati',            lat: 39.1031, lng: -84.5120, zoom: 9,  dwell: 22000 },
+        { label: 'Southwest Ohio',        lat: 39.5,    lng: -84.1,   zoom: 8,  dwell: 26000 },
+        { label: 'Southeast Ohio',        lat: 39.4,    lng: -82.0,   zoom: 8,  dwell: 26000 },
     ];
 
     var currentShot = 0;
@@ -1017,6 +1033,13 @@
     var audioBtn = document.getElementById('audio-btn');
     audio.volume = 0.38;
 
+    var jazz24Streams = [
+        'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',
+        'https://live.amperwave.net/direct/ppm-jazz24aac256-ibc1',
+        'https://playerservices.streamtheworld.com/api/livestream-redirect/JAZZ24.mp3',
+    ];
+    var streamIndex = 0;
+
     function setAudioState(state) {
         var labels = {
             idle:    '\u266A Play Sax',
@@ -1029,23 +1052,40 @@
         audioBtn.classList.toggle('active', state === 'playing');
     }
 
-    function tryPlay() {
+    function tryPlay(index) {
+        index = index || 0;
+        streamIndex = index;
         setAudioState('loading');
+        audio.src = jazz24Streams[index];
         audio.load();
         audio.play()
             .then(function() { setAudioState('playing'); })
             .catch(function(e) {
-                setAudioState(e.name === 'NotAllowedError' ? 'idle' : 'error');
+                if (e.name === 'NotAllowedError') {
+                    setAudioState('idle');
+                } else if (index + 1 < jazz24Streams.length) {
+                    tryPlay(index + 1);
+                } else {
+                    setAudioState('error');
+                }
             });
     }
 
-    audio.addEventListener('error', function() { if (audio.paused) setAudioState('error'); });
+    audio.addEventListener('error', function() {
+        if (audio.paused) {
+            if (streamIndex + 1 < jazz24Streams.length) {
+                tryPlay(streamIndex + 1);
+            } else {
+                setAudioState('error');
+            }
+        }
+    });
 
     audioBtn.addEventListener('click', function() {
-        if (audio.error || audio.readyState === 0) {
-            tryPlay();
+        if (!audio.src || audio.error || audio.readyState === 0) {
+            tryPlay(0);
         } else if (audio.paused) {
-            tryPlay();
+            tryPlay(streamIndex);
         } else if (audio.muted) {
             audio.muted = false;
             setAudioState('playing');
