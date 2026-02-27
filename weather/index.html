@@ -567,6 +567,58 @@
             z-index: 650;
             display: none;
         }
+
+        /* ── SPLASH SCREEN ───────────────────────────────────────── */
+        #splash {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(2, 5, 16, 0.92);
+            cursor: pointer;
+            gap: 18px;
+            transition: opacity 0.6s ease;
+        }
+        #splash.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .splash-logo {
+            font-size: 2.8rem;
+            opacity: 0.6;
+        }
+        .splash-title {
+            font-family: 'VT323', monospace;
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            color: var(--teal);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            text-shadow: var(--glow-teal);
+        }
+        .splash-sub {
+            font-family: 'VT323', monospace;
+            font-size: clamp(1rem, 3vw, 1.35rem);
+            color: var(--text-secondary);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .splash-cta {
+            margin-top: 24px;
+            font-family: 'VT323', monospace;
+            font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+            color: var(--amber-bright);
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            animation: splash-pulse 1.6s ease-in-out infinite;
+            text-shadow: 0 0 12px rgba(240, 192, 96, 0.7);
+        }
+        @keyframes splash-pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.35; }
+        }
         .alert-banner.visible { display: flex; align-items: center; gap: 10px; }
         .alert-icon {
             color: #ff5050;
@@ -592,6 +644,14 @@
 
     <!-- CRT effects layered bottom to top -->
     <div class="scanlines"></div>
+    <!-- Splash screen — satisfies browser autoplay gate for audio + animations -->
+    <div id="splash">
+        <div class="splash-logo">&#9928;</div>
+        <div class="splash-title">Weather Desk</div>
+        <div class="splash-sub">Ohio Doppler &bull; Data Dive Bar</div>
+        <div class="splash-cta">Tap to Tune In</div>
+    </div>
+
     <div class="grain"></div>
     <div class="vignette"></div>
     <div class="flicker-overlay"></div>
@@ -795,8 +855,7 @@
         }, shot.dwell);
     }
 
-    // Start camera after a short pause on load
-    setTimeout(function() { flyToShot(0); }, 4000);
+    // Camera starts via splash dismiss (see below)
 
     // ── CLOCK ────────────────────────────────────────────────────
     var DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1113,16 +1172,20 @@
         }
     });
 
-    // Try autoplay immediately on load.
-    // Browsers often block this without prior interaction — if blocked,
-    // retry automatically on the first user click anywhere on the page.
-    tryPlay(0);
-    document.addEventListener('click', function() {
-        if (autoplayBlocked) {
-            autoplayBlocked = false;
-            tryPlay(0);
-        }
-    }, { once: true });
+    // ── SPLASH DISMISS ───────────────────────────────────────────
+    // The splash screen acts as the user-gesture gate required by browsers
+    // before audio can autoplay. Dismissing it starts both audio and camera.
+    var splash = document.getElementById('splash');
+    function startExperience() {
+        splash.classList.add('fade-out');
+        splash.addEventListener('transitionend', function() {
+            splash.style.display = 'none';
+        }, { once: true });
+        flyToShot(0);
+        tryPlay(0);
+    }
+    splash.addEventListener('click', startExperience, { once: true });
+    splash.addEventListener('touchend', startExperience, { once: true });
 
     </script>
 </body>
