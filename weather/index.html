@@ -660,7 +660,7 @@
     </div>
 
     <!-- Audio -->
-    <!-- SomaFM Ill Street Blues: smooth jazz/blues, free, no key required -->
+    <!-- Jazz24 (KNKX Seattle): smooth jazz, free, no key required -->
     <audio id="jazz-audio" preload="none"></audio>
 
     <!-- Scrolling chyron -->
@@ -1033,12 +1033,16 @@
     var audioBtn = document.getElementById('audio-btn');
     audio.volume = 0.38;
 
-    // SomaFM Ill Street Blues — smooth jazz/blues, free, no API key needed
+    // Jazz24 (KNKX Seattle) — smooth jazz, confirmed working CDN URLs
+    // amperwave.net = Jazz24's official streaming CDN (confirmed Oct 2023)
+    // audiocdn.com  = URLs from jazz24.org's own web player
+    // WBGO fallback = Jazz 88.3 Newark (official stream URLs)
     var streams = [
-        'https://ice6.somafm.com/illstreet-128-mp3',
-        'https://ice2.somafm.com/illstreet-128-mp3',
-        'https://ice4.somafm.com/illstreet-128-mp3',
-        'https://ice1.somafm.com/illstreet-128-mp3',
+        'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',
+        'https://live.amperwave.net/direct/ppm-jazz24aac256-ibc1',
+        'https://knkx-live-a.edge.audiocdn.com/6285_128k',
+        'https://knkx-live-a.edge.audiocdn.com/6285_256k',
+        'https://ais-sa8.cdnstream1.com/3629_128.mp3',
     ];
     var streamIndex = 0;
     var isPlaying = false;
