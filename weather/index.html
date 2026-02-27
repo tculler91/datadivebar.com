@@ -645,7 +645,7 @@
                 <button class="seg-btn" data-opacity="0">Off</button>
             </div>
         </div>
-        <button class="audio-btn" id="audio-btn">&#9834; Play Jazz</button>
+        <button class="audio-btn" id="audio-btn">&#9834; Play Sax</button>
     </div>
 
     <!-- Radar legend -->
@@ -660,10 +660,13 @@
     </div>
 
     <!-- Audio -->
+    <!-- SomaFM Secret Agent: smooth spy jazz, heavy saxophone -->
+    <!-- Jazz24 (KNKX): public radio smooth jazz fallback -->
     <audio id="jazz-audio" preload="none">
-        <source src="https://ice1.somafm.com/illstreet-128-mp3" type="audio/mpeg">
-        <source src="https://ice3.somafm.com/illstreet-128-mp3" type="audio/mpeg">
-        <source src="https://ice6.somafm.com/illstreet-128-mp3" type="audio/mpeg">
+        <source src="https://ice1.somafm.com/secretagent-128-mp3" type="audio/mpeg">
+        <source src="https://ice3.somafm.com/secretagent-128-mp3" type="audio/mpeg">
+        <source src="https://ice6.somafm.com/secretagent-128-mp3" type="audio/mpeg">
+        <source src="https://playerservices.streamtheworld.com/api/livestream-redirect/JAZZ24.mp3" type="audio/mpeg">
     </audio>
 
     <!-- Scrolling chyron -->
@@ -1020,7 +1023,7 @@
 
     function setAudioState(state) {
         var labels = {
-            idle:    '\u266A Play Jazz',
+            idle:    '\u266A Play Sax',
             playing: '\u266A Mute',
             muted:   '\u266A Unmute',
             error:   '\u266A No Signal',
