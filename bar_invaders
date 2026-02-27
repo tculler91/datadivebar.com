@@ -361,34 +361,54 @@
   <button id="fire-btn">FIRE</button>
 </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<!-- Supabase SDK (cloud leaderboard) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <script>
 // ============================================================
-// FIREBASE CONFIG - Replace with your own Firebase project config
+// LEADERBOARD CONFIG — Supabase (free, persistent, no rules BS)
 // ============================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyBVF9fWoOc1hJGeGsv_TLqEHCG-yq5sDlQ",
-  authDomain: "datadivebar-barcade.firebaseapp.com",
-  databaseURL: "https://datadivebar-barcade-default-rtdb.firebaseio.com",
-  projectId: "datadivebar-barcade",
-  storageBucket: "datadivebar-barcade.firebasestorage.app",
-  messagingSenderId: "392110535492",
-  appId: "1:392110535492:web:45c32335b7294181b75d11",
-  measurementId: "G-12XWE1EFJG"
-}
-;
+// One-time setup (5 min):
+//
+//  1. Create a FREE project at https://supabase.com
+//
+//  2. In your project's SQL Editor, run:
+//
+//       CREATE TABLE bar_invaders_scores (
+//         id          BIGSERIAL PRIMARY KEY,
+//         name        TEXT    NOT NULL,
+//         score       INTEGER NOT NULL,
+//         wave        INTEGER NOT NULL,
+//         timestamp   BIGINT  NOT NULL,
+//         created_at  TIMESTAMPTZ DEFAULT NOW()
+//       );
+//       ALTER TABLE bar_invaders_scores ENABLE ROW LEVEL SECURITY;
+//       CREATE POLICY "public read"
+//         ON bar_invaders_scores FOR SELECT USING (true);
+//       CREATE POLICY "public insert"
+//         ON bar_invaders_scores FOR INSERT WITH CHECK (true);
+//
+//  3. Go to Project Settings > API and paste your values below:
+// ============================================================
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';        // https://xxxx.supabase.co
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';   // eyJhbGci...
 
-let db = null;
-let firebaseReady = false;
+let sbClient   = null;
+let cloudReady = false;
 try {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-  firebaseReady = !firebaseConfig.apiKey.startsWith("YOUR_");
+  if (!SUPABASE_URL.startsWith('YOUR_')) {
+    sbClient   = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    cloudReady = true;
+  }
 } catch(e) {
-  console.warn("Firebase not configured. Leaderboard will use local storage fallback.");
+  console.warn('Supabase init failed — using localStorage fallback:', e);
+}
+
+// Flush any scores that were queued while offline
+const _pending = JSON.parse(localStorage.getItem('barInvadersPending') || '[]');
+if (cloudReady && _pending.length > 0) {
+  sbClient.from('bar_invaders_scores').insert(_pending)
+    .then(({ error }) => { if (!error) localStorage.removeItem('barInvadersPending'); });
 }
 
 // ============================================================
@@ -1392,7 +1412,7 @@ function gameLoop() {
 }
 
 // ============================================================
-// LEADERBOARD (Firebase + Local Fallback)
+// LEADERBOARD (Supabase cloud + localStorage fallback)
 // ============================================================
 async function submitScore(name, scoreVal, waveVal) {
   const entry = {
@@ -1402,16 +1422,29 @@ async function submitScore(name, scoreVal, waveVal) {
     timestamp: Date.now()
   };
 
-  if (firebaseReady) {
+  saveLocalScore(entry); // always persist locally as a backup
+
+  if (cloudReady) {
     try {
-      const ref = db.ref('barInvadersScores');
-      await ref.push(entry);
+      const { error } = await sbClient.from('bar_invaders_scores').insert(entry);
+      if (error) throw error;
+      // Success — flush any previously queued offline scores too
+      const pending = JSON.parse(localStorage.getItem('barInvadersPending') || '[]');
+      if (pending.length > 0) {
+        const { error: flushErr } = await sbClient.from('bar_invaders_scores').insert(pending);
+        if (!flushErr) localStorage.removeItem('barInvadersPending');
+      }
     } catch(e) {
-      console.warn('Firebase write failed, using local storage', e);
-      saveLocalScore(entry);
+      console.warn('Cloud write failed — queuing for later sync:', e);
+      const pending = JSON.parse(localStorage.getItem('barInvadersPending') || '[]');
+      pending.push(entry);
+      localStorage.setItem('barInvadersPending', JSON.stringify(pending));
     }
   } else {
-    saveLocalScore(entry);
+    // Cloud not configured — queue so it syncs if credentials are added later
+    const pending = JSON.parse(localStorage.getItem('barInvadersPending') || '[]');
+    pending.push(entry);
+    localStorage.setItem('barInvadersPending', JSON.stringify(pending));
   }
 }
 
@@ -1423,15 +1456,17 @@ function saveLocalScore(entry) {
 }
 
 async function getLeaderboard() {
-  if (firebaseReady) {
+  if (cloudReady) {
     try {
-      const ref = db.ref('barInvadersScores');
-      const snapshot = await ref.orderByChild('score').limitToLast(20).once('value');
-      const scores = [];
-      snapshot.forEach(child => scores.push(child.val()));
-      return scores.sort((a, b) => b.score - a.score);
+      const { data, error } = await sbClient
+        .from('bar_invaders_scores')
+        .select('name, score, wave, timestamp')
+        .order('score', { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data || [];
     } catch(e) {
-      console.warn('Firebase read failed, using local storage', e);
+      console.warn('Cloud read failed — using local scores:', e);
       return getLocalLeaderboard();
     }
   }
@@ -1447,10 +1482,17 @@ function getLocalLeaderboard() {
 async function showLeaderboard(highlightName = null) {
   const scores = await getLeaderboard();
   const table = document.getElementById('lb-table');
+
+  const statusColor = cloudReady ? 'var(--neon-green)' : '#8a7a5a';
+  const statusText  = cloudReady
+    ? '&#x2601; GLOBAL LEADERBOARD'
+    : '&#x1F4BE; LOCAL ONLY &mdash; see code comments to enable cloud';
+  const statusBar = `<div style="text-align:center;font-family:'Press Start 2P';font-size:6px;padding:2px 0 10px;color:${statusColor};">${statusText}</div>`;
+
   if (scores.length === 0) {
-    table.innerHTML = '<div style="text-align:center;padding:20px;color:#8a7a5a;font-family:\'Press Start 2P\';font-size:9px;">NO SCORES YET<br><br>BE THE FIRST!</div>';
+    table.innerHTML = statusBar + '<div style="text-align:center;padding:20px;color:#8a7a5a;font-family:\'Press Start 2P\';font-size:9px;">NO SCORES YET<br><br>BE THE FIRST!</div>';
   } else {
-    table.innerHTML = scores.map((s, i) => {
+    table.innerHTML = statusBar + scores.map((s, i) => {
       const highlight = highlightName && s.name === highlightName.toUpperCase() ? ' highlight' : '';
       return `<div class="lb-row${highlight}">
         <span class="lb-rank">${i + 1}.</span>
