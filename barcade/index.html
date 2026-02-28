@@ -161,6 +161,35 @@
     text-shadow: 0 0 5px rgba(255, 234, 0, 0.4);
   }
 
+  /* Victory */
+  #victory-panel {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  #victory-panel .v-title {
+    font-family: 'Jacquard 12', serif;
+    font-size: 52px;
+    color: var(--neon-yellow);
+    text-shadow: 0 0 20px rgba(255, 234, 0, 0.9), 0 0 50px rgba(255, 234, 0, 0.5);
+    animation: flicker 1.5s infinite alternate;
+  }
+  #victory-panel .v-sub {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--neon-green);
+    text-shadow: 0 0 8px rgba(57, 255, 20, 0.6);
+    text-align: center;
+    line-height: 1.8;
+  }
+  #victory-panel .v-score {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: var(--neon-green);
+    text-shadow: 0 0 8px rgba(57, 255, 20, 0.6);
+  }
+
   /* Game Over specific */
   #game-over-panel {
     display: none;
@@ -343,6 +372,16 @@
       </div>
       <button class="start-btn" id="submit-score-btn">SUBMIT & PLAY AGAIN</button>
       <button class="start-btn" style="font-size:9px;padding:8px 20px;margin-top:4px;color:var(--neon-yellow);border-color:var(--neon-yellow);box-shadow:0 0 10px rgba(255,234,0,0.2);text-shadow:0 0 6px rgba(255,234,0,0.4);" id="view-lb-btn">VIEW LEADERBOARD</button>
+    </div>
+    <div id="victory-panel">
+      <div class="v-title">YOU WIN!</div>
+      <div class="v-sub">ALL 100 WAVES CLEARED<br>THE DIVE BAR IS SAFE</div>
+      <div class="v-score">SCORE: <span id="victory-score-val">0</span></div>
+      <div class="name-entry" style="margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <label style="font-family:'Press Start 2P';font-size:9px;color:var(--neon-yellow);text-shadow:0 0 6px rgba(255,234,0,0.4);">ENTER YOUR NAME</label>
+        <input type="text" id="victory-name" maxlength="8" placeholder="--------" autocomplete="off" spellcheck="false" style="font-family:'Press Start 2P';font-size:16px;width:180px;text-align:center;padding:8px;background:rgba(0,0,0,0.6);border:2px solid var(--neon-yellow);color:var(--neon-yellow);text-shadow:0 0 6px rgba(255,234,0,0.5);box-shadow:0 0 10px rgba(255,234,0,0.2);border-radius:2px;outline:none;text-transform:uppercase;letter-spacing:4px;">
+      </div>
+      <button class="start-btn" id="victory-submit-btn">SUBMIT & PLAY AGAIN</button>
     </div>
     <div id="leaderboard-panel">
       <div class="lb-title">TOP 20</div>
@@ -734,8 +773,14 @@ function spawnWave(waveNum) {
   const startX = (W - (cols - 1) * spacing) / 2;
   const startY = 50;
 
+  // Two-phase scaling: waves 1-8 use the original formula exactly;
+  // waves 9-100 continue at a gentler rate to extend the challenge.
+  const w8 = Math.min(waveNum, 8);
+  const wOver8 = Math.max(0, waveNum - 8);
+  const hpBonus = Math.floor(w8 / 6) + Math.floor(wOver8 / 12);
+
   for (let r = 0; r < rows; r++) {
-    // Harder types in back rows, scale with wave
+    // Original type breakpoints preserved exactly through wave 8
     let typeIndex;
     if (waveNum <= 2) typeIndex = Math.min(r, 1);
     else if (waveNum <= 5) typeIndex = Math.min(r, 2);
@@ -748,19 +793,21 @@ function spawnWave(waveNum) {
     for (let c = 0; c < cols; c++) {
       enemies.push({
         type, x: startX + c * spacing, y: startY + r * 38,
-        w: base.w, h: base.h, hp: base.hp + Math.floor(waveNum / 6),
-        maxHp: base.hp + Math.floor(waveNum / 6),
-        points: base.points + waveNum * 2,
+        w: base.w, h: base.h, hp: base.hp + hpBonus,
+        maxHp: base.hp + hpBonus,
+        points: base.points + waveNum * 5,
         alive: true, frame: Math.random() * 100
       });
     }
   }
 
-  // Movement pattern
+  // Wave 8 matches original exactly; beyond wave 8 each axis scales more gently.
+  // speed:    original 0.08/wave → 0.025/wave after wave 8
+  // fireRate: original -3/wave   → -0.3/wave  after wave 8  (min 8 frames)
   enemyDir = 1;
-  enemySpeed = 0.4 + waveNum * 0.08;
+  enemySpeed = 0.4 + w8 * 0.08 + wOver8 * 0.025;
   enemyDropSpeed = 0;
-  enemyFireRate = Math.max(15, 60 - waveNum * 3);
+  enemyFireRate = Math.max(8, 60 - w8 * 3 - wOver8 * 0.3);
   enemyFireTimer = 0;
 }
 
@@ -1032,7 +1079,7 @@ function update() {
       const dx = player.x - shooter.x;
       const dy = player.y - shooter.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const speed = 2.5 + wave * 0.15;
+      const speed = 2.5 + Math.min(wave, 8) * 0.15 + Math.max(0, wave - 8) * 0.03;
       enemyBullets.push({
         x: shooter.x, y: shooter.y + 10,
         vx: (dx / dist) * speed * (0.8 + Math.random() * 0.4),
@@ -1132,16 +1179,25 @@ function update() {
 
   // Wave complete check
   if (aliveEnemies.length === 0 && waveTransition <= 0) {
-    wave++;
-    waveTransition = 120;
-    waveTransitionText = `WAVE ${wave}`;
-    audio.play('wave');
-    updateHUD();
     // Bonus for completing wave
     const waveBonus = wave * 100;
     score += waveBonus;
     showFloatingText(W/2, H/2 + 30, `WAVE BONUS +${waveBonus}`, '#ffea00', 12);
     updateHUD();
+
+    if (wave >= 100) {
+      // Victory — all 100 waves cleared
+      waveTransition = 120;
+      waveTransitionText = 'YOU WIN!';
+      audio.play('wave');
+      setTimeout(() => victory(), 2100);
+    } else {
+      wave++;
+      waveTransition = 120;
+      waveTransitionText = `WAVE ${wave}`;
+      audio.play('wave');
+      updateHUD();
+    }
   }
 
   if (waveTransition > 0) {
@@ -1176,6 +1232,21 @@ function gameOver() {
   const overlay = document.getElementById('overlay');
   overlay.classList.remove('hidden');
   const nameInput = document.getElementById('player-name');
+  nameInput.value = lastPlayerName;
+  setTimeout(() => nameInput.focus(), 100);
+}
+
+function victory() {
+  state = 'gameover';
+  audio.play('bonus');
+  document.getElementById('victory-score-val').textContent = score;
+  document.getElementById('title-panel').style.display = 'none';
+  document.getElementById('game-over-panel').style.display = 'none';
+  document.getElementById('victory-panel').style.display = 'flex';
+  document.getElementById('leaderboard-panel').style.display = 'none';
+  const overlay = document.getElementById('overlay');
+  overlay.classList.remove('hidden');
+  const nameInput = document.getElementById('victory-name');
   nameInput.value = lastPlayerName;
   setTimeout(() => nameInput.focus(), 100);
 }
@@ -1562,6 +1633,25 @@ document.getElementById('player-name').addEventListener('keydown', e => {
 
 // Prevent game keys while typing name
 document.getElementById('player-name').addEventListener('keyup', e => e.stopPropagation());
+
+// Victory submit
+document.getElementById('victory-submit-btn').addEventListener('click', async () => {
+  const name = document.getElementById('victory-name').value.trim() || 'ANON';
+  lastPlayerName = name;
+  localStorage.setItem('barInvadersName', name);
+  await submitScore(name, score, wave);
+  audio.init();
+  resetGame();
+  state = 'playing';
+  document.getElementById('victory-panel').style.display = 'none';
+  document.getElementById('overlay').classList.add('hidden');
+});
+
+document.getElementById('victory-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('victory-submit-btn').click();
+  e.stopPropagation();
+});
+document.getElementById('victory-name').addEventListener('keyup', e => e.stopPropagation());
 
 // Start the loop
 gameLoop();
