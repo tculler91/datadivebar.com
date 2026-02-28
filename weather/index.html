@@ -9,6 +9,8 @@
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet.heat for traffic jam heatmap -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 
     <!-- Fonts: VT323 for that CRT terminal glow, Playfair for city names -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -626,6 +628,93 @@
             animation: livepulse 1s ease-in-out infinite;
         }
 
+        /* ── TRAFFIC MARKERS ─────────────────────────────────── */
+        .traffic-marker {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            background: rgba(4, 8, 42, 0.9);
+            line-height: 1;
+            cursor: pointer;
+        }
+        .traffic-marker.police   { border-color: #3888c8; box-shadow: 0 0 8px rgba(56,136,200,0.8), 0 0 20px rgba(56,136,200,0.3); }
+        .traffic-marker.accident { border-color: #e84040; box-shadow: 0 0 8px rgba(232,64,64,0.8), 0 0 20px rgba(232,64,64,0.3); }
+        .traffic-marker.hazard   { border-color: #e4a83c; box-shadow: 0 0 8px rgba(228,168,60,0.8), 0 0 20px rgba(228,168,60,0.3); }
+        .traffic-marker.closure  { border-color: #e87050; box-shadow: 0 0 8px rgba(232,112,80,0.8), 0 0 20px rgba(232,112,80,0.3); }
+
+        /* ── LEAFLET POPUP (dark theme) ───────────────────────── */
+        .leaflet-popup-content-wrapper {
+            background: rgba(4, 8, 42, 0.96);
+            border: 1px solid rgba(48, 148, 220, 0.35);
+            border-radius: 3px;
+            padding: 0;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.85), 0 0 12px rgba(48,136,200,0.15);
+            color: var(--text);
+        }
+        .leaflet-popup-content {
+            margin: 8px 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            line-height: 1.5;
+        }
+        .leaflet-popup-tip-container { display: none; }
+        .leaflet-popup-close-button { display: none; }
+
+        /* ── TRAFFIC LEGEND ──────────────────────────────────── */
+        .traffic-legend {
+            position: fixed;
+            bottom: calc(var(--chyron-h) + 92px);
+            right: 14px;
+            z-index: 600;
+            background: rgba(4, 8, 42, 0.88);
+            border: 1px solid rgba(48, 148, 220, 0.2);
+            border-radius: 3px;
+            padding: 9px 13px;
+            display: none;
+        }
+        .traffic-legend.visible { display: block; }
+        .traffic-legend-title {
+            font-family: 'VT323', monospace;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+        .traffic-legend-items {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 7px;
+        }
+        .traffic-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .traffic-legend-icon { font-size: 0.8rem; width: 16px; text-align: center; }
+        .traffic-legend-label {
+            font-family: 'VT323', monospace;
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        #traffic-status {
+            font-family: 'VT323', monospace;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+            border-top: 1px solid rgba(48,148,220,0.12);
+            padding-top: 6px;
+            margin-top: 2px;
+        }
+
         /* ── RESPONSIVE ──────────────────────────────────────── */
         @media (max-width: 900px) {
             .chyron-city { padding: 0 18px; }
@@ -705,6 +794,13 @@
                 <button class="seg-btn" data-opacity="0">Off</button>
             </div>
         </div>
+        <div class="control-group">
+            <span class="control-label">Traffic</span>
+            <div class="segmented" id="traffic-seg">
+                <button class="seg-btn" data-traffic="on">On</button>
+                <button class="seg-btn active" data-traffic="off">Off</button>
+            </div>
+        </div>
         <button class="audio-btn" id="audio-btn">&#9834; Play Sax</button>
     </div>
 
@@ -717,6 +813,30 @@
             <span class="radar-legend-label">Moderate</span>
             <span class="radar-legend-label">Heavy</span>
         </div>
+    </div>
+
+    <!-- Traffic legend -->
+    <div class="traffic-legend" id="traffic-legend">
+        <div class="traffic-legend-title">Traffic Alerts</div>
+        <div class="traffic-legend-items">
+            <div class="traffic-legend-item">
+                <span class="traffic-legend-icon">&#x1F694;</span>
+                <span class="traffic-legend-label">Police</span>
+            </div>
+            <div class="traffic-legend-item">
+                <span class="traffic-legend-icon">&#x1F4A5;</span>
+                <span class="traffic-legend-label">Accident</span>
+            </div>
+            <div class="traffic-legend-item">
+                <span class="traffic-legend-icon">&#x26A0;&#xFE0F;</span>
+                <span class="traffic-legend-label">Hazard</span>
+            </div>
+            <div class="traffic-legend-item">
+                <span class="traffic-legend-icon">&#x1F6A7;</span>
+                <span class="traffic-legend-label">Road Closed</span>
+            </div>
+        </div>
+        <div id="traffic-status">&#x2014; Inactive &#x2014;</div>
     </div>
 
     <!-- Audio -->
@@ -1170,6 +1290,154 @@
             audio.muted = true;
             setAudioState('muted');
         }
+    });
+
+    // ── TRAFFIC LAYER ────────────────────────────────────────────
+    var trafficEnabled   = false;
+    var trafficMarkers   = [];
+    var trafficHeatLayer = null;
+    var trafficTimer     = null;
+    var TRAFFIC_REFRESH_MS = 5 * 60 * 1000;
+
+    // Waze alert type definitions
+    var WAZE_TYPES = {
+        'POLICE':       { cls: 'police',   emoji: '\uD83D\uDE94', label: 'Police' },
+        'ACCIDENT':     { cls: 'accident', emoji: '\uD83D\uDCA5', label: 'Accident' },
+        'HAZARD':       { cls: 'hazard',   emoji: '\u26A0\uFE0F', label: 'Hazard' },
+        'ROAD_CLOSED':  { cls: 'closure',  emoji: '\uD83D\uDEA7', label: 'Road Closed' },
+        'CONSTRUCTION': { cls: 'closure',  emoji: '\uD83D\uDEA7', label: 'Construction' },
+    };
+
+    function clearTrafficLayers() {
+        trafficMarkers.forEach(function(m) { map.removeLayer(m); });
+        trafficMarkers = [];
+        if (trafficHeatLayer) { map.removeLayer(trafficHeatLayer); trafficHeatLayer = null; }
+    }
+
+    function setTrafficStatus(msg) {
+        var el = document.getElementById('traffic-status');
+        if (el) el.textContent = msg;
+    }
+
+    async function fetchTrafficData() {
+        if (!trafficEnabled) return;
+        setTrafficStatus('Scanning\u2026');
+
+        // Ohio bounding box — enough to cover the whole state
+        var wazeUrl = 'https://www.waze.com/live-map/api/georss' +
+            '?env=na&types=alerts,traffic' +
+            '&top=42.0&bottom=38.4&left=-84.8&right=-80.5';
+
+        // Try two CORS proxies in sequence
+        var proxies = [
+            'https://corsproxy.io/?' + encodeURIComponent(wazeUrl),
+            'https://api.allorigins.win/raw?url=' + encodeURIComponent(wazeUrl),
+        ];
+
+        var data = null;
+        for (var pi = 0; pi < proxies.length; pi++) {
+            try {
+                var controller = new AbortController();
+                var tid = setTimeout(function() { controller.abort(); }, 10000);
+                var res = await fetch(proxies[pi], { signal: controller.signal });
+                clearTimeout(tid);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                data = await res.json();
+                break;
+            } catch(e) { /* try next proxy */ }
+        }
+
+        if (!data) {
+            setTrafficStatus('No signal — retrying');
+            return;
+        }
+
+        clearTrafficLayers();
+
+        // ── Incident markers ──────────────────────────────────
+        var alerts  = data.alerts || [];
+        var plotted = 0;
+        alerts.forEach(function(alert) {
+            var typeDef = WAZE_TYPES[alert.type] || WAZE_TYPES[alert.subtype];
+            if (!typeDef) return;
+            var lat = alert.location && alert.location.y;
+            var lng = alert.location && alert.location.x;
+            if (!lat || !lng) return;
+
+            var colorMap = { police: '#3888c8', accident: '#e84040', hazard: '#e4a83c', closure: '#e87050' };
+            var labelColor = colorMap[typeDef.cls] || '#b8d0f0';
+
+            var popupHtml =
+                '<strong style="color:' + labelColor + '">' + typeDef.label.toUpperCase() + '</strong>' +
+                (alert.street ? '<br>\u{1F6E3} ' + alert.street : '') +
+                (alert.city   ? ', ' + alert.city : '');
+
+            var m = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div class="traffic-marker ' + typeDef.cls + '">' + typeDef.emoji + '</div>',
+                    iconSize:   [24, 24],
+                    iconAnchor: [12, 12],
+                }),
+                interactive: true,
+                zIndexOffset: 300,
+            });
+            m.bindPopup(popupHtml, { closeButton: false, offset: [0, -8] });
+            m.addTo(map);
+            trafficMarkers.push(m);
+            plotted++;
+        });
+
+        // ── Traffic jam heatmap ───────────────────────────────
+        var jams = data.jams || [];
+        if (jams.length > 0 && typeof L.heatLayer === 'function') {
+            var heatPoints = [];
+            jams.forEach(function(jam) {
+                var intensity = Math.min(1.0, (jam.delay || 60) / 90);
+                (jam.line || []).forEach(function(pt) {
+                    heatPoints.push([pt.y, pt.x, intensity]);
+                });
+            });
+            if (heatPoints.length > 0) {
+                trafficHeatLayer = L.heatLayer(heatPoints, {
+                    radius:  18,
+                    blur:    12,
+                    maxZoom: 15,
+                    max:     1.0,
+                    gradient: { 0.2: '#30c8d4', 0.5: '#e4a83c', 0.8: '#e84040', 1.0: '#f800fd' },
+                }).addTo(map);
+            }
+        }
+
+        var jamCount = jams.length;
+        setTrafficStatus(
+            plotted === 0 && jamCount === 0
+                ? 'Clear roads'
+                : plotted + ' alert' + (plotted !== 1 ? 's' : '') +
+                  ' \u00B7 ' + jamCount + ' jam' + (jamCount !== 1 ? 's' : '')
+        );
+    }
+
+    // Traffic toggle controls
+    document.querySelectorAll('#traffic-seg .seg-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#traffic-seg .seg-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            var legend = document.getElementById('traffic-legend');
+            if (btn.dataset.traffic === 'on') {
+                trafficEnabled = true;
+                if (legend) legend.classList.add('visible');
+                fetchTrafficData();
+                clearInterval(trafficTimer);
+                trafficTimer = setInterval(fetchTrafficData, TRAFFIC_REFRESH_MS);
+            } else {
+                trafficEnabled = false;
+                if (legend) legend.classList.remove('visible');
+                clearInterval(trafficTimer);
+                clearTrafficLayers();
+                setTrafficStatus('\u2014 Inactive \u2014');
+            }
+        });
     });
 
     // ── SPLASH DISMISS ───────────────────────────────────────────
