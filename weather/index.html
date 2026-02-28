@@ -932,6 +932,11 @@
         pane: 'basemapPane',
     }).addTo(map);
 
+    // Redraw heatmap after pan/zoom so colors stay locked to the correct roads
+    map.on('moveend zoomend', function() {
+        if (trafficHeatLayer) { trafficHeatLayer.redraw(); }
+    });
+
     // ── RADAR LAYER ──────────────────────────────────────────────
     var radarLayer = L.tileLayer(
         'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
@@ -1404,7 +1409,7 @@
                     blur:    12,
                     maxZoom: 15,
                     max:     1.0,
-                    gradient: { 0.2: '#30c8d4', 0.5: '#e4a83c', 0.8: '#e84040', 1.0: '#f800fd' },
+                    gradient: { 0.0: '#1166ff', 0.4: '#66aaff', 0.7: '#ff8800', 1.0: '#ff2200' },
                 }).addTo(map);
             }
         }
