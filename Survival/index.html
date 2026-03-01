@@ -3,23 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bobby Pinkeye: Stayin' Alive When Life Pisses In Your Cheerios | Data Dive Bar</title>
+<title>When Life Pisses in Your Cheerios | Data Dive Bar</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --neon-water: #4fc3f7;
-    --neon-cyan: #00e5ff;
-    --neon-amber: #ffb347;
     --neon-red: #ff3c3c;
+    --neon-amber: #ffb347;
+    --neon-blue: #4fc3f7;
     --neon-green: #69f0ae;
     --dark-bg: #0d0d0d;
     --panel-bg: #1a1a1a;
-    --card-bg: #141414;
     --chalk: #e8e0d4;
     --muted: #7a7265;
+    --water-blue: #29b6f6;
+    --danger-red: #ff5722;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
   html { scroll-behavior: smooth; }
 
   body {
@@ -34,11 +35,7 @@
     content: '';
     position: fixed;
     inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent, transparent 2px,
-      rgba(255,255,255,0.007) 2px, rgba(255,255,255,0.007) 4px
-    );
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px);
     pointer-events: none;
     z-index: 1000;
   }
@@ -52,8 +49,7 @@
   /* === HERO === */
   .hero {
     text-align: center;
-    padding: 80px 0 40px;
-    position: relative;
+    padding: 80px 0 48px;
   }
 
   .hero-kicker {
@@ -71,75 +67,140 @@
     font-weight: 900;
     font-size: clamp(2.2rem, 6vw, 3.8rem);
     line-height: 1.08;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     color: #fff;
+    letter-spacing: -0.02em;
   }
 
   .hero h1 em {
     font-style: italic;
-    color: var(--neon-water);
-    text-shadow: 0 0 30px rgba(79, 195, 247, 0.45);
+    color: var(--neon-amber);
+    text-shadow: 0 0 30px rgba(255, 179, 71, 0.35);
   }
 
   .hero-sub {
-    font-size: 1.1rem;
-    color: var(--muted);
-    max-width: 580px;
-    margin: 0 auto;
-    line-height: 1.55;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.25rem;
+    color: var(--chalk);
+    margin: 0 auto 20px;
+    opacity: 0.85;
   }
 
   .hero-meta {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     color: var(--muted);
-    margin-top: 32px;
+    margin-top: 12px;
     letter-spacing: 1px;
   }
 
-  .hero-meta a {
-    color: var(--neon-amber);
-    text-decoration: none;
+  .hero-epigraph {
+    margin: 32px auto 0;
+    padding: 20px 40px;
+    border-left: 3px solid var(--neon-amber);
+    border-right: 3px solid var(--neon-amber);
+    font-style: italic;
+    color: var(--chalk);
+    font-size: 0.98rem;
+    max-width: 620px;
+    line-height: 1.65;
+    opacity: 0.9;
   }
 
-  .author-byline {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    margin-top: 32px;
+  /* === ARTICLE STRUCTURE === */
+  .article-hr {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    margin: 44px 0;
   }
 
-  .author-photo {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    object-fit: cover;
-    object-position: top;
-    border: 2px solid var(--neon-amber);
-    flex-shrink: 0;
+  .chapter-heading {
+    margin: 56px 0 20px;
   }
 
-  .author-info {
-    text-align: left;
+  .chapter-heading h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    color: #fff;
+    line-height: 1.18;
+    border-left: 4px solid var(--neon-amber);
+    padding-left: 20px;
+  }
+
+  .section-subhead {
+    margin: 40px 0 14px;
+  }
+
+  .section-subhead h3 {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    line-height: 1.6;
-  }
-
-  .author-name {
-    color: var(--neon-amber);
+    font-size: 0.88rem;
     font-weight: 700;
-    display: block;
-    font-size: 12px;
-    margin-bottom: 2px;
+    color: var(--neon-amber);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
 
-  /* === SECTIONS === */
+  /* === PROSE === */
+  .prose {
+    margin: 20px 0;
+  }
+
+  .prose p {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--chalk);
+    margin-bottom: 22px;
+  }
+
+  .prose.lead p:first-child::first-letter {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5em;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: var(--neon-amber);
+  }
+
+  /* === SIGN-OFF === */
+  .signoff {
+    margin: 32px 0 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--neon-amber);
+  }
+
+  .teaser {
+    margin: 28px 0;
+    padding: 20px 24px;
+    background: rgba(255, 179, 71, 0.05);
+    border-left: 3px solid var(--neon-amber);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--chalk);
+    line-height: 1.7;
+  }
+
+  .copyright {
+    margin: 24px 0 48px;
+    padding: 18px 24px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 4px;
+    font-style: italic;
+    font-size: 0.84rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* === VIZ SECTIONS === */
   .viz-section {
-    margin: 72px 0;
+    margin: 64px 0;
+    padding: 32px;
+    background: rgba(255,255,255,0.025);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.07);
   }
 
   .section-label {
@@ -147,7 +208,7 @@
     font-size: 10px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: var(--neon-water);
+    color: var(--neon-amber);
     margin-bottom: 8px;
     opacity: 0.7;
   }
@@ -155,529 +216,172 @@
   .section-title {
     font-family: 'Playfair Display', serif;
     font-weight: 700;
-    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    font-size: clamp(1.3rem, 3vw, 1.75rem);
     color: #fff;
     margin-bottom: 8px;
-    line-height: 1.2;
+    line-height: 1.25;
   }
 
   .section-desc {
     color: var(--muted);
-    font-size: 0.92rem;
-    margin-bottom: 32px;
+    font-size: 0.9rem;
+    margin-bottom: 28px;
     max-width: 640px;
-    line-height: 1.6;
+    line-height: 1.7;
   }
 
-  /* === PROSE === */
-  .prose {
-    margin: 48px 0;
-  }
-
-  .prose p {
-    font-size: 1.05rem;
-    line-height: 1.78;
-    color: var(--chalk);
-    margin-bottom: 20px;
-  }
-
-  .prose p:first-child::first-letter {
-    font-family: 'Playfair Display', serif;
-    font-size: 3.5em;
-    float: left;
-    line-height: 0.8;
-    margin: 4px 12px 0 0;
-    color: var(--neon-water);
-  }
-
-  .pull-quote {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.3rem, 3vw, 1.7rem);
-    font-style: italic;
-    color: #fff;
-    text-align: center;
-    margin: 56px 0;
-    padding: 32px 24px;
-    line-height: 1.4;
-  }
-
-  .pull-quote::before, .pull-quote::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 2px;
-    background: var(--neon-water);
-    margin: 0 auto 24px;
-  }
-  .pull-quote::after { margin: 24px auto 0; }
-
-  .callout {
-    margin: 28px 0;
-    padding: 20px 24px;
-    background: rgba(79, 195, 247, 0.05);
-    border-left: 3px solid var(--neon-water);
-    border-radius: 0 8px 8px 0;
-  }
-
-  .callout p {
-    font-size: 0.92rem;
-    color: var(--chalk);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .callout strong { color: var(--neon-water); }
-  .callout .mono { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
-
-  .callout-red {
-    background: rgba(255, 60, 60, 0.05);
-    border-left-color: var(--neon-red);
-  }
-  .callout-red strong { color: var(--neon-red); }
-
-  .callout-amber {
-    background: rgba(255, 179, 71, 0.05);
-    border-left-color: var(--neon-amber);
-  }
-  .callout-amber strong { color: var(--neon-amber); }
-
-  /* ===========================
-     CHART 1: DEHYDRATION TIMELINE
-     =========================== */
-  .timeline-wrap {
-    position: relative;
-    padding: 16px 0 40px;
-  }
-
-  .timeline-track {
-    position: relative;
-    height: 56px;
-    border-radius: 8px;
+  /* === CHART 1: PREPAREDNESS STACKED BAR === */
+  .prep-bar-track {
+    height: 52px;
+    border-radius: 6px;
     overflow: hidden;
-    background: rgba(255,255,255,0.04);
-    margin-bottom: 0;
-  }
-
-  .timeline-fill {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      #4fc3f7 0%,
-      #26c6da 15%,
-      #29b6f6 22%,
-      #ffb347 38%,
-      #ff9800 52%,
-      #ff5722 68%,
-      #e53935 82%,
-      #b71c1c 100%
-    );
-    border-radius: 8px;
-    opacity: 0.85;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .timeline-fill.animated { transform: scaleX(1); }
-
-  .timeline-label-row {
     display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    padding: 0 0;
+    margin-bottom: 16px;
   }
 
-  .tl-hour {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: var(--muted);
-    text-align: center;
-    letter-spacing: 1px;
-  }
-
-  .milestones {
-    position: relative;
-    height: 140px;
-    margin-top: 4px;
-  }
-
-  .milestone {
-    position: absolute;
-    top: 0;
-    transform: translateX(-50%);
+  .prep-segment {
+    height: 100%;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    cursor: default;
+    justify-content: center;
+    overflow: hidden;
+    transition: opacity 0.2s;
   }
 
-  .milestone-tick {
-    width: 1px;
-    height: 16px;
-    background: rgba(255,255,255,0.25);
-    margin-bottom: 6px;
-  }
+  .prep-segment:hover { opacity: 0.82; }
 
-  .milestone-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-bottom: 6px;
-    flex-shrink: 0;
-  }
-
-  .milestone-label {
+  .prep-segment-pct {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    text-align: center;
-    line-height: 1.3;
-    max-width: 80px;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-  }
-
-  .milestone-label.visible { opacity: 1; }
-
-  .milestone-time {
+    font-size: 12px;
     font-weight: 700;
-    display: block;
-    margin-bottom: 2px;
+    white-space: nowrap;
+    padding: 0 8px;
+    pointer-events: none;
   }
 
-  .milestone-desc {
-    display: block;
-    color: var(--muted);
-    font-size: 8px;
+  .prep-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    margin-top: 8px;
   }
 
-  /* temp scenarios */
-  .temp-scenarios {
-    margin-top: 24px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-  }
-
-  .temp-card {
-    background: var(--card-bg);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 8px;
-    padding: 16px 14px;
-    text-align: center;
-  }
-
-  .temp-degree {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-
-  .temp-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 8px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-
-  .temp-window-bar {
-    height: 8px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    width: 0;
-    transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .temp-window-text {
+  .prep-legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    font-weight: 700;
+    color: var(--chalk);
+    line-height: 1.5;
   }
 
-  /* ===========================
-     CHART 2: PREPAREDNESS GAP
-     =========================== */
-  .prep-chart {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  .prep-legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 1px;
   }
 
-  .prep-row {
+  .prep-callout {
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: rgba(183, 28, 28, 0.08);
+    border-left: 3px solid #e53935;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .prep-callout p {
+    font-size: 0.9rem;
+    color: var(--chalk);
+    line-height: 1.65;
+  }
+
+  .prep-callout strong { color: #ff5252; }
+
+  /* === CHART 2: DEHYDRATION TIMELINE === */
+  .timeline-svg { width: 100%; }
+
+  /* === CHART 3: GALLON CALCULATOR === */
+  .gallon-row {
     display: grid;
-    grid-template-columns: 160px 1fr 100px;
+    grid-template-columns: 220px 1fr 72px;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    margin-bottom: 9px;
+    height: 44px;
   }
 
-  .prep-label {
+  .gallon-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     text-align: right;
     color: var(--chalk);
-    line-height: 1.3;
+    line-height: 1.35;
   }
 
-  .prep-label small {
-    display: block;
-    color: var(--muted);
-    font-size: 8px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  .prep-bar-track {
-    height: 36px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 4px;
-    position: relative;
-    overflow: visible;
-  }
-
-  .prep-bar-yes {
+  .gallon-bar-container {
     height: 100%;
+    background: rgba(255,255,255,0.03);
     border-radius: 4px;
-    position: relative;
-    width: 0;
-    transition: width 1.4s cubic-bezier(0.22, 1, 0.36, 1);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 8px;
     overflow: hidden;
   }
 
-  .prep-bar-pct {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(0,0,0,0.7);
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.4s ease 1.2s;
+  .gallon-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    width: 0;
+    transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
   }
 
-  .prep-bar-pct.visible { opacity: 1; }
-
-  .prep-stat {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    text-align: left;
-  }
-
-  .prep-gap-label {
+  .gallon-bar-fill::after {
+    content: '';
     position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translate(calc(100% + 8px), -50%);
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 60%);
+    border-radius: 4px;
+  }
+
+  .gallon-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: var(--neon-red);
-    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--chalk);
+    text-align: left;
     opacity: 0;
     transition: opacity 0.5s ease 1.5s;
   }
 
-  .prep-gap-label.visible { opacity: 1; }
+  .gallon-value.visible { opacity: 1; }
 
-  /* ===========================
-     CHART 3: 82 GALLONS vs 1
-     =========================== */
-  .tank-viz {
-    display: flex;
-    gap: 32px;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 24px 0;
-  }
-
-  .tank-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .tank-outer {
-    position: relative;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 6px;
-    overflow: hidden;
-    width: 80px;
-  }
-
-  .tank-fill {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    border-radius: 0 0 5px 5px;
-    height: 0%;
-    transition: height 1.6s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .tank-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 2px;
-  }
-
-  .tank-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    text-align: center;
-    color: var(--muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    max-width: 90px;
-    line-height: 1.3;
-  }
-
-  .tank-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.5rem;
-    font-weight: 700;
-    text-align: center;
-  }
-
-  .tank-unit {
-    font-size: 0.7rem;
-    display: block;
-    color: var(--muted);
-    font-weight: 400;
-    letter-spacing: 1px;
-  }
-
-  .tank-vs {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    font-style: italic;
-    color: var(--muted);
-    align-self: center;
-    padding-bottom: 80px;
-  }
-
-  .ratio-callout {
-    text-align: center;
-    margin-top: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  .ratio-callout strong {
-    font-size: 2.4rem;
-    color: #fff;
-    display: block;
-    margin: 4px 0;
-  }
-
-  /* ===========================
-     CHART 4: WEATHER KILLS
-     =========================== */
-  .weather-chart {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .weather-row {
-    display: grid;
-    grid-template-columns: 160px 1fr 70px;
-    align-items: center;
-    gap: 12px;
-    height: 40px;
-  }
-
-  .weather-name {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    text-align: right;
-    color: var(--chalk);
-  }
-
-  .weather-name .icon {
-    margin-right: 6px;
-  }
-
-  .weather-bar-track {
-    height: 100%;
-    background: rgba(255,255,255,0.04);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .weather-bar-fill {
-    height: 100%;
-    border-radius: 4px;
-    width: 0;
-    transition: width 1.4s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .weather-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--chalk);
-    opacity: 0;
-    transition: opacity 0.5s ease 1.4s;
-  }
-
-  .weather-value.visible { opacity: 1; }
-
-  .weather-divider {
-    border: none;
-    border-top: 1px dashed rgba(255,255,255,0.08);
-    margin: 8px 0 8px 172px;
-  }
-
-  /* === PRACTICAL TIPS GRID === */
-  .tips-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 8px;
-  }
-
-  .tip-card {
-    background: var(--card-bg);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 8px;
-    padding: 20px 18px;
-  }
-
-  .tip-number {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+  .gallon-row.bobby-row .gallon-label {
     color: var(--neon-amber);
-    margin-bottom: 8px;
-  }
-
-  .tip-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
     font-weight: 700;
-    color: #fff;
-    margin-bottom: 8px;
-    line-height: 1.2;
   }
 
-  .tip-desc {
-    font-size: 0.87rem;
-    color: var(--muted);
-    line-height: 1.6;
+  .gallon-row.bobby-row .gallon-value {
+    color: var(--neon-amber);
+    font-size: 14px;
   }
+
+  /* === CALLOUT BOX === */
+  .fear-callout {
+    margin-top: 20px;
+    padding: 18px 22px;
+    background: rgba(255, 179, 71, 0.05);
+    border-left: 3px solid var(--neon-amber);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .fear-callout p {
+    font-size: 0.9rem;
+    color: var(--chalk);
+    line-height: 1.65;
+  }
+
+  .fear-callout strong { color: var(--neon-amber); }
 
   /* === METHODOLOGY === */
   .methodology {
@@ -698,7 +402,7 @@
   .methodology p {
     font-size: 0.82rem;
     color: var(--muted);
-    line-height: 1.7;
+    line-height: 1.72;
     margin-bottom: 8px;
   }
 
@@ -723,40 +427,15 @@
     margin-top: 8px;
   }
 
-  .series-badge {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    background: rgba(79, 195, 247, 0.1);
-    border: 1px solid rgba(79, 195, 247, 0.25);
-    color: var(--neon-water);
-    border-radius: 4px;
-    padding: 4px 10px;
-    margin-bottom: 16px;
-  }
-
   /* === RESPONSIVE === */
-  @media (max-width: 640px) {
-    .prep-row {
-      grid-template-columns: 110px 1fr 70px;
-      gap: 8px;
-    }
-    .prep-label { font-size: 9px; }
-    .weather-row {
-      grid-template-columns: 110px 1fr 55px;
-      gap: 8px;
-    }
-    .weather-name { font-size: 9px; }
-    .temp-scenarios { grid-template-columns: 1fr; gap: 8px; }
-    .tips-grid { grid-template-columns: 1fr; }
-    .tank-viz { gap: 16px; }
-    .tank-outer { width: 60px; }
-    .hero { padding: 48px 0 24px; }
-    .viz-section { margin: 48px 0; }
-    .milestone-label { font-size: 7px; max-width: 60px; }
-    .prep-gap-label { display: none; }
+  @media (max-width: 600px) {
+    .hero { padding: 48px 0 28px; }
+    .hero-epigraph { padding: 16px 20px; }
+    .viz-section { margin: 40px 0; padding: 20px 16px; }
+    .gallon-row { grid-template-columns: 120px 1fr 52px; gap: 8px; }
+    .gallon-label { font-size: 9px; }
+    .chapter-heading h2 { font-size: 1.35rem; }
+    .prep-legend { gap: 10px 16px; }
   }
 </style>
 </head>
@@ -766,322 +445,464 @@
 
   <!-- HERO -->
   <header class="hero">
-    <div class="series-badge">Bobby Pinkeye's Survival Guide · Episode 01</div>
-    <div class="hero-kicker">Data Dive Bar · Survival Series</div>
-    <h1>Bobby Pinkeye: Stayin' Alive When <em>Life Pisses In Your Cheerios</em></h1>
-    <p class="hero-sub">A survival guide from a man who has had his Cheerios pissed in by every force of nature and human stupidity imaginable — including a mayor with too much goddamn free time, a father-in-law who looks at him like he's tracking something foul in on his shoe, a woman named Brenda he's been in love with since high school, and forty-five years of life that has never once let up. Currently typing this on a laptop Brenda's orange shitstain of a cat pissed on in March. He is qualified. He is furious about it.</p>
-    <div class="author-byline">
-      <img src="bobby.jpg" alt='Bobby Pinkeye' class="author-photo">
-      <div class="author-info">
-        <span class="author-name">Bobby Pinkeye</span>
-        FEMA National Surveys 2023–24 · Clinical dehydration literature<br>CDC Emergency Water Guidelines
-      </div>
-    </div>
+    <div class="hero-kicker">Data Dive Bar — Survival Series, Vol. 1</div>
+    <h1>WHEN LIFE PISSES IN YOUR <em>CHEERIOS</em></h1>
+    <p class="hero-sub">A Regular Dipshit's Guide to Not Dyin'</p>
+    <div class="hero-meta">By Bobby "Pinkeye" Butts, Survival Contributor · DataDiveBar.com</div>
+    <div class="hero-epigraph">"Because the government sure as shit ain't comin' to save your sorry ass, and neither is the mayor, and neither is your mama"</div>
   </header>
 
-  <!-- INTRO PROSE -->
-  <div class="prose">
+  <!-- INTRO PROSE (verbatim) -->
+  <div class="prose lead">
     <p>Data Dive Bar asked me to write these articles. I said no. They explained their reasoning. I explained that I haul auto parts in a Ford Econoline that smells like something crawled into the ventilation system around 2019, made a choice, and nobody's gone looking since. I type with two fingers on a laptop Brenda's orange bastard of a cat Pumpkin pissed on last March and we have both chosen to live with it. You open that lid and it hits you — cat ammonia, fifteen years of questionable decisions baked into the keyboard, Brenda's forty-seven browser tabs she'll never close. She named that cat Pumpkin. That cat is not a Pumpkin. That cat is a felony with fur. I'm writing the articles anyway because most of you dipshits are going to die of something preventable and embarrassing and somebody needs to say something.</p>
-
-    <p>The pipes under your city are held together with corrosion, luck, and the prayers of underpaid guys who could walk tomorrow and let you figure it out. When those pipes fail — and they will, nothing in this country works worth a good goddamn and the infrastructure report card would make you weep — you've got seventy-two hours before your faucet is purely decorative. FEMA's got the numbers. The numbers are ugly as sin. Half of America has nothing stored, no plan, and a fuzzy feeling that somebody official is going to show up with pallets of SmartWater before things get really bad. Bobby Pinkeye is going to be on the porch with sixty gallons, a lawn chair, and zero sympathy to spare except on a strict case-by-case basis depending on whether you were one of the thirty-seven turkeys who signed that petition. More on that.</p>
-
-    <p>I am fifty-five years old. Five foot nine. North of two hundred pounds and I don't want to hear one word about it — that's between me and Jesus and the two of us have come to an understanding. I wear a Mossy Oak camo hat I've had since 2003 and it looks like it's been through something. It has. The something is my life. My name is Bobby Ray Duggan and every sumbitch from here to the county line calls me Bobby Pinkeye. Don't ask about the name. It involves a county fair, a tire iron, a case of Busch Light, a bet from 1994 I absolutely should not have taken, and a thing that happened to my eye. I won the bet. My eye has never fully forgiven me. I drive an Econoline. I don't pay Brenda rent. Life pisses in my Cheerios every single morning and I get up and eat them anyway, which is both a metaphor and a lifestyle, and it is the only qualification you need to write a survival guide.</p>
-
-    <p>I survived a divorce. I survived gas station sushi in Bakersfield, California — four dollars, clerk named Doug, I should have turned around the moment I saw Doug's face, I did not turn around. That was worse than the divorce. I am also the man who ate a six-dollar chicken fried steak from a cook named Darryl at a truck stop outside Kearney, Nebraska, and what that man did to my insides over the following forty-eight hours will live in my body's memory until the day I die. More on Darryl in a minute because it is directly relevant to the topic of water, and also I have never forgiven him and never plan to, and sometimes it helps to say that in print.</p>
-
-    <p>I am currently surviving Brenda, which is its own special category of Cheerios-pissing that defies classification. I have been in love with that woman since eleventh grade. Last Tuesday she looked at me over her coffee with the dead-eyed calm of someone who has completely made peace with her own life choices and said I was "the most exhausting person she had ever spent significant time around." I thought about it. Accurate. She is, however, a liar about the proposal. That did not happen. My face is red right now because I am angry — not embarrassed, those are completely different physiological states — and we are moving on to water because I cannot spend any more time on this particular topic without my blood pressure doing something my doctor told me specifically not to do.</p>
+    <p>The pipes under your city are held together with corrosion, luck, and the prayers of underpaid guys who could walk tomorrow and let you figure it out. When those pipes fail — and they will, nothing in this country works worth a good goddamn — you've got seventy-two hours before your faucet is purely decorative. FEMA's got the numbers. The numbers are ugly as sin. Half of America has nothing stored, no plan, and a fuzzy feeling that somebody official is going to show up with pallets of SmartWater. Meanwhile Bobby Pinkeye is on the porch with sixty gallons, a lawn chair, and zero sympathy to spare except on a strict case-by-case basis depending on whether you were one of the thirty-seven turkeys who signed that petition. More on that.</p>
+    <p>I am fifty-five years old. Five foot nine. North of two hundred pounds and that is between me and Jesus. Mossy Oak camo hat from 2003 that looks like it's been through something. It has. The something is my life. My name is Bobby Ray Butts and every sumbitch from here to the county line calls me Bobby Pinkeye. Don't ask about the name. It involves a county fair in 1994, a tire iron, a case of Busch Light, a bet I absolutely should not have taken, and a thing that happened to my eye. I won the bet. My eye has never fully forgiven me. I drive an Econoline. I don't pay Brenda rent. Life pisses in my Cheerios every single morning and I get up and eat them anyway.</p>
+    <p>I survived a divorce. I survived gas station sushi in Bakersfield, California — four dollars, clerk named Doug, I should have turned around the moment I saw Doug's face. I did not turn around. That was worse than the divorce. I am also the man who ate a six-dollar chicken fried steak from a cook named Darryl at a truck stop outside Kearney, Nebraska, and what that man did to my insides over the following forty-eight hours made both the divorce and the Bakersfield sushi look like a spa weekend. More on Darryl in a minute because it is directly relevant to the topic of water, and also I have never forgiven him and never plan to.</p>
+    <p>I am currently surviving Brenda, which is its own special category of Cheerios-pissing. I have been in love with that woman since eleventh grade. Last Tuesday she looked at me over her coffee with the dead-eyed calm of someone who has completely made peace with her own life choices and said I was "the most exhausting person she had ever encountered in her entire life." I thought about it. Accurate. She is, however, a liar about the proposal. That did not happen. My face is red right now because I am angry — not embarrassed, those are completely different physiological states — and we are moving on to water.</p>
   </div>
 
-  <!-- ================================
-       CHART 1: DEHYDRATION TIMELINE
-       ================================ -->
+  <!-- CHART 01: America's Water Preparedness Gap -->
   <div class="viz-section" id="chart1">
-    <div class="section-label">Chart 01 The Clock Is Already Running</div>
-    <div class="section-title">72 Hours. Then Your Organs Start Saying Goodbye.</div>
-    <div class="section-desc">The human dehydration progression, hour by hour. At 2% fluid loss you're already dumber and you probably can't tell. At 10% you're in organ failure territory. And if you think the "three days" rule still applies when it's a hundred degrees out, boy do I have some bad news for your dumb ass.</div>
+    <div class="section-label">Chart 01</div>
+    <div class="section-title">Bobby's Right — Half of America Has Nothing</div>
+    <div class="section-desc">FEMA's national preparedness surveys confirm what Bobby already knows: the majority of American households have no meaningful emergency water storage, and almost none reach the agency's own two-week target. The numbers are, as Bobby puts it, ugly as sin.</div>
 
-    <div class="timeline-wrap" id="timelineWrap">
-      <div class="timeline-track">
-        <div class="timeline-fill" id="timelineFill"></div>
-      </div>
+    <div class="prep-bar-track" id="prepBarTrack"></div>
+    <div class="prep-legend" id="prepLegend"></div>
 
-      <div class="milestones" id="milestones">
-        <!-- positioned by JS -->
-      </div>
-
-      <div class="timeline-label-row">
-        <div class="tl-hour">HR 0</div>
-        <div class="tl-hour">HR 12</div>
-        <div class="tl-hour">HR 24</div>
-        <div class="tl-hour">HR 36</div>
-        <div class="tl-hour">HR 48</div>
-        <div class="tl-hour">HR 60</div>
-        <div class="tl-hour">HR 72</div>
-        <div class="tl-hour">HR 96+</div>
-      </div>
-    </div>
-
-    <div class="temp-scenarios" id="tempScenarios">
-      <div class="temp-card">
-        <div class="temp-degree" style="color:#4fc3f7">70°F</div>
-        <div class="temp-label">Mild day</div>
-        <div class="temp-window-bar" data-width="90" data-color="#4fc3f7" style="background:#4fc3f7"></div>
-        <div class="temp-window-text" style="color:#4fc3f7">72–96 hours</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:6px">max survival without water</div>
-      </div>
-      <div class="temp-card">
-        <div class="temp-degree" style="color:#ff9800">90°F</div>
-        <div class="temp-label">Hot summer day</div>
-        <div class="temp-window-bar" data-width="44" data-color="#ff9800" style="background:#ff9800"></div>
-        <div class="temp-window-text" style="color:#ff9800">24–48 hours</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:6px">window collapses by 50–60%</div>
-      </div>
-      <div class="temp-card">
-        <div class="temp-degree" style="color:#ff3c3c">110°F</div>
-        <div class="temp-label">Heat wave / crisis</div>
-        <div class="temp-window-bar" data-width="8" data-color="#ff3c3c" style="background:#ff3c3c"></div>
-        <div class="temp-window-text" style="color:#ff3c3c">4–8 hours</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:6px">adults lose 1–1.5L/hr sweating</div>
-      </div>
+    <div class="prep-callout">
+      <p>FEMA's recommended target is two weeks of water — <strong>1 gallon per person per day</strong>. A family of four needs 56 gallons. Roughly 80% of Americans aren't close. The 5% who've hit the two-week mark and the 2% at Bobby's level are barely visible at this scale.</p>
     </div>
   </div>
 
-  <div class="callout callout-red">
-    <p>At 110°F — which Ohio, Texas, and half the Sun Belt sees every summer now — <strong>you can be in organ failure in under 8 hours</strong>. The three-day rule you learned in Boy Scouts assumes mild weather and a functioning body. Strip those assumptions out and you're dead before the weekend. Nature will piss in your Cheerios without hesitation, apology, or the slightest awareness that you existed. The question is not whether it's coming. The question is whether you've got sixty gallons in the garage or a dry faucet and a fading hope that somebody official gives a damn about you. I have seen the numbers. Nobody is coming. Drink your water.</p>
+  <hr class="article-hr">
+
+  <!-- CHAPTER 1 (verbatim) -->
+  <div class="chapter-heading">
+    <h2>Chapter 1: Water, and How Darryl Damn Near Killed Me</h2>
   </div>
 
-  <!-- PROSE: Nebraska -->
+  <div class="prose">
+    <p>Every survival article starts with water. You know why? Because you are dead without it, stupid. Three days. Seventy-two hours and your kidneys say "to hell with this" and your brain turns to soup. Deader than my marriage. Deader than Dale Earnhardt, rest his soul, greatest driver who ever lived, and I will throw hands with any sumbitch who says otherwise, bad knees and all.</p>
+    <p>Water beats everything. More important than food. More important than ammo, and brother I have a bumper sticker that makes my position on the Second Amendment very clear, so you know I don't say that lightly. And here's the one that should hit you in the gut: beats diesel fuel too. I have cried, real tears, at a Pilot Flying J watching diesel prices. God bless Pilot Flying J. If they ran the government this country would work. Instead we got dipshits in suits who couldn't find their own ass with both hands and a headlamp.</p>
+  </div>
+
+  <hr class="article-hr">
+
+  <!-- DARRYL STORY (verbatim) -->
+  <div class="section-subhead">
+    <h3>The Night Darryl's Chicken Fried Steak Tried to Kill Me</h3>
+  </div>
+
   <div class="prose">
     <p>I know about dehydration because I nearly died from it in a truck stop bathroom outside Kearney, Nebraska on a Tuesday in August 2011. Not a dramatic situation. Not some wild act of God. A parking lot. A cook named Darryl. A six-dollar chicken fried steak I could smell from the parking lot and ordered anyway because I am a man with an optimistic relationship with his own stomach and poor judgment about independent diners.</p>
-
-    <p>I stopped at some pissant little diner off I-80 — not a Pilot Flying J, and I need to be real clear that Pilot Flying J has never once done me wrong and I have a bumper sticker expressing exactly that. This was some other place with a hand-lettered sign and a menu laminated so many times over the decades it was mostly laminate with faint menu-shaped ghosts underneath. The six-dollar special. Steak fried in what I believe was the same oil since the Clinton administration, gravy from a caulk gun, mashed potatoes that had given up on themselves, and a dinner roll you could've patched a drywall hole with. Fine. That's I-80 Nebraska. You shut your mouth and eat.</p>
-
+    <p>I stopped at some pissant little diner off I-80 — not a Pilot Flying J, and I need to be real clear that Pilot Flying J has never once done me wrong. This was some other place with a hand-lettered sign and a menu laminated so many times over the decades it was mostly laminate with faint menu-shaped ghosts underneath. The six-dollar special. Steak fried in what I believe was the same oil since the Clinton administration, gravy from a caulk gun, mashed potatoes that had given up on themselves, and a dinner roll you could've patched a drywall hole with. Fine. That's I-80 Nebraska. You shut your mouth and eat.</p>
     <p>About ninety minutes back on the road, my insides filed formal paperwork. Not a complaint — a full goddamn mutiny. Every organ below my belt decided simultaneously that conditions were unacceptable and they were all walking off the job at once. I made it to a rest area. I stayed there for forty-eight hours. The sleeper cab bathroom is approximately the size of a coat closet someone welded to a diesel engine as a punishment. Under normal conditions it smells like synthetic regret and recycled air. These were not normal conditions. What happened in that bathroom over the next two days is between me, Darryl's legacy, and the Nebraska Department of Transportation, and I will take it to my grave.</p>
-
     <p>I had two sixteen-ounce bottles of Aquafina. One I drank. The other I used for... logistics. The full details of how I repurposed that second bottle will never appear in print as long as I am breathing, and if Brenda is reading this, that means you specifically, especially you, almost entirely you, and we are never discussing it.</p>
-
-    <p>By hour thirty-six I was in genuine trouble. Mouth like the inside of a work boot someone left in a hot car. Head splitting in a way that went past headache into something structural, like my skull was reconsidering the whole arrangement. Heart doing fast, weird, unasked-for shit. I made deals with God — the rent situation with Brenda, stopping calling Gary a dipshit, the truck, all of it. God and I both understood those were negotiating positions and not real commitments and He bailed me out anyway. Appreciate it. Moving on. I hallucinated Dale Earnhardt standing at my front bumper with his arms crossed, looking at me like I was the stupidest living creature he'd ever laid eyes on. Dale didn't say anything helpful. He just shook his head and walked off, and that's when I understood the situation had gotten genuinely bad, because even hallucination Dale usually throws you a bone.</p>
-
-    <p>A trucker named Big Hoss from Tulsa knocked on my cab door because — his exact words — I was making sounds like "a coon dog that ate a June bug and was real sorry about it." Big Hoss handed me a gallon jug and two orange Gatorades, warm as bathwater, and stood outside while I sat in that parking lot and ugly-cried for twenty minutes like a man who'd just been pulled back from something, which I genuinely had been. I owe Big Hoss forty dollars. He knows. I know. Some debts you just carry around until they kill you.</p>
+    <p>By hour thirty-six I was in genuine trouble. Mouth like the inside of a work boot left in a hot car. Head splitting in a way that went past headache into something structural, like my skull was reconsidering the whole arrangement. Heart doing fast, weird, unasked-for shit. I made deals with God — the rent situation with Brenda, stopping calling Gary a dipshit, the truck, all of it. God and I both understood those were negotiating positions and not real commitments and He bailed me out anyway. I hallucinated Dale Earnhardt standing at my front bumper with his arms crossed, looking at me like I was the stupidest living creature he'd ever seen. Dale didn't say anything helpful. He just shook his head and walked off, and that's when I understood the situation had gotten genuinely bad.</p>
+    <p>A trucker named Big Hoss from Tulsa knocked on my cab door because — his exact words — I was making sounds like "a coon dog that ate a June bug and was real sorry about it." Big Hoss handed me a gallon jug and two orange Gatorades, warm as bathwater, and stood outside while I sat in that parking lot and ugly-cried for twenty minutes like a man who'd just been pulled back from something, which I genuinely had been. I owe Big Hoss forty dollars. He knows. I know. Some debts you just carry.</p>
   </div>
 
-  <!-- ================================
-       CHART 2: PREPAREDNESS GAP
-       ================================ -->
+  <!-- CHART 02: 72-Hour Dehydration Timeline -->
   <div class="viz-section" id="chart2">
-    <div class="section-label">Chart 02 The Preparedness Gap</div>
-    <div class="section-title">Most Americans Will Run Dry in Three Days. The Data Doesn't Care About Your Feelings.</div>
-    <div class="section-desc">FEMA 2023 National Household Survey + peer-reviewed preparedness research. The gap between "feelin' prepared" and actually havin' water stored is one of the most depressin' numbers in all of public safety data, and I have encountered some depressin' numbers in my time.</div>
+    <div class="section-label">Chart 02</div>
+    <div class="section-title">Bobby's Nebraska Rest Stop, By the Numbers</div>
+    <div class="section-desc">Bobby's hour-by-hour experience in that sleeper cab tracks almost exactly with clinical dehydration progression. Here's what his body was going through — and what yours will go through — when the water runs out. Hour 36 is where things get structural. Hour 72 is where Bobby's kidneys put it plainly.</div>
 
-    <div class="prep-chart" id="prepChart">
-
-      <div class="prep-row">
-        <div class="prep-label">
-          <small>perception</small>
-          Feel "prepared"
-        </div>
-        <div class="prep-bar-track">
-          <div class="prep-bar-yes" data-pct="51" style="background:linear-gradient(90deg,rgba(79,195,247,0.4),rgba(79,195,247,0.6))">
-            <span class="prep-bar-pct">51%</span>
-          </div>
-        </div>
-        <div class="prep-stat" style="color:var(--neon-water)">51%</div>
-      </div>
-
-      <div class="prep-row">
-        <div class="prep-label">
-          <small>reality</small>
-          3-day water supply
-        </div>
-        <div class="prep-bar-track">
-          <div class="prep-bar-yes" data-pct="53" style="background:linear-gradient(90deg,rgba(105,240,174,0.5),rgba(105,240,174,0.7))">
-            <span class="prep-bar-pct">53%</span>
-            <span class="prep-gap-label">← 47% have nothing</span>
-          </div>
-        </div>
-        <div class="prep-stat" style="color:var(--neon-green)">53%</div>
-      </div>
-
-      <div class="prep-row">
-        <div class="prep-label">
-          <small>FEMA minimum</small>
-          3-day food supply
-        </div>
-        <div class="prep-bar-track">
-          <div class="prep-bar-yes" data-pct="96" style="background:linear-gradient(90deg,rgba(255,179,71,0.4),rgba(255,179,71,0.6))">
-            <span class="prep-bar-pct">96%</span>
-          </div>
-        </div>
-        <div class="prep-stat" style="color:var(--neon-amber)">96%</div>
-      </div>
-
-    </div>
+    <svg class="timeline-svg" viewBox="0 0 840 300" id="timelineChart"></svg>
   </div>
 
-  <div class="callout callout-amber">
-    <p>96% of Americans have three days of food. Only <strong>53% have three days of water</strong>. You will die of thirst before you die of hunger — that's not philosophy, that's basic biology — and yet every one of you dopey turkeys has got seventeen cans of Campbell's in the cabinet and maybe fourteen ounces of tap water you poured through a goddamn Brita like that's gonna save your ass when the pipes quit. Soup for a month. Water for a Tuesday afternoon. The math on your survival situation is genuinely disgusting and you did it to yourself. I am not even mad. I am just disappointed, which is worse.</p>
+  <hr class="article-hr">
+
+  <!-- SO WHAT DID I LEARN (verbatim) -->
+  <div class="section-subhead">
+    <h3>So What the Hell Did I Learn</h3>
   </div>
 
-  <div class="pull-quote">
-    "One gallon per person per day. That's the whole goddamn lecture. Four people, two weeks, fifty-six gallons minimum. Write it on your hand. Tell your dog. Tattoo it on your ass for all I care. I don't give a single solitary damn how you remember it — just remember it or die thirsty, your choice, I'm not your mother."
-  </div>
-
-  <!-- PROSE: How to make shitty water less shitty -->
   <div class="prose">
-    <p>Half of you dipshits are sitting there right now thinking your city water is completely fine. Total confidence. Beautiful. That is exactly the energy every single person has right up until a main bursts, a chemical spill hits the reservoir, or a grid failure kills the pumps and suddenly you are standing in front of a dry faucet at noon in July wondering why you didn't listen to the sweaty sumbitch with the truck full of possums. That is a terrible Tuesday to be having.</p>
-
-    <p>You cannot drink pond water, creek water, or your neighbor's above-ground pool that has been growing something with real ambitions since the Obama administration. You will get things living inside you that will do to your insides exactly what Darryl's chicken fried steak did to mine in that Nebraska rest area bathroom, and I promise you will not handle it with the quiet dignity and creative improvisation I brought to the situation. Big Hoss from Tulsa still talks about it. I know because word gets around at Pilot Flying J's.</p>
-
-    <p>Boil it. Rolling boil, sixty seconds, and everything that had plans to kill you is stone dead. Above six thousand feet, go three minutes, because altitude does some weird nerdy shit to the boiling point that the scientists understand and I do not. I trust the nerds on this completely. God bless every last nerd on this green earth. Nerds have kept my ass alive more times than I'd like to admit.</p>
-
-    <p>Bleach. Plain unscented Clorox. Eight drops per gallon if the water's clear. Sixteen drops if it's cloudy or you fished a dead something out before you scooped it, which has happened to me, and I don't want to discuss the details or which body of water was involved or what the something was. Stir it, wait thirty minutes, drink it. It tastes like a YMCA locker room. You are alive. Shut your mouth and drink it. I once drank radiator runoff in a Walmart parking lot in Tulsa, Oklahoma because that was my option at that exact moment in my life. Bleach water is a goddamn vacation by comparison. Do not drink radiator runoff. That is the one piece of free advice I give without conditions or caveats.</p>
-
-    <p>Get a real filter. Not a Brita. A Brita is a toy for people who want to feel rugged while drinking tap water in their granite-countertop kitchen and telling themselves they're prepared for something. That is a load of malarkey so heavy it'd break a truck axle. I'm talking a Sawyer Squeeze. A LifeStraw. A Berkey that looks like R2-D2 let himself go after a bad breakup. Something that actually kills what's in there. The one thing no filter can remove is the look on Brenda's daddy Jack's face when I come downstairs and eat his eggs every morning without so much as a thank-you. That requires either extensive therapy or a complete and total shamelessness. I chose option two approximately four years ago and I have zero regrets and I will not be taking questions.</p>
+    <p>One gallon of water per person per day. That is THE number. Four people, two weeks, fifty-six gallons minimum. Write it on your hand. Tell your dog. Tattoo it on your ass for all I care. I don't give a single solitary damn how you remember it — just remember it or die thirsty, your choice, I'm not your mother.</p>
+    <p>I got water stashed all over hell and half of Georgia at this point. Water in the Econoline. Water in the shed out back, right next to the tools I keep promising Brenda's daddy Jack I'm going to use. Jack hates me. Let me be clear about that. That man looks at me the way a dog looks at a bathtub. He knows I don't pay rent. He knows about the truck. The tools have been waiting since 2019. Jack, I'm getting to it.</p>
+    <p>There's water under Brenda's bed. Fourteen bottles. She don't know about those. If she's reading this: surprise, sweetheart. Don't be mad. It could save your life. She's definitely going to be mad. Worth it.</p>
+    <p>And there's water in the F-150. Thirty-two bottles in the cab. Twelve more in the bed underneath the volunteer trees. That truck everybody wants towed to the scrapyard? She is a supply depot. When the water supply goes to hell and you're all running around like wet cats, Billy Pinkeye is going to be on the porch with enough water to last till spring. And I might share. MIGHT. Depends on whether you signed that petition.</p>
   </div>
 
-  <!-- Practical tips grid -->
-  <div class="tips-grid">
-    <div class="tip-card">
-      <div class="tip-number">The thing in your basement</div>
-      <div class="tip-title">Your water heater has 40–80 gallons</div>
-      <div class="tip-desc">You paid for it already and you forgot it existed. Turn the power or gas off first — dying in an explosion is embarrassing, stupid, and permanent, and I will not be there to help you. Then open the drain valve at the bottom. Four weeks of drinking water sitting fifteen feet from where you sleep right now. You're welcome.</div>
+  <!-- CHART 03: The One Gallon Rule -->
+  <div class="viz-section" id="chart3">
+    <div class="section-label">Chart 03</div>
+    <div class="section-title">One Gallon, Per Person, Per Day — The Math</div>
+    <div class="section-desc">Bobby's rule is simple. The math is humbling. Most people imagine "emergency prep" as a few bottles under the sink. Here's what FEMA's recommended targets actually look like in gallons — and where Bobby's distributed stash lands on that scale.</div>
+
+    <div id="gallonChart">
+      <div class="gallon-row">
+        <div class="gallon-label">Solo / 72-hr emergency</div>
+        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="2.7" style="background: linear-gradient(90deg, #29b6f6, #4fc3f7);"></div></div>
+        <div class="gallon-value">3 gal</div>
+      </div>
+      <div class="gallon-row">
+        <div class="gallon-label">2 people / 72 hours</div>
+        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="5.4" style="background: linear-gradient(90deg, #29b6f6, #4fc3f7);"></div></div>
+        <div class="gallon-value">6 gal</div>
+      </div>
+      <div class="gallon-row">
+        <div class="gallon-label">2 people / 2 weeks</div>
+        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="25.2" style="background: linear-gradient(90deg, #0288d1, #29b6f6);"></div></div>
+        <div class="gallon-value">28 gal</div>
+      </div>
+      <div class="gallon-row">
+        <div class="gallon-label">4 people / 2 wks (FEMA target)</div>
+        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="50.4" style="background: linear-gradient(90deg, #01579b, #0288d1);"></div></div>
+        <div class="gallon-value">56 gal</div>
+      </div>
+      <div class="gallon-row bobby-row">
+        <div class="gallon-label">Bobby's total stash</div>
+        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="100" style="background: linear-gradient(90deg, var(--neon-amber), #ffd54f); box-shadow: 0 0 18px rgba(255,179,71,0.22);"></div></div>
+        <div class="gallon-value">100+ gal</div>
+      </div>
     </div>
-    <div class="tip-card">
-      <div class="tip-number">Free water from the sky</div>
-      <div class="tip-title">Catch rainwater. It's legal in most states.</div>
-      <div class="tip-desc">Gutters into food-grade barrels, filter what you collect. God put it up there for free. Some states have laws against collecting rainwater off your own roof into your own bucket, which is the dumbest thing the government has ever done and they have done some genuinely spectacular stupid things. Ohio's fine. Check your state. Catch the damn rain before some dipshit in a cubicle figures out how to stop you.</div>
-    </div>
-    <div class="tip-card">
-      <div class="tip-number">Store it everywhere, dummy</div>
-      <div class="tip-title">Milk jugs. Buckets. Under the bed.</div>
-      <div class="tip-desc">Bakery departments at grocery stores give away food-grade five-gallon buckets free if you ask. I know "asking nice" ain't everybody's strong suit. It sure as hell ain't mine. Brenda says I have the social skills of a raccoon with a head wound and honestly that's fair. But even I can get a free bucket. Fill 'em from the tap. I got fourteen bottles under Brenda's bed right now. She doesn't know. She will know when she reads this. Worth it. Absolutely worth it.</div>
+
+    <div class="fear-callout">
+      <p>FEMA's two-week target for a family of four — 56 gallons — is heavier than most people imagine. That's seven full flats of water bottles, stacked in a closet. Bobby's stash clears it in <strong>multiple locations simultaneously</strong>: Econoline, shed, under Brenda's bed, F-150 cab, F-150 bed. The thirty-seven petition signers are not prepared. Bobby knows their names.</p>
     </div>
   </div>
 
-  <!-- CLOSING PROSE -->
+  <hr class="article-hr">
+
+  <!-- HOW TO MAKE SHITTY WATER LESS SHITTY (verbatim) -->
+  <div class="section-subhead">
+    <h3>How to Make Shitty Water Less Shitty</h3>
+  </div>
+
   <div class="prose">
-    <p>Now I gotta address the 1985 Ford F-150 sitting in Brenda's driveway. Seventh generation, straight six, two-tone brown and tan. Has not run since 2005. I don't want to hear one goddamn word about it. She'll run again. I'm getting to it. Have been getting to it for twenty years, yes, and there are trees growing out of the truck bed and a family of possums living under the front axle, but I want you to understand something: the possums moved in voluntarily. The trees are growing toward the sun. Nature itself has co-signed this truck's existence. If the natural world ain't complaining, then Gary can fold his fourteen letters into an origami swan and sit on it.</p>
-
-    <p>Thirty-seven people in this town signed a petition about that truck. Thirty. Seven. In a town of fourteen hundred. "Eyesore," they called it — in a town where the hardware store has had a Reagan campaign poster in the window since 1984 and not one living soul has said a single word. But Bobby Pinkeye's truck is the great moral emergency of our time. You know what those thirty-seven people can do with their eyesore opinion? I am going to exercise restraint and not say it out loud. You're smart enough to figure it out from context. Gary, you are not.</p>
-
-    <p>Gary is the mayor. I call him Mayor Dipshit in open company and I will not apologize for it. He has sent me fourteen official government letters about that truck. Fourteen. On municipal letterhead. That is a man with a printer, too much free time, and a profound inability to identify real problems. "Mr. Duggan, please remove the inoperable vehicle." Mr. Duggan this. Mr. Duggan that. Gary, I want you to understand something. When I was sixteen years old I built my high school's football stadium with nothing but a John Deere tractor and a disc plow because nobody else had the guts to do it. Coach Dempsey watched me grade that entire field and said, "Bobby, you are the only kid I got who ain't completely useless." That is CHARACTER, Gary. You write me a fifteenth letter and I will read it at the diner table and use it as a napkin. Don't test me on this.</p>
-
-    <p>That truck ain't an eyesore. It is a supply depot. Thirty-two bottles of water in the cab. Twelve more in the bed, under the volunteer trees growing up through the cargo floor, which I consider to be nature personally endorsing my preparation strategy. When this town's water main gives out — and it will, that infrastructure is older than I am and held together with corrosion and municipal prayer — every one of those thirty-seven petition-signing turkeys is going to come shuffling up Brenda's driveway with their hats in their hands like they didn't spend two years trying to have my emergency supply depot towed to a junkyard. I might share my water. MIGHT. Depends entirely on the quality of the apology and whether you're willing to look me in the eye while you do it. I have memorized every name on that list. Ask Gary. He's got the records.</p>
-
-    <p>Then there's Jack. Brenda's daddy. That man has been pissing in my Cheerios since 2017 with the patient, methodical precision of someone who has identified his life's purpose and committed to it completely. He looks at me the way a dog looks at a bathtub — total awareness that something bad is about to happen, pure dread, not a shred of goodwill. He knows I don't pay rent. He knows about the truck. He knows I come downstairs every morning and eat his eggs without so much as a thank-you because I've decided that's how I contribute to this household — as a cautionary tale and a test of character. The tools in that shed, Jack. I am getting to it. I said I am getting to it. You don't have to keep looking at me like that.</p>
-
-    <p>Some of you from around town are reading this going, "Bobby, ain't you the one who hit a scratch-off for fifty grand?" I don't know what anybody is talking about. I buy scratch-offs at the gas station like a completely normal American. Most of them don't hit. I have no further comment on this topic. Whatever the IRS mayor or may not be sniffing around is a private matter between me and the relevant federal agencies and I will not be elaborating under any circumstances including but not limited to this article, the next article, a deposition, or my own funeral.</p>
-
-    <p>Here is what matters. Water kills you faster than everything else. Three days is your entire window — that's the whole game, the whole article, the whole damn point. One gallon per person per day, four people, two weeks, fifty-six gallons minimum and don't let any smooth-talking dipshit talk you down from that number. Your water heater is sitting in your basement right this second with forty to eighty gallons you completely forgot you had — turn the power off first or you will die stupid, which is the single worst way to die because nobody learns anything useful from it. Boil it, bleach it, filter it. Catch rainwater off your roof because God made it fall for free and any government that has opinions otherwise can go directly to hell. In Ohio it's legal, thank the sweet baby Jesus, because if it wasn't I would have snapped completely years ago and Brenda would have had to explain it to Gary and I don't want that for her.</p>
-
-    <p>Don't eat anything from a cook named Darryl. Dale Earnhardt was the greatest driver who ever sat behind a wheel, full stop, no appeals, no discussion, and I will throw hands at my age with my knees the way they are with any sumbitch who wants to argue that — bad back, bad knees, fifty-five years old, doesn't matter, I WILL swing and I WILL feel good about it. Pilot Flying J has never done me wrong and I love them like family. The truck stays right where she is. Gary can write his fifteenth letter. Jack can keep making that face across the breakfast table. Brenda can tell me I'm exhausting over her coffee every morning until the sun burns out. None of it matters. I got water. I got a plan. My Cheerios have been pissed in every single day for fifty-five years and I am still sitting here eating them, which is the whole point of this article and also of my life in general.</p>
-
-    <p><strong>Don't let nobody piss in your Cheerios.</strong></p>
-    <p style="font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--neon-amber)">Bobby Pinkeye out.</p>
+    <p>Pond water, creek water, your neighbor's above-ground pool that's been growing something with real ambitions since the Obama administration — you cannot drink it straight. You will get things living inside you that will do to your insides exactly what Darryl's chicken fried steak did to mine, and I promise you will not handle it with the quiet dignity and creative improvisation I brought to that Nebraska rest area.</p>
+    <p>Boil it. Rolling boil, sixty seconds. Everything that had plans to kill you is dead. Above six thousand feet, go three minutes because altitude does some nerdy shit to the boiling point I don't fully understand. I trust the nerds completely. God bless every last nerd on this earth.</p>
+    <p>Bleach. Plain unscented Clorox. Eight drops per gallon if the water's clear. Sixteen drops if it's cloudy or you fished a dead something out before you scooped it, which has happened to me, and I don't want to say more about it. Stir it, wait thirty minutes, drink it. Tastes like a YMCA locker room. You're alive. Shut up and drink. I once drank radiator runoff in a Walmart parking lot in Tulsa because that was my option at that particular moment. Bleach water is a goddamn vacation by comparison. Do not drink radiator runoff. That is the one piece of free advice I give without conditions.</p>
+    <p>Get a real filter. Not a Brita. A Brita is a toy. I'm talking a Sawyer Squeeze, a LifeStraw, a Berkey that looks like R2-D2 let himself go after a bad breakup. Something that actually kills what's in there. The one thing no filter can touch is the expression on Brenda's daddy Jack's face when I come downstairs and eat his eggs every morning without asking. That requires either extensive therapy or a complete and total shamelessness. I chose option two approximately four years ago. Zero regrets.</p>
   </div>
+
+  <hr class="article-hr">
+
+  <!-- WATER HEATER (verbatim) -->
+  <div class="section-subhead">
+    <h3>Your Water Heater, a.k.a. the Thing in Your Basement You Forgot About</h3>
+  </div>
+
+  <div class="prose">
+    <p>Most people are dumber than a bag of wet hair. I say that with love. The point is: your hot water heater is sitting there right now with forty to eighty gallons of drinkable water in it and you didn't even know it. Turn the power or gas off first — dying in an explosion is embarrassing, stupid, and permanent. Open the drain valve at the bottom. Boom. Up to four weeks of drinking water you already paid for.</p>
+    <p>If you blow yourself up because you forgot to turn off the power, that's Darwinism doing its job. I'll feel a little bad. Mostly I'll be annoyed you didn't listen.</p>
+  </div>
+
+  <hr class="article-hr">
+
+  <!-- RAIN (verbatim) -->
+  <div class="section-subhead">
+    <h3>Catchin' Rain and Pissin' Off the Government (Two Birds, One Stone)</h3>
+  </div>
+
+  <div class="prose">
+    <p>Some states have laws against collecting rainwater off your own roof into your own bucket on your own property. The sky. THE SKY. God's water. Free water from clouds that aren't owned by anybody. And some jackass in a government cubicle who probably couldn't change a tire decided that is illegal. That is the single dumbest thing the government has ever done and they have done some genuinely spectacular stupid things.</p>
+    <p>In Ohio you CAN collect rain, thank the sweet baby Jesus, because if you couldn't I woulda snapped a long time ago. Set up your gutters, run 'em into barrels, filter what you collect. God made it fall for free. Any government that has opinions otherwise can go directly to hell.</p>
+  </div>
+
+  <hr class="article-hr">
+
+  <!-- THE TRUCK (verbatim) -->
+  <div class="section-subhead">
+    <h3>The Goddamn Truck (I Will Not Shut Up About It)</h3>
+  </div>
+
+  <div class="prose">
+    <p>Now I gotta address the 1985 Ford F-150 sitting in Brenda's driveway. Seventh generation, straight six, two-tone brown and tan. Has not run since 2005. I do not want to hear one goddamn word about it. She'll run again. I'm getting to it.</p>
+    <p>Thirty-seven people signed a petition. In a town of fourteen hundred. "Eyesore," they called it — in a town where the hardware store has had a Reagan campaign poster in the window since 1984 and not one soul has said a word. But Bobby Pinkeye's truck is the great civic emergency of our time. You know what those thirty-seven people can do with their opinion? You're smart enough to figure it out from context. Gary, you are not.</p>
+    <p>Gary is the mayor. I call him Mayor Dipshit in open company. Fourteen official government letters. Fourteen. On municipal letterhead. "Mr. Butts, the town council has received complaints." Gary, when I was sixteen years old I built my high school's football stadium with a John Deere tractor and a disc plow because nobody else had the guts to do it. Coach Dempsey watched me grade that whole field and said, "Bobby, you're the only kid I got who ain't completely useless." That is CHARACTER, Gary. You write me a fifteenth letter and I will read it out loud at the diner and use it as a napkin.</p>
+    <p>You know what's in that "eyesore" right now? Thirty-two bottles of water in the cab. Twelve more in the bed, under the volunteer trees growing up through the cargo floor, which I consider nature personally co-signing my lifestyle. When this town's water main gives out — and it WILL, that infrastructure is older than I am and held together with corrosion and wishful thinking — every one of those thirty-seven petition-signing turkeys is going to come shuffling up Brenda's driveway with their hats in their hands. I might share my water. MIGHT. Depends entirely on the sincerity of the apology. I've memorized every name on that list. Ask Gary.</p>
+  </div>
+
+  <hr class="article-hr">
+
+  <!-- SCRATCH-OFF (verbatim) -->
+  <div class="section-subhead">
+    <h3>A Quick Word About the Scratch-Off</h3>
+  </div>
+
+  <div class="prose">
+    <p>Some of you from around town are reading this going, "Bobby, ain't you the one who hit fifty grand on a scratch-off?" I do not know what you are talking about. I buy scratch-offs at the gas station like a normal American. Most of them don't hit. Whatever the IRS may or may not be sniffing around is a private matter and I will not be elaborating. Whatever Brenda thinks she knows, she doesn't. My face is red right now but it's because I'm angry. Just anger. Plain regular anger. We are done with this topic forever.</p>
+  </div>
+
+  <hr class="article-hr">
+
+  <!-- SIGN-OFF (verbatim) -->
+  <div class="prose">
+    <p>The Data Dive Bar boys tell me I'm writing more of these. Food, shelter, security, first aid. It's gonna be a hell of a ride.</p>
+    <p>Until next time, don't let nobody piss in your Cheerios.</p>
+  </div>
+
+  <div class="signoff">Bobby Pinkeye out.</div>
+
+  <hr class="article-hr">
+
+  <div class="teaser"><em>Coming up next on Data Dive Bar: "FOOD, or, The Time I Hit a Deer with the Econoline on Highway 30 and Brenda's Daddy Jack Made Jerky Out of It and It Was the Only Time That Man Has Ever Looked at Me Without Visible Contempt"</em></div>
+
+  <hr class="article-hr">
+
+  <div class="copyright"><em>© Bobby "Pinkeye" Butts. Unauthorized reproduction of this article will result in Bobby showing up at your location in a Ford Econoline that smells like something died in the vents, with a bad attitude, a camo hat baked in cat piss, and enough warm Mountain Dew to drown a reasonable man's will to live. You've been warned, you stupid turkey.</em></div>
 
   <!-- METHODOLOGY -->
   <div class="methodology">
-    <h3>Methodology & Sources</h3>
-    <p><strong>Dehydration survival timeline</strong> Synthesized from peer-reviewed clinical literature including Nutrition Reviews, American Journal of Physiology, and NHS/Mayo Clinic clinical guidelines. The 72–96 hour baseline reflects adult survival under temperate conditions (60–75°F) without other stressors. Temperature survival windows based on sweat rate research (adults lose approximately 1–1.5 L/hr sweating at extreme heat) and clinical case literature.</p>
-    <p><strong>Household preparedness statistics</strong> 51% self-reported preparedness from FEMA 2023 National Household Survey (~7,600 respondents; community.fema.gov). 53% with 3-day water supply and 96% with 3-day food supply from Yadav &amp; Kumar (2021), <em>Disaster Medicine and Public Health Preparedness</em> (PMID: 33820591), based on a national survey sample.</p>
-    <p><strong>Water purification recommendations</strong> Boil water and bleach treatment guidance consistent with CDC Emergency Water Disinfection guidelines. 8 drops unscented household bleach (5–9% sodium hypochlorite) per gallon, 30-minute contact time. Above 6,000 ft: boil 3 minutes. At or below 6,000 ft: boil 1 minute. Source: cdc.gov/water-emergency.</p>
+    <h3>Methodology &amp; Sources</h3>
+    <p><strong>Water Preparedness Data (Chart 01)</strong> — FEMA Ready.gov national preparedness surveys and the FEMA National Household Survey on Disaster Preparedness. The two-week water storage recommendation (1 gallon/person/day × 14 days) is FEMA's published guidance. Survey data consistently shows approximately 50–55% of Americans have no emergency water stored; the tier breakdown is derived from FEMA and CERT preparedness survey aggregates.</p>
+    <p><strong>Dehydration Timeline (Chart 02)</strong> — Clinical dehydration stages sourced from wilderness medicine literature and American College of Emergency Physicians published guidelines. Symptom onset and progression are well-established; individual variation exists based on body weight, temperature, and exertion. Bobby's reported symptom timeline (rapid heart rate, hallucinations, deals with God at hour 36) aligns with documented moderate-to-severe dehydration presentation in a hot vehicle environment.</p>
+    <p><strong>Water Treatment Methods</strong> — CDC emergency water treatment guidelines. Boiling: 1 rolling minute at sea level, 3 minutes above 6,500 ft. Unscented household bleach (5–9% sodium hypochlorite): 8 drops/gallon clear water, 16 drops/gallon cloudy or turbid water; stir and wait 30 minutes. Commercial filtration per manufacturer NSF/ANSI certification standards.</p>
+    <p><strong>Bobby's Stash Estimate (Chart 03)</strong> — Bobby's text accounts for: 60 gallons explicitly mentioned on the porch; 32 + 12 bottles in the F-150 (standard 16.9 oz bottles ≈ 5.5 gal total); 14 bottles under Brenda's bed (≈ 1.75 gal); undisclosed quantities in the Econoline and the shed. Total estimated at 100+ gallons across distributed locations. Bobby did not respond to requests for clarification because Bobby does not take calls from data people.</p>
   </div>
 
   <!-- FOOTER -->
   <div class="article-footer">
     <div class="logo">Data Dive Bar</div>
     <div class="tagline">Unhinged investigations. Unnecessary charts. Questionable research conducted at questionable hours.</div>
-    <p style="font-size:0.78rem;color:var(--muted);margin-top:20px;font-family:'JetBrains Mono',monospace;letter-spacing:0.5px">Next up: <em>FOOD, or, The Time I Hit a Deer with the Econoline on Highway 30 and Brenda's Daddy Jack Made Jerky Out of It and It Was the Only Time That Man Has Ever Looked at Me Without Visible Contempt</em></p>
-    <p style="font-size:0.72rem;color:var(--muted);margin-top:12px;opacity:0.6">© Bobby Pinkeye. Unauthorized reproduction of this article will result in Bobby Pinkeye showing up at your location in a Ford Econoline that smells like something died in the vents, with a bad attitude, a camo hat baked in cat piss, and enough warm Mountain Dew to drown a reasonable man's will to live. You've been warned, you stupid turkey.</p>
   </div>
 
-</div><!-- end page-container -->
+</div>
 
 <script>
-// ============================================================
-// INTERSECTION OBSERVER triggers all chart animations
-// ============================================================
-function onVisible(el, fn) {
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { fn(); obs.disconnect(); } });
-  }, { threshold: 0.2 });
-  obs.observe(el);
-}
+// =============================================
+// CHART 1: America's Water Preparedness
+// =============================================
+(function buildPrepChart() {
+  const track  = document.getElementById('prepBarTrack');
+  const legend = document.getElementById('prepLegend');
+  if (!track) return;
 
-// ============================================================
-// CHART 1: DEHYDRATION TIMELINE
-// ============================================================
-(function buildTimeline() {
-  const milestones = [
-    { pct: 0,   time: 'HR 0',   desc: 'Baseline',       color: '#4fc3f7' },
-    { pct: 12,  time: 'HR 12',  desc: 'Thirst, −5% cognition', color: '#29b6f6' },
-    { pct: 25,  time: 'HR 24',  desc: 'Headache, dark urine', color: '#ffb347' },
-    { pct: 50,  time: 'HR 48',  desc: 'Confusion, rapid heartbeat', color: '#ff9800' },
-    { pct: 75,  time: 'HR 72',  desc: 'Organ deterioration begins', color: '#ff5722' },
-    { pct: 100, time: 'HR 96+', desc: 'Kidney failure / death', color: '#e53935' },
+  const segments = [
+    { label: 'No emergency water stored',         pct: 53, color: '#b71c1c', textDark: false },
+    { label: 'Less than 3 days stored',            pct: 27, color: '#d32f2f', textDark: false },
+    { label: '3–7 days stored',                    pct: 13, color: '#ff7043', textDark: false },
+    { label: '14+ days (FEMA target)',              pct:  5, color: '#ffb347', textDark: true  },
+    { label: 'Bobby level (60+ gal, distributed)', pct:  2, color: '#69f0ae', textDark: true  },
   ];
 
-  const container = document.getElementById('milestones');
-  milestones.forEach(m => {
-    const el = document.createElement('div');
-    el.className = 'milestone';
-    el.style.left = m.pct + '%';
-    if (m.pct === 100) el.style.left = 'calc(100% - 2px)';
-    el.innerHTML = `
-      <div class="milestone-tick"></div>
-      <div class="milestone-dot" style="background:${m.color}"></div>
-      <div class="milestone-label">
-        <span class="milestone-time" style="color:${m.color}">${m.time}</span>
-        <span class="milestone-desc">${m.desc}</span>
-      </div>`;
-    container.appendChild(el);
-  });
+  segments.forEach(s => {
+    const seg = document.createElement('div');
+    seg.className = 'prep-segment';
+    seg.style.width = s.pct + '%';
+    seg.style.background = s.color;
+    seg.title = s.label + ' — ' + s.pct + '%';
 
-  const wrap = document.getElementById('timelineWrap');
-  onVisible(wrap, () => {
-    // animate bar fill
-    setTimeout(() => {
-      document.getElementById('timelineFill').classList.add('animated');
-    }, 100);
-    // reveal milestone labels
-    const labels = wrap.querySelectorAll('.milestone-label');
-    labels.forEach((l, i) => {
-      setTimeout(() => l.classList.add('visible'), 300 + i * 180);
-    });
-    // animate temperature bars
-    const tempBars = document.querySelectorAll('.temp-window-bar');
-    tempBars.forEach((bar, i) => {
-      setTimeout(() => {
-        bar.style.width = bar.dataset.width + '%';
-      }, 800 + i * 100);
-    });
+    if (s.pct >= 10) {
+      const pct = document.createElement('span');
+      pct.className = 'prep-segment-pct';
+      pct.style.color = s.textDark ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.9)';
+      pct.textContent = s.pct + '%';
+      seg.appendChild(pct);
+    }
+    track.appendChild(seg);
+
+    const item = document.createElement('div');
+    item.className = 'prep-legend-item';
+
+    const swatch = document.createElement('div');
+    swatch.className = 'prep-legend-swatch';
+    swatch.style.background = s.color;
+    item.appendChild(swatch);
+
+    const txt = document.createElement('span');
+    txt.textContent = s.label + ' — ' + s.pct + '%';
+    item.appendChild(txt);
+
+    legend.appendChild(item);
   });
 })();
 
-// ============================================================
-// CHART 2: PREPAREDNESS GAP
-// ============================================================
-(function buildPrep() {
-  const chart = document.getElementById('prepChart');
+
+// =============================================
+// CHART 2: 72-Hour Dehydration Timeline
+// =============================================
+(function buildTimeline() {
+  const svg = document.getElementById('timelineChart');
+  if (!svg) return;
+  const ns = 'http://www.w3.org/2000/svg';
+
+  const W = 840, H = 300;
+  const pad = { top: 64, right: 24, bottom: 72, left: 24 };
+  const plotW = W - pad.left - pad.right;
+  const barH = 48;
+  const barY = pad.top;
+
+  const stages = [
+    { start: 0,  end: 4,  label: 'Thirst,\ndry mouth',             color: '#ffb347', severity: 0.18 },
+    { start: 4,  end: 12, label: 'Headache,\nfatigue',              color: '#ff9800', severity: 0.38 },
+    { start: 12, end: 24, label: 'Dizziness,\nnausea',              color: '#ff7043', severity: 0.56 },
+    { start: 24, end: 36, label: 'Confusion,\nrapid heartbeat',     color: '#ff5722', severity: 0.73 },
+    { start: 36, end: 48, label: "★ BOBBY'S ZONE\nhallucinations",  color: '#ff3c3c', severity: 0.89, bobby: true },
+    { start: 48, end: 60, label: 'Critical organ\nstress',          color: '#e53935', severity: 0.96 },
+    { start: 60, end: 72, label: 'Kidney\nfailure',                 color: '#b71c1c', severity: 1.0  },
+  ];
+
+  const xScale = h => pad.left + (h / 72) * plotW;
+
+  // Background track
+  const bg = document.createElementNS(ns, 'rect');
+  bg.setAttribute('x', pad.left); bg.setAttribute('y', barY);
+  bg.setAttribute('width', plotW); bg.setAttribute('height', barH);
+  bg.setAttribute('fill', 'rgba(255,255,255,0.03)'); bg.setAttribute('rx', 6);
+  svg.appendChild(bg);
+
+  // Severity segments
+  stages.forEach(s => {
+    const x1 = xScale(s.start);
+    const w  = xScale(s.end) - x1;
+
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', x1); rect.setAttribute('y', barY);
+    rect.setAttribute('width', w); rect.setAttribute('height', barH);
+    rect.setAttribute('fill', s.color);
+    rect.setAttribute('opacity', (0.22 + s.severity * 0.68).toFixed(2));
+    if (s.bobby) {
+      rect.setAttribute('stroke', '#ff3c3c');
+      rect.setAttribute('stroke-width', '2');
+      rect.setAttribute('opacity', '0.88');
+    }
+    svg.appendChild(rect);
+
+    // Top severity stripe
+    const stripe = document.createElementNS(ns, 'rect');
+    stripe.setAttribute('x', x1 + 1); stripe.setAttribute('y', barY);
+    stripe.setAttribute('width', w - 2); stripe.setAttribute('height', 5);
+    stripe.setAttribute('fill', s.color); stripe.setAttribute('opacity', '0.9');
+    svg.appendChild(stripe);
+  });
+
+  // Hour ticks and labels
+  [0, 12, 24, 36, 48, 60, 72].forEach(h => {
+    const x = xScale(h);
+
+    const tick = document.createElementNS(ns, 'line');
+    tick.setAttribute('x1', x); tick.setAttribute('x2', x);
+    tick.setAttribute('y1', barY + barH); tick.setAttribute('y2', barY + barH + 8);
+    tick.setAttribute('stroke', 'rgba(255,255,255,0.2)'); tick.setAttribute('stroke-width', '1');
+    svg.appendChild(tick);
+
+    const lbl = document.createElementNS(ns, 'text');
+    lbl.setAttribute('x', x); lbl.setAttribute('y', barY + barH + 22);
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('fill', 'rgba(255,255,255,0.4)');
+    lbl.setAttribute('font-family', "'JetBrains Mono', monospace");
+    lbl.setAttribute('font-size', '10');
+    lbl.textContent = h === 0 ? 'Hour 0' : h + 'h';
+    svg.appendChild(lbl);
+  });
+
+  // X-axis label
+  const axisLbl = document.createElementNS(ns, 'text');
+  axisLbl.setAttribute('x', pad.left + plotW / 2); axisLbl.setAttribute('y', H - 8);
+  axisLbl.setAttribute('text-anchor', 'middle');
+  axisLbl.setAttribute('fill', 'rgba(255,255,255,0.18)');
+  axisLbl.setAttribute('font-family', "'JetBrains Mono', monospace");
+  axisLbl.setAttribute('font-size', '9'); axisLbl.setAttribute('letter-spacing', '2');
+  axisLbl.textContent = 'HOURS WITHOUT WATER';
+  svg.appendChild(axisLbl);
+
+  // Stage labels above bar
+  const labelData = [
+    { hour: 2,  text: 'Thirst' },
+    { hour: 8,  text: 'Headache' },
+    { hour: 18, text: 'Dizziness' },
+    { hour: 30, text: 'Confusion' },
+    { hour: 42, text: 'Hallucinations' },
+    { hour: 54, text: 'Organ stress' },
+    { hour: 66, text: 'Kidney failure' },
+  ];
+
+  labelData.forEach((ld, i) => {
+    const x = xScale(ld.hour);
+    const stage = stages[i];
+
+    const t = document.createElementNS(ns, 'line');
+    t.setAttribute('x1', x); t.setAttribute('x2', x);
+    t.setAttribute('y1', barY - 4); t.setAttribute('y2', barY);
+    t.setAttribute('stroke', stage ? stage.color : '#fff');
+    t.setAttribute('stroke-width', '1'); t.setAttribute('opacity', '0.5');
+    svg.appendChild(t);
+
+    const txt = document.createElementNS(ns, 'text');
+    txt.setAttribute('x', x); txt.setAttribute('y', barY - 10);
+    txt.setAttribute('text-anchor', 'middle');
+    txt.setAttribute('fill', stage && stage.bobby ? '#ff5252' : 'rgba(255,255,255,0.55)');
+    txt.setAttribute('font-family', "'JetBrains Mono', monospace");
+    txt.setAttribute('font-size', '9');
+    txt.setAttribute('font-weight', stage && stage.bobby ? '700' : '400');
+    txt.textContent = ld.text;
+    svg.appendChild(txt);
+  });
+
+  // Bobby zone callout
+  const bobbyX = xScale(42);
+
+  const calloutLine = document.createElementNS(ns, 'line');
+  calloutLine.setAttribute('x1', bobbyX); calloutLine.setAttribute('x2', bobbyX);
+  calloutLine.setAttribute('y1', barY + barH); calloutLine.setAttribute('y2', barY + barH + 44);
+  calloutLine.setAttribute('stroke', '#ff3c3c');
+  calloutLine.setAttribute('stroke-width', '1.5');
+  calloutLine.setAttribute('stroke-dasharray', '3,3');
+  svg.appendChild(calloutLine);
+
+  const calloutText = document.createElementNS(ns, 'text');
+  calloutText.setAttribute('x', bobbyX); calloutText.setAttribute('y', barY + barH + 56);
+  calloutText.setAttribute('text-anchor', 'middle');
+  calloutText.setAttribute('fill', '#ff5252');
+  calloutText.setAttribute('font-family', "'JetBrains Mono', monospace");
+  calloutText.setAttribute('font-size', '9'); calloutText.setAttribute('font-weight', '700');
+  calloutText.setAttribute('letter-spacing', '1');
+  calloutText.textContent = '★ BOBBY IS HERE';
+  svg.appendChild(calloutText);
+
+  // Hour 72 annotation
+  const kidneyX = xScale(72) - 4;
+  const k1 = document.createElementNS(ns, 'text');
+  k1.setAttribute('x', kidneyX); k1.setAttribute('y', barY + barH / 2 - 6);
+  k1.setAttribute('text-anchor', 'end');
+  k1.setAttribute('fill', '#ff5252');
+  k1.setAttribute('font-family', "'JetBrains Mono', monospace");
+  k1.setAttribute('font-size', '9'); k1.setAttribute('font-weight', '700');
+  k1.setAttribute('letter-spacing', '1');
+  k1.textContent = '◄ HOUR 72';
+  svg.appendChild(k1);
+
+  const k2 = document.createElementNS(ns, 'text');
+  k2.setAttribute('x', kidneyX); k2.setAttribute('y', barY + barH / 2 + 10);
+  k2.setAttribute('text-anchor', 'end');
+  k2.setAttribute('fill', 'rgba(255,60,60,0.65)');
+  k2.setAttribute('font-family', "'JetBrains Mono', monospace");
+  k2.setAttribute('font-size', '8');
+  k2.textContent = '"kidneys say to hell with this"';
+  svg.appendChild(k2);
+})();
+
+
+// =============================================
+// CHART 3: Gallon Calculator — animated bars
+// =============================================
+(function buildGallonChart() {
+  const chart = document.getElementById('gallonChart');
   if (!chart) return;
-  onVisible(chart, () => {
-    const bars = chart.querySelectorAll('.prep-bar-yes');
-    bars.forEach((bar, i) => {
-      const pct = parseFloat(bar.dataset.pct);
-      setTimeout(() => {
-        bar.style.width = pct + '%';
-        setTimeout(() => {
-          const lbl = bar.querySelector('.prep-bar-pct');
-          if (lbl) lbl.classList.add('visible');
-          const gap = bar.querySelector('.prep-gap-label');
-          if (gap) gap.classList.add('visible');
-        }, 800);
-      }, i * 150);
-    });
-  });
-})();
 
+  const bars   = chart.querySelectorAll('.gallon-bar-fill');
+  const values = chart.querySelectorAll('.gallon-value');
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      bars.forEach((bar, i) => {
+        setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, i * 110);
+      });
+      setTimeout(() => {
+        values.forEach(v => v.classList.add('visible'));
+      }, 300);
+      obs.disconnect();
+    });
+  }, { threshold: 0.3 });
+
+  obs.observe(chart);
+})();
 </script>
 
 </body>
