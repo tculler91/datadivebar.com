@@ -16,7 +16,7 @@ I am 55 years old. Five foot nine. North of two hundred pounds and I don't give 
 
 I also survived an F5 tornado on I-80 in Nebraska haulin' forty thousand pounds of steel coils doin' about eighty-five and I tell that story a lot and I don't give a shit if you're tired of hearin' it because when YOU outrun an F5 tornado in a Peterbilt you can tell YOUR story a lot. Until then, shut up and listen to mine.
 
-I also survived a divorce. I also survived eatin' gas station sushi in Bakersfield, California, which was honestly worse than the tornado. And I am currently survivin' a relationship with a woman named Brenda who I been in love with since high school and who has told me on multiple occasions that I am "the most exhaustin' human being on earth," which I take as a compliment because at least I'm number one at somethin'.
+I survived a divorce too. And eatin' gas station sushi in Bakersfield, California, which was honestly worse than the tornado — I mean that sincerely and without a hint of exaggeration. And I am currently survivin' a relationship with a woman named Brenda who I been in love with since high school and who has told me on multiple occasions that I am "the most exhaustin' human being on earth," which I take as a compliment because at least I'm number one at somethin'.
 
 Anyway. This here's an article about water. You need it. You probably don't got enough of it. And you're gonna die without it. Let's get into it.
 
@@ -40,7 +40,7 @@ Now. Water.
 
 Every survival article, book, pamphlet, whatever the hell, starts with water. You know why? 'Cause you're dead without it, stupid. Three days. That's all your body gives you. Seventy-two hours and your kidneys say "to hell with this" and your brain turns to soup and that's all she wrote. Game over. Done. Deader than shit. Deader than my marriage. Deader than Dale Earnhardt, rest his soul, greatest driver that ever goddamn lived and I will throw hands with any son of a bitch who says otherwise, I don't care if I lose, I WILL swing.
 
-Water is more important than food. More important than shelter. More important than ammo, and I got a bumper sticker about my feelings on the Second Amendment that makes my position pretty damn clear, so you know that ain't a statement I make lightly. Water is more important than diesel fuel. And brother, I have cried, REAL tears, at a Pilot Flying J, watchin' diesel prices drop. Those beautiful bastards. God bless Pilot Flying J. If they ran the government this country would work. Instead we got dipshits in suits who can't find their own ass with both hands and a flashlight runnin' things, and that, friends, is why we need to talk about storin' our own water, because countin' on these turkeys to keep the pipes runnin' is a bunch of malarkey and you damn well know it.
+Water is more important than food or shelter. And here's the one that oughta hit you in the gut: more important than ammo. I got a bumper sticker about my feelings on the Second Amendment that makes my position pretty damn clear, so you know that ain't a statement I make lightly. Hell, it beats diesel fuel too. And brother, I have cried, REAL tears, at a Pilot Flying J, watchin' diesel prices drop. Those beautiful bastards. God bless Pilot Flying J. If they ran the government this country would work. Instead we got dipshits in suits who can't find their own ass with both hands and a flashlight runnin' things, and that, friends, is why we need to talk about storin' our own water, because countin' on these turkeys to keep the pipes runnin' is a bunch of malarkey and you damn well know it.
 
 You wanna know how I know about dehydration? 'Cause I almost died from it. Not in Vietnam. Not in the jungle. Not in the ocean where I was pullin' half-drowned sailors out of pitch-black water for Uncle Sam while your daddy was watchin' Hee Haw. No. I almost died in goddamn NEBRASKA. In a truck stop parking lot. Because of a six dollar chicken fried steak and a short order cook named Darryl.
 
@@ -92,7 +92,7 @@ And there's water in the F-150. Thirty-two bottles in the cab. Twelve more in th
 
 Alright, let's say the world's gone ass over teakettle and you need water but all you got is a pond or a creek or the runoff from your neighbor's above-ground pool that ain't been cleaned since the Obama administration. You can't just drink it like that. You'll get parasites and bacteria and all kinds of nasty crap that'll have you prayin' for death on a toilet just like I was at Darryl's truck stop, and trust me, you do NOT want that. That is a place you do not wanna go. I been there. It ain't good. Pack a lunch, 'cause you're gonna be there awhile.
 
-So you gotta purify it. Three ways to do this, and none of 'em are complicated, which is good because most of you are dumber than a bag of hammers and I mean that with all the respect it deserves, which is zero.
+So you gotta purify it. And it ain't complicated, which is good because most of you are dumber than a bag of hammers and I mean that with all the respect it deserves, which is zero.
 
 Boilin' is the easy one. Get the water to a rolling boil, keep it there for sixty seconds, and you're good. All the bad shit dies. If you're way up in the mountains, like above six thousand feet, go for three minutes because apparently the boilin' point is different up there or some nerdy horseshit like that. I didn't go to college. I went to Vietnam. But the Navy taught me one thing: listen to the nerds. The nerds know shit that'll keep you alive. God bless every last one of them nerds.
 
@@ -136,11 +136,7 @@ That's a promise. And unlike my alleged proposal to Brenda, which DID NOT HAPPEN
 
 ---
 
-### What to Remember From This Article
-
-Water kills you faster than starvation does. Three days. That's your window. One gallon per person per day and not a drop less. Store it everywhere. Boil it, bleach it, or filter it. Your water heater's got forty to eighty gallons you forgot about. Catch rainwater because it's free and it makes the government mad, which in my book is a bonus. Don't eat chicken fried steak from a cook named Darryl. Don't drive through Long Island unless you wanna lose your faith in humanity. Dale Earnhardt was the greatest. Pilot Flying J is a national treasure. The truck in the driveway is a survival asset and she stays right the hell where she is.
-
-That's all I got for now. The Data Dive Bar boys tell me I'm gonna be writin' more of these, which means you poor bastards are stuck with me. I got articles comin' on food, shelter, security, first aid, and what to do when society collapses and your neighbors start actin' like the dipshits on Long Island. It's gonna be a hell of a ride.
+The Data Dive Bar boys tell me I'm gonna be writin' more of these, which means you poor bastards are stuck with me. I got articles comin' on food, shelter, security, first aid, and what to do when society collapses and your neighbors start actin' like the dipshits on Long Island. It's gonna be a hell of a ride.
 
 Until next time, don't let nobody piss in your Cheerios.
 
