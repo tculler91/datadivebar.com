@@ -1,6 +1,6 @@
 # WHEN IT ALL GOES SIDEWAYS
 # A Regular Dipshit's Guide to Not Dyin'
-## By Billy "Lugnuts" Duggan, Survival Contributor, DataDiveBar.com
+## By Billy "Pinkeye" Duggan, Survival Contributor, DataDiveBar.com
 
 *"Because the government sure as shit ain't comin' to save your sorry ass, and neither is the mayor, and neither is your mama"*
 
@@ -8,9 +8,9 @@
 
 The fellas over at Data Dive Bar asked me to write some articles for their website on account of I am the most qualified sumbitch in the state of Iowa, and possibly the whole goddamn country, when it comes to stayin' alive when everything goes tits up. I told 'em I ain't no writer. I drive a damn Econoline van. I haul shit to places nobody's ever heard of for money that ain't worth talkin' about. I ain't got a degree. I ain't got a computer, I'm typin' this on Brenda's laptop that takes six damn minutes to boot up and smells like cat piss because her worthless orange bastard of a cat, Pumpkin, sprayed on it last March and we been pretending that didn't happen ever since.
 
-But they said, "Billy, people need to hear this." And hell, they're right. They damn sure are right. Because if the shit hits the fan tomorrow, and brother it WILL, most of you dipshits are gonna be runnin' around like chickens with your heads cut off while Billy Lugnuts Duggan is sittin' pretty with enough water and supplies to last till Christmas. So here I am. Writin' an article. For the internet. Lord have mercy.
+But they said, "Billy, people need to hear this." And hell, they're right. They damn sure are right. Because if the shit hits the fan tomorrow, and brother it WILL, most of you dipshits are gonna be runnin' around like chickens with your heads cut off while Billy Pinkeye Duggan is sittin' pretty with enough water and supplies to last till Christmas. So here I am. Writin' an article. For the internet. Lord have mercy.
 
-My name is William Ray Duggan but every sumbitch from here to the Mississippi knows me as Billy Lugnuts. Don't worry about how I got the name. It involves a tire iron, a case of Busch Light, a county fair in 1994, and a bet I shoulda never taken. I won the bet though. Damn right I did.
+My name is William Ray Duggan but every sumbitch from here to the Mississippi knows me as Billy Pinkeye. Don't worry about how I got the name. It involves a tire iron, a case of Busch Light, a county fair in 1994, and a bet I shoulda never taken. I won the bet though. Damn right I did.
 
 I am 55 years old. Five foot nine. North of two hundred pounds and I don't give a good goddamn exactly how far north because I ain't gettin' on no scale. That's between me and Jesus. I wear a Mossy Oak camo hat from ought-three that looks like it's been through a war. It has. The war is my life. I survived Vietnam, for Christ's sake. U.S. Navy, rescue diver, Tonkin Gulf, '69 and '70. I pulled boys out of water so dark and nasty you couldn't see shit. I did that while half the country was back home smokin' dope and protestin'. I didn't complain about it then and I ain't complainin' now, I'm just sayin', it'd be nice if the mayor of my own damn town would cut me some slack on the truck in the driveway considerin' I SERVED THIS COUNTRY but no, Gary's gotta send me another goddamn letter. More on that in a minute because I cannot help myself.
 
@@ -48,7 +48,7 @@ You wanna know how I know about dehydration? 'Cause I almost died from it. Not i
 
 ### The Night Darryl's Chicken Fried Steak Tried to Kill Me
 
-This was 2011 and I was still runnin' big rigs back then. Real trucks. Eighteen wheels. Loads that'd make the pavement crack. Not this Econoline horseshit I do now where I'm haulin' half-pallets of God knows what to towns so far out in the sticks it might as well be Bumfuck Egypt. I'm talkin' about Bumfuck Iowa, actually, which is the same as Bumfuck Egypt but with more soybeans and less history. I'm grateful for the work. I ain't proud. But Jesus Christ do I miss the big rig. I miss the open road so bad it hurts. Nothin' in front of you but highway. Nothin' behind you but some shithole town you couldn't wait to leave. That was freedom. That was LIVIN'. Now I'm drivin' Brenda's errands in an Econoline that smells like cat piss and broken dreams and I gotta smile about it. Happier than a dead pig in the sunshine, that's me. That's a lie. I am not happy. I am never happy. I am Billy Lugnuts Duggan and I am permanently pissed off about everything and that is just how it is.
+This was 2011 and I was still runnin' big rigs back then. Real trucks. Eighteen wheels. Loads that'd make the pavement crack. Not this Econoline horseshit I do now where I'm haulin' half-pallets of God knows what to towns so far out in the sticks it might as well be Bumfuck Egypt. I'm talkin' about Bumfuck Iowa, actually, which is the same as Bumfuck Egypt but with more soybeans and less history. I'm grateful for the work. I ain't proud. But Jesus Christ do I miss the big rig. I miss the open road so bad it hurts. Nothin' in front of you but highway. Nothin' behind you but some shithole town you couldn't wait to leave. That was freedom. That was LIVIN'. Now I'm drivin' Brenda's errands in an Econoline that smells like cat piss and broken dreams and I gotta smile about it. Happier than a dead pig in the sunshine, that's me. That's a lie. I am not happy. I am never happy. I am Billy Pinkeye Duggan and I am permanently pissed off about everything and that is just how it is.
 
 So it's August. Hotter than two rats screwin' in a wool sock. Hotter than the underside of Satan's ballsack. I'm haulin' steel coils to a stamping plant outside Kearney, which is the same kind of load I was runnin' when I outran that F5 tornado on I-80 back in '03. I know. I know. I talk about the tornado a lot. Bite me. You outrun a funnel cloud the size of God's angry fist doin' eighty-five with forty thousand pounds of rolled steel behind you and nothin' between you and kingdom come but a Peterbilt windshield, you'd talk about it too. The tornado went north. I went south. Whole damn highway behind me looked like God took a weed whacker to it. I pulled into a Pilot Flying J, God bless 'em forever and ever amen, and I sat in that cab shakin' for twenty minutes. Then I ate a burrito and got back on the road. That is what truckers do. We eat gas station burritos and keep movin'. It is our way.
 
@@ -84,7 +84,7 @@ I got water stashed all over hell and half of Georgia at this point. There's wat
 
 There's water under Brenda's bed. Fourteen bottles. She don't know about those. If she's readin' this, surprise, sweetheart. Don't be mad. It could save your life. Actually she's definitely gonna be mad. Worth it.
 
-And there's water in the F-150. Thirty-two bottles in the cab. Twelve more in the bed underneath the volunteer trees. That truck that everybody and their brother wants me to haul off to the scrapyard? She is a SUPPLY DEPOT. She is a strategic survival asset sittin' right there in the driveway and every one of you thirty-seven petition-signin' busybodies should be thankin' me instead of runnin' your mouths down at the diner. When the water supply goes to hell and you're all runnin' around like a bunch of turkeys in a thunderstorm, Billy Lugnuts is gonna be sittin' on the porch happier than pigs in shit with enough water to last till spring. And I might share. MIGHT. Depends on whether you signed that petition. I got the list, Gary. I got the damn list.
+And there's water in the F-150. Thirty-two bottles in the cab. Twelve more in the bed underneath the volunteer trees. That truck that everybody and their brother wants me to haul off to the scrapyard? She is a SUPPLY DEPOT. She is a strategic survival asset sittin' right there in the driveway and every one of you thirty-seven petition-signin' busybodies should be thankin' me instead of runnin' your mouths down at the diner. When the water supply goes to hell and you're all runnin' around like a bunch of turkeys in a thunderstorm, Billy Pinkeye is gonna be sittin' on the porch happier than pigs in shit with enough water to last till spring. And I might share. MIGHT. Depends on whether you signed that petition. I got the list, Gary. I got the damn list.
 
 ---
 
@@ -122,7 +122,7 @@ In Iowa you CAN collect rain, thank the sweet baby Jesus, because if you couldn'
 
 ---
 
-### A Quick Word About Billy Lugnuts and Money
+### A Quick Word About Billy Pinkeye and Money
 
 Some of you, especially if you're from my town, are sittin' there readin' this thinkin', "Billy, all this survival gear costs money, and aren't you the guy who won fifty grand on a scratch-off and ain't done a damn thing with it?"
 
@@ -130,7 +130,7 @@ Let me make somethin' real clear right now. I do not know what anybody is talkin
 
 Point is, you don't need fifty grand or any other amount of money that may or may not exist to store water. Save your milk jugs. Rinse 'em out. Fill 'em from the tap. Get food-grade buckets from the bakery at the grocery store, most of 'em give those away for free if you ask nice. I know "askin' nice" ain't exactly my strong suit. Brenda says I got the social skills of a raccoon with a head wound. That is not untrue. But even I can ask for a bucket. You can too. Probably. Hopefully. Lord help us all.
 
-And I'll say this one more time. If everything goes to hell and you ain't got water and Billy Lugnuts rolls up in the Econoline with six months worth of supplies and that 1985 F-150 finally runnin' again with the truck bed loaded down with provisions... you will say thank you. You will apologize for the petition. You will tell Gary to go pound sand. And you will never, EVER say the word "eyesore" in my presence again.
+And I'll say this one more time. If everything goes to hell and you ain't got water and Billy Pinkeye rolls up in the Econoline with six months worth of supplies and that 1985 F-150 finally runnin' again with the truck bed loaded down with provisions... you will say thank you. You will apologize for the petition. You will tell Gary to go pound sand. And you will never, EVER say the word "eyesore" in my presence again.
 
 That's a promise. And unlike my alleged proposal to Brenda, which DID NOT HAPPEN, I keep my damn promises.
 
@@ -144,7 +144,7 @@ That's all I got for now. The Data Dive Bar boys tell me I'm gonna be writin' mo
 
 Until next time, don't let nobody piss in your Cheerios.
 
-Billy Lugnuts out.
+Billy Pinkeye out.
 
 ---
 
@@ -152,4 +152,4 @@ Billy Lugnuts out.
 
 ---
 
-*© 2024 Billy "Lugnuts" Duggan. Unauthorized reproduction of this article will result in Billy showin' up at your house in a Ford Econoline full of warm Mountain Dew with a bad attitude and a camo hat that smells like cat piss. You don't want that. You have been warned, turkey.*
+*© 2024 Billy "Pinkeye" Duggan. Unauthorized reproduction of this article will result in Billy showin' up at your house in a Ford Econoline full of warm Mountain Dew with a bad attitude and a camo hat that smells like cat piss. You don't want that. You have been warned, turkey.*
