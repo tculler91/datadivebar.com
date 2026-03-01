@@ -102,6 +102,41 @@
     text-decoration: none;
   }
 
+  .author-byline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 32px;
+  }
+
+  .author-photo {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: top;
+    border: 2px solid var(--neon-amber);
+    flex-shrink: 0;
+  }
+
+  .author-info {
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    line-height: 1.6;
+  }
+
+  .author-name {
+    color: var(--neon-amber);
+    font-weight: 700;
+    display: block;
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+
   /* === SECTIONS === */
   .viz-section {
     margin: 72px 0;
@@ -735,9 +770,12 @@
     <div class="hero-kicker">Data Dive Bar · Survival Series</div>
     <h1>You Will Die of <em>Thirst</em> Before You Die of Anything Else</h1>
     <p class="hero-sub">A data-backed survival guide to water storage and purification. Featuring Billy "Lugnuts" Duggan, 55, Navy rescue diver, Iowa trucker, and the most qualified sumbitch in the state when it comes to not dying.</p>
-    <div class="hero-meta">
-      By Billy "Lugnuts" Duggan ·
-      FEMA National Survey 2023–24 · USGS Water Use · NWS Hazard Stats · Clinical dehydration literature
+    <div class="author-byline">
+      <img src="billy.jpg" alt='Billy "Lugnuts" Duggan' class="author-photo">
+      <div class="author-info">
+        <span class="author-name">Billy "Lugnuts" Duggan</span>
+        FEMA National Survey 2023–24 · USGS Water Use<br>NWS Hazard Stats · Clinical dehydration literature
+      </div>
     </div>
   </header>
 
