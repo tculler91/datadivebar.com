@@ -744,13 +744,13 @@
   const barY = pad.top;
 
   const stages = [
-    { start: 0,  end: 4,  label: 'Thirst,\ndry mouth',             color: '#FF8C2A', severity: 0.18 },
+    { start: 0,  end: 4,  label: 'Thirst,\ndry mouth',             color: '#FFC107', severity: 0.18 },
     { start: 4,  end: 12, label: 'Headache,\nfatigue',              color: '#FF8C2A', severity: 0.38 },
     { start: 12, end: 24, label: 'Dizziness,\nnausea',              color: '#E85D04', severity: 0.56 },
     { start: 24, end: 36, label: 'Confusion,\nrapid heartbeat',     color: '#C83803', severity: 0.73 },
     { start: 36, end: 48, label: "★ BOBBY'S ZONE\nhallucinations",  color: '#FF6B0A', severity: 0.89, bobby: true },
     { start: 48, end: 60, label: 'Critical organ\nstress',          color: '#e53935', severity: 0.96 },
-    { start: 60, end: 72, label: 'Kidney\nfailure',                 color: '#0B162A', severity: 1.0  },
+    { start: 60, end: 72, label: 'Kidney\nfailure',                 color: '#7f0000', severity: 1.0  },
   ];
 
   const xScale = h => pad.left + (h / 72) * plotW;
@@ -834,17 +834,17 @@
 
     const t = document.createElementNS(ns, 'line');
     t.setAttribute('x1', x); t.setAttribute('x2', x);
-    t.setAttribute('y1', barY - 4); t.setAttribute('y2', barY);
+    t.setAttribute('y1', barY - 6); t.setAttribute('y2', barY);
     t.setAttribute('stroke', stage ? stage.color : '#fff');
-    t.setAttribute('stroke-width', '1'); t.setAttribute('opacity', '0.5');
+    t.setAttribute('stroke-width', '1.5'); t.setAttribute('opacity', '0.75');
     svg.appendChild(t);
 
     const txt = document.createElementNS(ns, 'text');
-    txt.setAttribute('x', x); txt.setAttribute('y', barY - 10);
+    txt.setAttribute('x', x); txt.setAttribute('y', barY - 12);
     txt.setAttribute('text-anchor', 'middle');
-    txt.setAttribute('fill', stage && stage.bobby ? '#ff5252' : 'rgba(255,255,255,0.55)');
+    txt.setAttribute('fill', stage && stage.bobby ? '#ff5252' : 'rgba(255,255,255,0.75)');
     txt.setAttribute('font-family', "'JetBrains Mono', monospace");
-    txt.setAttribute('font-size', '9');
+    txt.setAttribute('font-size', '9.5');
     txt.setAttribute('font-weight', stage && stage.bobby ? '700' : '400');
     txt.textContent = ld.text;
     svg.appendChild(txt);
