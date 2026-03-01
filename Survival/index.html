@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Survivin' with Billy: Water | Data Dive Bar</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon-water: #4fc3f7;
+    --neon-cyan: #00e5ff;
+    --neon-amber: #ffb347;
+    --neon-red: #ff3c3c;
+    --neon-green: #69f0ae;
+    --dark-bg: #0d0d0d;
+    --panel-bg: #1a1a1a;
+    --card-bg: #141414;
+    --chalk: #e8e0d4;
+    --muted: #7a7265;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark-bg);
+    color: var(--chalk);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent, transparent 2px,
+      rgba(255,255,255,0.007) 2px, rgba(255,255,255,0.007) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .page-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* === HERO === */
+  .hero {
+    text-align: center;
+    padding: 80px 0 40px;
+    position: relative;
+  }
+
+  .hero-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--neon-amber);
+    margin-bottom: 24px;
+    opacity: 0.9;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(2.2rem, 6vw, 3.8rem);
+    line-height: 1.08;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--neon-water);
+    text-shadow: 0 0 30px rgba(79, 195, 247, 0.45);
+  }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 580px;
+    margin: 0 auto;
+    line-height: 1.55;
+  }
+
+  .hero-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 32px;
+    letter-spacing: 1px;
+  }
+
+  .hero-meta a {
+    color: var(--neon-amber);
+    text-decoration: none;
+  }
+
+  /* === SECTIONS === */
+  .viz-section {
+    margin: 72px 0;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--neon-water);
+    margin-bottom: 8px;
+    opacity: 0.7;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    color: #fff;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .section-desc {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-bottom: 32px;
+    max-width: 640px;
+    line-height: 1.6;
+  }
+
+  /* === PROSE === */
+  .prose {
+    margin: 48px 0;
+  }
+
+  .prose p {
+    font-size: 1.05rem;
+    line-height: 1.78;
+    color: var(--chalk);
+    margin-bottom: 20px;
+  }
+
+  .prose p:first-child::first-letter {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5em;
+    float: left;
+    line-height: 0.8;
+    margin: 4px 12px 0 0;
+    color: var(--neon-water);
+  }
+
+  .pull-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 3vw, 1.7rem);
+    font-style: italic;
+    color: #fff;
+    text-align: center;
+    margin: 56px 0;
+    padding: 32px 24px;
+    line-height: 1.4;
+  }
+
+  .pull-quote::before, .pull-quote::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: var(--neon-water);
+    margin: 0 auto 24px;
+  }
+  .pull-quote::after { margin: 24px auto 0; }
+
+  .callout {
+    margin: 28px 0;
+    padding: 20px 24px;
+    background: rgba(79, 195, 247, 0.05);
+    border-left: 3px solid var(--neon-water);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .callout p {
+    font-size: 0.92rem;
+    color: var(--chalk);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .callout strong { color: var(--neon-water); }
+  .callout .mono { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+
+  .callout-red {
+    background: rgba(255, 60, 60, 0.05);
+    border-left-color: var(--neon-red);
+  }
+  .callout-red strong { color: var(--neon-red); }
+
+  .callout-amber {
+    background: rgba(255, 179, 71, 0.05);
+    border-left-color: var(--neon-amber);
+  }
+  .callout-amber strong { color: var(--neon-amber); }
+
+  /* ===========================
+     CHART 1: DEHYDRATION TIMELINE
+     =========================== */
+  .timeline-wrap {
+    position: relative;
+    padding: 16px 0 40px;
+  }
+
+  .timeline-track {
+    position: relative;
+    height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+    margin-bottom: 0;
+  }
+
+  .timeline-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      #4fc3f7 0%,
+      #26c6da 15%,
+      #29b6f6 22%,
+      #ffb347 38%,
+      #ff9800 52%,
+      #ff5722 68%,
+      #e53935 82%,
+      #b71c1c 100%
+    );
+    border-radius: 8px;
+    opacity: 0.85;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .timeline-fill.animated { transform: scaleX(1); }
+
+  .timeline-label-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 0 0;
+  }
+
+  .tl-hour {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .milestones {
+    position: relative;
+    height: 140px;
+    margin-top: 4px;
+  }
+
+  .milestone {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: default;
+  }
+
+  .milestone-tick {
+    width: 1px;
+    height: 16px;
+    background: rgba(255,255,255,0.25);
+    margin-bottom: 6px;
+  }
+
+  .milestone-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-bottom: 6px;
+    flex-shrink: 0;
+  }
+
+  .milestone-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-align: center;
+    line-height: 1.3;
+    max-width: 80px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .milestone-label.visible { opacity: 1; }
+
+  .milestone-time {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .milestone-desc {
+    display: block;
+    color: var(--muted);
+    font-size: 8px;
+  }
+
+  /* temp scenarios */
+  .temp-scenarios {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .temp-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+
+  .temp-degree {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .temp-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .temp-window-bar {
+    height: 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    width: 0;
+    transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .temp-window-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  /* ===========================
+     CHART 2: PREPAREDNESS GAP
+     =========================== */
+  .prep-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .prep-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 100px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .prep-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-align: right;
+    color: var(--chalk);
+    line-height: 1.3;
+  }
+
+  .prep-label small {
+    display: block;
+    color: var(--muted);
+    font-size: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .prep-bar-track {
+    height: 36px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    position: relative;
+    overflow: visible;
+  }
+
+  .prep-bar-yes {
+    height: 100%;
+    border-radius: 4px;
+    position: relative;
+    width: 0;
+    transition: width 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    overflow: hidden;
+  }
+
+  .prep-bar-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(0,0,0,0.7);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.4s ease 1.2s;
+  }
+
+  .prep-bar-pct.visible { opacity: 1; }
+
+  .prep-stat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-align: left;
+  }
+
+  .prep-gap-label {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translate(calc(100% + 8px), -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--neon-red);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.5s ease 1.5s;
+  }
+
+  .prep-gap-label.visible { opacity: 1; }
+
+  /* ===========================
+     CHART 3: 82 GALLONS vs 1
+     =========================== */
+  .tank-viz {
+    display: flex;
+    gap: 32px;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 24px 0;
+  }
+
+  .tank-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tank-outer {
+    position: relative;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    overflow: hidden;
+    width: 80px;
+  }
+
+  .tank-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 0 0 5px 5px;
+    height: 0%;
+    transition: height 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .tank-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+  }
+
+  .tank-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-align: center;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    max-width: 90px;
+    line-height: 1.3;
+  }
+
+  .tank-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .tank-unit {
+    font-size: 0.7rem;
+    display: block;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 1px;
+  }
+
+  .tank-vs {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-style: italic;
+    color: var(--muted);
+    align-self: center;
+    padding-bottom: 80px;
+  }
+
+  .ratio-callout {
+    text-align: center;
+    margin-top: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .ratio-callout strong {
+    font-size: 2.4rem;
+    color: #fff;
+    display: block;
+    margin: 4px 0;
+  }
+
+  /* ===========================
+     CHART 4: WEATHER KILLS
+     =========================== */
+  .weather-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .weather-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 70px;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+  }
+
+  .weather-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-align: right;
+    color: var(--chalk);
+  }
+
+  .weather-name .icon {
+    margin-right: 6px;
+  }
+
+  .weather-bar-track {
+    height: 100%;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .weather-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    width: 0;
+    transition: width 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .weather-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--chalk);
+    opacity: 0;
+    transition: opacity 0.5s ease 1.4s;
+  }
+
+  .weather-value.visible { opacity: 1; }
+
+  .weather-divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.08);
+    margin: 8px 0 8px 172px;
+  }
+
+  /* === PRACTICAL TIPS GRID === */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .tip-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 20px 18px;
+  }
+
+  .tip-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--neon-amber);
+    margin-bottom: 8px;
+  }
+
+  .tip-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .tip-desc {
+    font-size: 0.87rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* === METHODOLOGY === */
+  .methodology {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .methodology h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .methodology p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+
+  /* === FOOTER === */
+  .article-footer {
+    text-align: center;
+    padding: 48px 0 64px;
+    margin-top: 40px;
+  }
+
+  .article-footer .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--neon-amber);
+    text-transform: uppercase;
+  }
+
+  .article-footer .tagline {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .series-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: rgba(79, 195, 247, 0.1);
+    border: 1px solid rgba(79, 195, 247, 0.25);
+    color: var(--neon-water);
+    border-radius: 4px;
+    padding: 4px 10px;
+    margin-bottom: 16px;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 640px) {
+    .prep-row {
+      grid-template-columns: 110px 1fr 70px;
+      gap: 8px;
+    }
+    .prep-label { font-size: 9px; }
+    .weather-row {
+      grid-template-columns: 110px 1fr 55px;
+      gap: 8px;
+    }
+    .weather-name { font-size: 9px; }
+    .temp-scenarios { grid-template-columns: 1fr; gap: 8px; }
+    .tips-grid { grid-template-columns: 1fr; }
+    .tank-viz { gap: 16px; }
+    .tank-outer { width: 60px; }
+    .hero { padding: 48px 0 24px; }
+    .viz-section { margin: 48px 0; }
+    .milestone-label { font-size: 7px; max-width: 60px; }
+    .prep-gap-label { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-container">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="series-badge">Survivin' with Billy — Episode 01</div>
+    <div class="hero-kicker">Data Dive Bar · Survival Series</div>
+    <h1>You Will Die of <em>Thirst</em> Before You Die of Anything Else</h1>
+    <p class="hero-sub">A data-backed survival guide to water storage and purification. Featuring Billy "Lugnuts" Duggan, 55, Navy rescue diver, Iowa trucker, and the most qualified sumbitch in the state when it comes to not dying.</p>
+    <div class="hero-meta">
+      By Billy "Lugnuts" Duggan ·
+      FEMA National Survey 2023–24 · USGS Water Use · NWS Hazard Stats · Clinical dehydration literature
+    </div>
+  </header>
+
+  <!-- INTRO PROSE -->
+  <div class="prose">
+    <p>The fellas over at Data Dive Bar asked me to write some articles on account of I am the most qualified sumbitch in the state of Iowa, and possibly the whole goddamn country, when it comes to stayin' alive when everything goes tits up. I told 'em I ain't no writer. I drive a damn Econoline van. But they said, "Billy, people need to hear this." And hell, they're right. If the shit hits the fan tomorrow — and brother it WILL — most of you dipshits are gonna be runnin' around like chickens with your heads cut off while Billy Lugnuts Duggan is sittin' pretty with enough water and supplies to last till Christmas.</p>
+    <p>I am 55 years old. U.S. Navy, rescue diver, Tonkin Gulf, '69 and '70. I pulled boys out of water so dark and nasty you couldn't see shit. I survived an F5 tornado on I-80 haulin' forty thousand pounds of steel coils. I also survived a divorce, gas station sushi in Bakersfield, and a relationship with a woman named Brenda. All of that is to say: I know what it takes to stay alive. And what it takes, first and foremost, is water. Let's get into it.</p>
+  </div>
+
+  <!-- ================================
+       CHART 1: DEHYDRATION TIMELINE
+       ================================ -->
+  <div class="viz-section" id="chart1">
+    <div class="section-label">Chart 01 — The Clock Is Already Running</div>
+    <div class="section-title">72 Hours. Then Your Organs Start Saying Goodbye.</div>
+    <div class="section-desc">The human dehydration progression, hour by hour. At 2% fluid loss, cognitive performance drops measurably. Most people don't notice. At 10%+, you're in organ failure territory. Temperature multiplies everything.</div>
+
+    <div class="timeline-wrap" id="timelineWrap">
+      <div class="timeline-track">
+        <div class="timeline-fill" id="timelineFill"></div>
+      </div>
+
+      <div class="milestones" id="milestones">
+        <!-- positioned by JS -->
+      </div>
+
+      <div class="timeline-label-row">
+        <div class="tl-hour">HR 0</div>
+        <div class="tl-hour">HR 12</div>
+        <div class="tl-hour">HR 24</div>
+        <div class="tl-hour">HR 36</div>
+        <div class="tl-hour">HR 48</div>
+        <div class="tl-hour">HR 60</div>
+        <div class="tl-hour">HR 72</div>
+        <div class="tl-hour">HR 96+</div>
+      </div>
+    </div>
+
+    <div class="temp-scenarios" id="tempScenarios">
+      <div class="temp-card">
+        <div class="temp-degree" style="color:#4fc3f7">70°F</div>
+        <div class="temp-label">Mild day</div>
+        <div class="temp-window-bar" data-width="90" data-color="#4fc3f7" style="background:#4fc3f7"></div>
+        <div class="temp-window-text" style="color:#4fc3f7">72–96 hours</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:6px">max survival without water</div>
+      </div>
+      <div class="temp-card">
+        <div class="temp-degree" style="color:#ff9800">90°F</div>
+        <div class="temp-label">Hot summer day</div>
+        <div class="temp-window-bar" data-width="44" data-color="#ff9800" style="background:#ff9800"></div>
+        <div class="temp-window-text" style="color:#ff9800">24–48 hours</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:6px">window collapses by 50–60%</div>
+      </div>
+      <div class="temp-card">
+        <div class="temp-degree" style="color:#ff3c3c">110°F</div>
+        <div class="temp-label">Heat wave / crisis</div>
+        <div class="temp-window-bar" data-width="8" data-color="#ff3c3c" style="background:#ff3c3c"></div>
+        <div class="temp-window-text" style="color:#ff3c3c">4–8 hours</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:6px">adults lose 1–1.5L/hr sweating</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-red">
+    <p>At 110°F — which Ohio, Iowa, Texas, and most of the Sun Belt regularly sees during a grid-down heat event — <strong>you can be in organ failure in under 8 hours</strong>. The three-day rule you learned in Boy Scouts assumes mild weather. Strip that assumption and the math gets ugly fast.</p>
+  </div>
+
+  <!-- PROSE: Nebraska -->
+  <div class="prose">
+    <p>You wanna know how I know about dehydration? Because I almost died from it. Not in Vietnam. Not in the ocean. I almost died in goddamn Nebraska. In a truck stop parking lot. Because of a six-dollar chicken fried steak and a short-order cook named Darryl. I won't go into the details of what Darryl's cooking did to my insides, but let's just say I was in the sleeper cab bathroom for forty-eight hours straight and by hour thirty-six my heart was doing some weird shit I did not appreciate.</p>
+    <p>My mouth was dryer than a popcorn fart. My head was pounding. I was dizzy. I started hallucinatin' Dale Earnhardt leanin' against my truck bumper tellin' me to drink some damn water. He wasn't there. But I listened anyway because you ALWAYS listen to Dale. What saved me was a trucker named Big Hoss from Tulsa who knocked on my cab door because, direct quote, he could hear me "makin' sounds like a cow gettin' run through a wood chipper." Big Hoss gave me a gallon of water and two Gatorades. After that I swore on my mama's Bible I would never get caught without water again.</p>
+  </div>
+
+  <!-- ================================
+       CHART 2: PREPAREDNESS GAP
+       ================================ -->
+  <div class="viz-section" id="chart2">
+    <div class="section-label">Chart 02 — The Preparedness Gap</div>
+    <div class="section-title">Most Americans Will Run Dry in Three Days. The Data Doesn't Care About Your Feelings.</div>
+    <div class="section-desc">FEMA's 2023–24 National Household Survey on disaster preparedness. ~7,500 U.S. households. The gap between "feeling prepared" and having actual water stored is one of the most damning numbers in public safety data.</div>
+
+    <div class="prep-chart" id="prepChart">
+
+      <div class="prep-row">
+        <div class="prep-label">
+          <small>perception</small>
+          Feel "prepared"
+        </div>
+        <div class="prep-bar-track">
+          <div class="prep-bar-yes" data-pct="51" style="background:linear-gradient(90deg,rgba(79,195,247,0.4),rgba(79,195,247,0.6))">
+            <span class="prep-bar-pct">51%</span>
+          </div>
+        </div>
+        <div class="prep-stat" style="color:var(--neon-water)">51%</div>
+      </div>
+
+      <div class="prep-row">
+        <div class="prep-label">
+          <small>reality</small>
+          3-day water supply
+        </div>
+        <div class="prep-bar-track">
+          <div class="prep-bar-yes" data-pct="53" style="background:linear-gradient(90deg,rgba(105,240,174,0.5),rgba(105,240,174,0.7))">
+            <span class="prep-bar-pct">53%</span>
+            <span class="prep-gap-label">← 47% have nothing</span>
+          </div>
+        </div>
+        <div class="prep-stat" style="color:var(--neon-green)">53%</div>
+      </div>
+
+      <div class="prep-row">
+        <div class="prep-label">
+          <small>FEMA minimum</small>
+          3-day food supply
+        </div>
+        <div class="prep-bar-track">
+          <div class="prep-bar-yes" data-pct="96" style="background:linear-gradient(90deg,rgba(255,179,71,0.4),rgba(255,179,71,0.6))">
+            <span class="prep-bar-pct">96%</span>
+          </div>
+        </div>
+        <div class="prep-stat" style="color:var(--neon-amber)">96%</div>
+      </div>
+
+      <div class="prep-row">
+        <div class="prep-label">
+          <small>two weeks</small>
+          2-week water supply
+        </div>
+        <div class="prep-bar-track">
+          <div class="prep-bar-yes" data-pct="34" style="background:linear-gradient(90deg,rgba(255,60,60,0.4),rgba(255,60,60,0.6))">
+            <span class="prep-bar-pct">34%</span>
+          </div>
+        </div>
+        <div class="prep-stat" style="color:var(--neon-red)">34%</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="callout callout-amber">
+    <p>96% of Americans have three days of food. Only <strong>53% have three days of water</strong>. You will die of thirst before you die of hunger — that's not philosophy, that's biology — and yet we somehow have the food prep thing figured out and the water thing completely ass-backwards. You got seventeen cans of soup in that cabinet. How much water you got? That's what I thought.</p>
+  </div>
+
+  <div class="pull-quote">
+    "One gallon per person per day. Carve it into your forehead. If you got four people in your house and you're plannin' for two weeks, that's 56 gallons. Yeah. It's a lot. You know what's more than a lot? Being dead."
+  </div>
+
+  <!-- ================================
+       CHART 3: 82 GALLONS vs 1
+       ================================ -->
+  <div class="viz-section" id="chart3">
+    <div class="section-label">Chart 03 — The 82:1 Problem</div>
+    <div class="section-title">What You Use. What Keeps You Alive. The Gap Is Absurd.</div>
+    <div class="section-desc">USGS estimates the average American uses 82 gallons of water per day at home. FEMA's survival minimum is 1 gallon per person per day. That's not a rounding error. That's a complete civilizational dependency on infrastructure you do not control.</div>
+
+    <div class="tank-viz" id="tankViz">
+      <div class="tank-col">
+        <div class="tank-value" style="color:var(--neon-water)">82 <span class="tank-unit">GAL/DAY</span></div>
+        <div class="tank-outer" style="height:240px">
+          <div class="tank-fill" data-target="100" style="background:linear-gradient(180deg,rgba(79,195,247,0.6),rgba(0,229,255,0.4))"></div>
+        </div>
+        <div class="tank-label">Your daily water use (USGS avg)</div>
+      </div>
+
+      <div class="tank-vs">vs.</div>
+
+      <div class="tank-col">
+        <div class="tank-value" style="color:var(--neon-green)">1 <span class="tank-unit">GAL/DAY</span></div>
+        <div class="tank-outer" style="height:240px">
+          <div class="tank-fill" data-target="1.2" style="background:linear-gradient(180deg,rgba(105,240,174,0.7),rgba(105,240,174,0.5))"></div>
+        </div>
+        <div class="tank-label">FEMA survival minimum per person</div>
+      </div>
+
+      <div class="tank-vs">vs.</div>
+
+      <div class="tank-col">
+        <div class="tank-value" style="color:var(--neon-red)">0 <span class="tank-unit">GAL STORED</span></div>
+        <div class="tank-outer" style="height:240px">
+          <div class="tank-fill" data-target="0" style="background:linear-gradient(180deg,rgba(255,60,60,0.6),rgba(255,60,60,0.3))"></div>
+        </div>
+        <div class="tank-label">Median American household emergency supply</div>
+      </div>
+    </div>
+
+    <div class="ratio-callout">
+      <span>Daily use vs. survival minimum</span>
+      <strong>82 : 1</strong>
+      <span>A single toilet flush uses more water than your daily survival ration.</span>
+    </div>
+  </div>
+
+  <!-- PROSE: How to make shitty water less shitty -->
+  <div class="prose">
+    <p>Alright, let's say the world's gone ass over teakettle and you need water but all you got is a pond, a creek, or the runoff from your neighbor's above-ground pool that ain't been cleaned since the Obama administration. You can't just drink it. You'll get parasites and bacteria and all kinds of nasty crap that'll have you praying for death on a toilet. I been there. Pack a lunch, 'cause you're gonna be there awhile.</p>
+    <p>Three ways to fix shitty water, none of 'em complicated. First: boilin'. Rolling boil for sixty seconds, all the bad shit dies. Above six thousand feet, go three minutes. Second: bleach. I know it sounds crazy as a shithouse rat but eight drops of unscented Clorox per gallon, thirty minute wait, and it's safe to drink. Gonna taste like a YMCA swimming pool. Tough titty. You're alive. Third: real filtration. Not a Brita. A Brita is a toy. I'm talkin' about a Sawyer Squeeze or a Berkey. They filter out everything — bacteria, parasites, dirt, and probably your bad decisions too, though I can't prove that last one scientifically.</p>
+  </div>
+
+  <!-- Practical tips grid -->
+  <div class="tips-grid">
+    <div class="tip-card">
+      <div class="tip-number">Tip 01 — Free water you forgot about</div>
+      <div class="tip-title">Your water heater</div>
+      <div class="tip-desc">Standard residential water heater holds 40–80 gallons of clean, potable water. Turn off the power/gas first (don't blow yourself up), open the drain valve at the bottom. That's 2–4 weeks of drinking water you already paid for.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">Tip 02 — Free water from the sky</div>
+      <div class="tip-title">Rainwater collection</div>
+      <div class="tip-desc">Most states allow it. Set up gutters into food-grade barrels. Filter what you collect. It falls outta the sky because God loves you, or at least tolerates you, and either way it's more than the government does.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">Tip 03 — Store it everywhere</div>
+      <div class="tip-title">Distributed storage</div>
+      <div class="tip-desc">Save milk jugs, fill 'em from the tap. Food-grade 5-gallon buckets from bakery departments — free if you ask nice. Rotate every 6–12 months. Spread it across the house, the shed, the car. Don't put all your water in one basket.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">Tip 04 — The math is simple</div>
+      <div class="tip-title">1 gallon × people × days</div>
+      <div class="tip-desc">4 people. 14 days. That's 56 gallons. Add 50% for sanitation/cooking and you're at 84. A case of water bottles (24 × 16oz) is about 3 gallons. Do the math, do the shopping, do not die on a toilet like Darryl's revenge tried to make me do.</div>
+    </div>
+  </div>
+
+  <!-- ================================
+       CHART 4: WHAT WEATHER KILLS
+       ================================ -->
+  <div class="viz-section" id="chart4">
+    <div class="section-label">Chart 04 — The Real Threats</div>
+    <div class="section-title">What the Weather Will Actually Do to You. (Spoiler: It's Not Tornadoes.)</div>
+    <div class="section-desc">Average annual deaths by weather hazard, 10-year average (NWS). The events that create water emergencies — heat waves and floods — are also the ones quietly killing the most people. This is why water storage isn't paranoia. It's statistics.</div>
+
+    <div class="weather-chart" id="weatherChart">
+
+      <div class="weather-row">
+        <div class="weather-name"><span class="icon">☀️</span>Heat</div>
+        <div class="weather-bar-track">
+          <div class="weather-bar-fill" data-width="100" style="background:linear-gradient(90deg,#ff5722,#ff9800)"></div>
+        </div>
+        <div class="weather-value">~138/yr</div>
+      </div>
+
+      <div class="weather-row">
+        <div class="weather-name"><span class="icon">🌊</span>Flooding</div>
+        <div class="weather-bar-track">
+          <div class="weather-bar-fill" data-width="80" style="background:linear-gradient(90deg,#1565c0,#4fc3f7)"></div>
+        </div>
+        <div class="weather-value">~113/yr</div>
+      </div>
+
+      <div class="weather-row">
+        <div class="weather-name"><span class="icon">🌀</span>Tornadoes</div>
+        <div class="weather-bar-track">
+          <div class="weather-bar-fill" data-width="65" style="background:linear-gradient(90deg,#6a1b9a,#ab47bc)"></div>
+        </div>
+        <div class="weather-value">~90/yr</div>
+      </div>
+
+      <div class="weather-row">
+        <div class="weather-name"><span class="icon">❄️</span>Winter storm</div>
+        <div class="weather-bar-track">
+          <div class="weather-bar-fill" data-width="56" style="background:linear-gradient(90deg,#37474f,#90a4ae)"></div>
+        </div>
+        <div class="weather-value">~78/yr</div>
+      </div>
+
+      <hr class="weather-divider">
+
+      <div class="weather-row">
+        <div class="weather-name"><span class="icon">⛈️</span>Thunderstorm</div>
+        <div class="weather-bar-track">
+          <div class="weather-bar-fill" data-width="32" style="background:linear-gradient(90deg,#4a148c,#7b1fa2)"></div>
+        </div>
+        <div class="weather-value">~44/yr</div>
+      </div>
+
+      <div class="weather-row">
+        <div class="weather-name"><span class="icon">⚡</span>Lightning</div>
+        <div class="weather-bar-track">
+          <div class="weather-bar-fill" data-width="24" style="background:linear-gradient(90deg,#f9a825,#fdd835)"></div>
+        </div>
+        <div class="weather-value">~33/yr</div>
+      </div>
+
+      <div class="weather-row">
+        <div class="weather-name"><span class="icon">🌪️</span>Hurricane/surge</div>
+        <div class="weather-bar-track">
+          <div class="weather-bar-fill" data-width="18" style="background:linear-gradient(90deg,#00695c,#26a69a)"></div>
+        </div>
+        <div class="weather-value">~25/yr</div>
+      </div>
+
+    </div>
+
+    <div class="callout" style="margin-top:24px">
+      <p>Heat is the #1 weather killer — more than tornadoes, lightning, and hurricanes combined in a typical year. Heat kills via dehydration. Power goes out during heat waves. Municipal water pressure can drop when everyone's using it. <strong>Every heat event is a water event.</strong> And flooding — the #2 killer — contaminates wells and water supplies. That's the other direction of the same problem.</p>
+    </div>
+  </div>
+
+  <!-- CLOSING PROSE -->
+  <div class="prose">
+    <p>Most people are dumber than a sack of wet mice about this. I say that with love. The whole town signed a petition about the 1985 Ford F-150 in Brenda's driveway. Eyesore, they call it. What they don't know is that truck has got thirty-two bottles of water in the cab and twelve more in the bed underneath the volunteer trees. When the water supply goes to hell and they're runnin' around like turkeys in a thunderstorm, Billy Lugnuts is sittin' on the porch happier than pigs in shit with enough water to last till spring. That truck that everybody wants me to haul off to the scrapyard? She is a strategic survival asset. And I might share. <em>Might.</em> Depends on whether you signed that petition. I got the list, Gary.</p>
+    <p>Water kills you faster than starvation does. Three days. That's your window. One gallon per person per day and not a drop less. Store it everywhere. Boil it, bleach it, or filter it. Your water heater's got forty to eighty gallons you forgot about. Don't eat chicken fried steak from a cook named Darryl. Dale Earnhardt was the greatest. Pilot Flying J is a national treasure. The truck stays right the hell where she is.</p>
+    <p>Until next time: don't let nobody piss in your Cheerios.</p>
+    <p style="font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--neon-amber)">— Billy Lugnuts out.</p>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="methodology">
+    <h3>Methodology & Sources</h3>
+    <p><strong>Dehydration survival timeline</strong> — Synthesized from peer-reviewed clinical literature including Nutrition Reviews, American Journal of Physiology, and NHS/Mayo Clinic clinical guidelines. The 72–96 hour baseline reflects adult survival under temperate conditions (60–75°F) without other stressors. Temperature survival windows based on sweat rate research (1–1.5 L/hr at extreme heat) and clinical case literature. The 18-day record case from Austria (1979) is exceptional and should not inform planning assumptions.</p>
+    <p><strong>FEMA National Household Survey 2023–24</strong> — National representative sample of ~7,500 U.S. households. Key figures: 51% self-reported preparedness, 53% with 3-day water supply, 96% with 3-day food supply, 34% with 2-week water supply. Survey methodology and full report available at fema.gov/about/reports-and-data.</p>
+    <p><strong>USGS National Water Use</strong> — Per-capita domestic water use estimate of 82 gallons/day from USGS 2015 National Water Use report (most complete available). The 300+ gallon household figure reflects multi-person households. Available at usgs.gov/water-resources.</p>
+    <p><strong>NWS Weather-Related Fatality Statistics</strong> — 10-year average annual fatalities by hazard type from the National Weather Service hazard statistics page (weather.gov/hazstat). All figures are approximate averages; individual years vary significantly based on major events.</p>
+    <p><strong>Water purification recommendations</strong> — Boil water and bleach treatment guidance consistent with CDC Emergency Water Disinfection guidelines (cdc.gov/healthywater/emergency). Filter recommendations based on NSF/ANSI Standard 53 certified products.</p>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="article-footer">
+    <div class="logo">Data Dive Bar</div>
+    <div class="tagline">Unhinged investigations. Unnecessary charts. Questionable research conducted at questionable hours.</div>
+  </div>
+
+</div><!-- end page-container -->
+
+<script>
+// ============================================================
+// INTERSECTION OBSERVER — triggers all chart animations
+// ============================================================
+function onVisible(el, fn) {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { fn(); obs.disconnect(); } });
+  }, { threshold: 0.2 });
+  obs.observe(el);
+}
+
+// ============================================================
+// CHART 1: DEHYDRATION TIMELINE
+// ============================================================
+(function buildTimeline() {
+  const milestones = [
+    { pct: 0,   time: 'HR 0',   desc: 'Baseline',       color: '#4fc3f7' },
+    { pct: 12,  time: 'HR 12',  desc: 'Thirst, −5% cognition', color: '#29b6f6' },
+    { pct: 25,  time: 'HR 24',  desc: 'Headache, dark urine', color: '#ffb347' },
+    { pct: 50,  time: 'HR 48',  desc: 'Confusion, rapid heartbeat', color: '#ff9800' },
+    { pct: 75,  time: 'HR 72',  desc: 'Organ deterioration begins', color: '#ff5722' },
+    { pct: 100, time: 'HR 96+', desc: 'Kidney failure / death', color: '#e53935' },
+  ];
+
+  const container = document.getElementById('milestones');
+  milestones.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'milestone';
+    el.style.left = m.pct + '%';
+    if (m.pct === 100) el.style.left = 'calc(100% - 2px)';
+    el.innerHTML = `
+      <div class="milestone-tick"></div>
+      <div class="milestone-dot" style="background:${m.color}"></div>
+      <div class="milestone-label">
+        <span class="milestone-time" style="color:${m.color}">${m.time}</span>
+        <span class="milestone-desc">${m.desc}</span>
+      </div>`;
+    container.appendChild(el);
+  });
+
+  const wrap = document.getElementById('timelineWrap');
+  onVisible(wrap, () => {
+    // animate bar fill
+    setTimeout(() => {
+      document.getElementById('timelineFill').classList.add('animated');
+    }, 100);
+    // reveal milestone labels
+    const labels = wrap.querySelectorAll('.milestone-label');
+    labels.forEach((l, i) => {
+      setTimeout(() => l.classList.add('visible'), 300 + i * 180);
+    });
+    // animate temperature bars
+    const tempBars = document.querySelectorAll('.temp-window-bar');
+    tempBars.forEach((bar, i) => {
+      setTimeout(() => {
+        bar.style.width = bar.dataset.width + '%';
+      }, 800 + i * 100);
+    });
+  });
+})();
+
+// ============================================================
+// CHART 2: PREPAREDNESS GAP
+// ============================================================
+(function buildPrep() {
+  const chart = document.getElementById('prepChart');
+  if (!chart) return;
+  onVisible(chart, () => {
+    const bars = chart.querySelectorAll('.prep-bar-yes');
+    bars.forEach((bar, i) => {
+      const pct = parseFloat(bar.dataset.pct);
+      setTimeout(() => {
+        bar.style.width = pct + '%';
+        setTimeout(() => {
+          const lbl = bar.querySelector('.prep-bar-pct');
+          if (lbl) lbl.classList.add('visible');
+          const gap = bar.querySelector('.prep-gap-label');
+          if (gap) gap.classList.add('visible');
+        }, 800);
+      }, i * 150);
+    });
+  });
+})();
+
+// ============================================================
+// CHART 3: TANK VIZ
+// ============================================================
+(function buildTanks() {
+  const viz = document.getElementById('tankViz');
+  if (!viz) return;
+  onVisible(viz, () => {
+    const fills = viz.querySelectorAll('.tank-fill');
+    fills.forEach((fill, i) => {
+      const target = parseFloat(fill.dataset.target);
+      setTimeout(() => {
+        fill.style.height = target + '%';
+      }, 200 + i * 200);
+    });
+  });
+})();
+
+// ============================================================
+// CHART 4: WEATHER BAR CHART
+// ============================================================
+(function buildWeather() {
+  const chart = document.getElementById('weatherChart');
+  if (!chart) return;
+  onVisible(chart, () => {
+    const bars = chart.querySelectorAll('.weather-bar-fill');
+    const vals = chart.querySelectorAll('.weather-value');
+    bars.forEach((bar, i) => {
+      setTimeout(() => {
+        bar.style.width = bar.dataset.width + '%';
+      }, i * 100);
+    });
+    setTimeout(() => {
+      vals.forEach(v => v.classList.add('visible'));
+    }, 800);
+  });
+})();
+</script>
+
+</body>
+</html>
