@@ -1,4 +1,4 @@
-# WHEN IT ALL GOES SIDEWAYS
+# WHEN LIFE PISSES IN YOUR CHEERIOS
 # A Regular Dipshit's Guide to Not Dyin'
 ## By Billy "Pinkeye" Duggan, Survival Contributor, DataDiveBar.com
 
