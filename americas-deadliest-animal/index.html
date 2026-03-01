@@ -7,26 +7,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --neon-red: #ff3c3c;
-    --neon-amber: #ffb347;
-    --neon-blue: #4fc3f7;
+    --neon-orange: #FF6B0A;
+    --neon-amber: #FF8C2A;
+    --neon-blue: #4A90FF;
     --neon-green: #69f0ae;
     --neon-pink: #ff6b9d;
-    --dark-bg: #0d0d0d;
-    --panel-bg: #1a1a1a;
-    --card-bg: #141414;
+    --dark-bg: #060C16;
+    --panel-bg: #0D1520;
+    --card-bg: #0A1018;
     --chalk: #e8e0d4;
     --muted: #7a7265;
-    --deer-color: #ff5722;
-    --bee-color: #ffc107;
-    --dog-color: #4fc3f7;
+    --deer-color: #C83803;
+    --bee-color: #E85D04;
+    --dog-color: #4A90FF;
     --mammal-color: #ab47bc;
     --snake-color: #69f0ae;
-    --spider-color: #ef5350;
+    --spider-color: #FF5500;
     --shark-color: #78909c;
     --gator-color: #8bc34a;
     --bear-color: #795548;
-    --scorpion-color: #ff9800;
+    --scorpion-color: #FF8C2A;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -92,8 +92,8 @@
 
   .hero h1 em {
     font-style: italic;
-    color: var(--neon-red);
-    text-shadow: 0 0 30px rgba(255, 60, 60, 0.4);
+    color: var(--neon-orange);
+    text-shadow: 0 0 30px rgba(255, 107, 10, 0.4);
   }
 
   .hero-sub {
@@ -203,7 +203,7 @@
 
   .deer-row .bar-fill {
     background: linear-gradient(90deg, var(--deer-color), #ff8a65);
-    box-shadow: 0 0 20px rgba(255, 87, 34, 0.3);
+    box-shadow: 0 0 20px rgba(200, 56, 3, 0.3);
   }
 
   .bee-row .bar-fill {
@@ -285,8 +285,8 @@
   .fear-callout {
     margin-top: 32px;
     padding: 20px 24px;
-    background: rgba(255, 60, 60, 0.05);
-    border-left: 3px solid var(--neon-red);
+    background: rgba(255, 107, 10, 0.05);
+    border-left: 3px solid var(--neon-orange);
     border-radius: 0 8px 8px 0;
   }
 
@@ -297,7 +297,7 @@
   }
 
   .fear-callout strong {
-    color: var(--neon-red);
+    color: var(--neon-orange);
   }
 
   .fear-callout .stat-pop {
@@ -345,7 +345,7 @@
     float: left;
     line-height: 0.8;
     margin: 4px 12px 0 0;
-    color: var(--neon-red);
+    color: var(--neon-orange);
   }
 
   .pull-quote {
@@ -710,13 +710,13 @@ if (chart1El) observer.observe(chart1El);
     // Color: peak hours get hot, quiet hours get cool
     const intensity = d.crashes / maxCrashes;
     if (intensity > 0.7) {
-      path.setAttribute('fill', '#ff5722');
+      path.setAttribute('fill', '#C83803');
       path.setAttribute('opacity', 0.7 + intensity * 0.3);
     } else if (intensity > 0.4) {
-      path.setAttribute('fill', '#ff9800');
+      path.setAttribute('fill', '#FF8C2A');
       path.setAttribute('opacity', 0.5 + intensity * 0.3);
     } else {
-      path.setAttribute('fill', '#ffb347');
+      path.setAttribute('fill', '#FF8C2A');
       path.setAttribute('opacity', 0.3 + intensity * 0.3);
     }
 
@@ -770,7 +770,7 @@ if (chart1El) observer.observe(chart1El);
   const t1 = document.createElementNS(ns, 'text');
   t1.setAttribute('x', cx); t1.setAttribute('y', cy - 16);
   t1.setAttribute('text-anchor', 'middle');
-  t1.setAttribute('fill', '#ff5722');
+  t1.setAttribute('fill', '#C83803');
   t1.setAttribute('font-family', "'JetBrains Mono', monospace");
   t1.setAttribute('font-size', '28');
   t1.setAttribute('font-weight', '700');
@@ -884,7 +884,7 @@ if (chart1El) observer.observe(chart1El);
   let farsBase = data.map(d => `${xScale(d.year)},${yScale(0)}`).reverse().join(' ');
   const farsArea = document.createElementNS(ns, 'polygon');
   farsArea.setAttribute('points', farsPoints + ' ' + farsBase);
-  farsArea.setAttribute('fill', 'rgba(255,87,34,0.5)');
+  farsArea.setAttribute('fill', 'rgba(200,56,3,0.5)');
   svg.appendChild(farsArea);
 
   // Top path (CDC) - from FARS value to combined
@@ -892,7 +892,7 @@ if (chart1El) observer.observe(chart1El);
   let cdcBotPoints = data.map(d => `${xScale(d.year)},${yScale(d.fars)}`).reverse().join(' ');
   const cdcArea = document.createElementNS(ns, 'polygon');
   cdcArea.setAttribute('points', cdcTopPoints + ' ' + cdcBotPoints);
-  cdcArea.setAttribute('fill', 'rgba(255,179,71,0.4)');
+  cdcArea.setAttribute('fill', 'rgba(255,140,42,0.4)');
   svg.appendChild(cdcArea);
 
   // Lines
@@ -900,7 +900,7 @@ if (chart1El) observer.observe(chart1El);
   const farsLine = document.createElementNS(ns, 'polyline');
   farsLine.setAttribute('points', data.map(d => `${xScale(d.year)},${yScale(d.fars)}`).join(' '));
   farsLine.setAttribute('fill', 'none');
-  farsLine.setAttribute('stroke', '#ff5722');
+  farsLine.setAttribute('stroke', '#C83803');
   farsLine.setAttribute('stroke-width', '2.5');
   svg.appendChild(farsLine);
 
@@ -908,7 +908,7 @@ if (chart1El) observer.observe(chart1El);
   const combLine = document.createElementNS(ns, 'polyline');
   combLine.setAttribute('points', data.map(d => `${xScale(d.year)},${yScale(d.fars + d.cdc)}`).join(' '));
   combLine.setAttribute('fill', 'none');
-  combLine.setAttribute('stroke', '#ffb347');
+  combLine.setAttribute('stroke', '#FF8C2A');
   combLine.setAttribute('stroke-width', '2.5');
   svg.appendChild(combLine);
 
@@ -920,13 +920,13 @@ if (chart1El) observer.observe(chart1El);
     const cy1 = yScale(combined);
     const dot1 = document.createElementNS(ns, 'circle');
     dot1.setAttribute('cx', xScale(d.year)); dot1.setAttribute('cy', cy1);
-    dot1.setAttribute('r', 4); dot1.setAttribute('fill', '#ffb347');
+    dot1.setAttribute('r', 4); dot1.setAttribute('fill', '#FF8C2A');
     svg.appendChild(dot1);
 
     const lbl1 = document.createElementNS(ns, 'text');
     lbl1.setAttribute('x', xScale(d.year)); lbl1.setAttribute('y', cy1 - 12);
     lbl1.setAttribute('text-anchor', 'middle');
-    lbl1.setAttribute('fill', '#ffb347');
+    lbl1.setAttribute('fill', '#FF8C2A');
     lbl1.setAttribute('font-family', "'JetBrains Mono', monospace");
     lbl1.setAttribute('font-size', '12');
     lbl1.setAttribute('font-weight', '700');
@@ -937,13 +937,13 @@ if (chart1El) observer.observe(chart1El);
     const cy2 = yScale(d.fars);
     const dot2 = document.createElementNS(ns, 'circle');
     dot2.setAttribute('cx', xScale(d.year)); dot2.setAttribute('cy', cy2);
-    dot2.setAttribute('r', 4); dot2.setAttribute('fill', '#ff5722');
+    dot2.setAttribute('r', 4); dot2.setAttribute('fill', '#C83803');
     svg.appendChild(dot2);
 
     const lbl2 = document.createElementNS(ns, 'text');
     lbl2.setAttribute('x', xScale(d.year)); lbl2.setAttribute('y', cy2 + 18);
     lbl2.setAttribute('text-anchor', 'middle');
-    lbl2.setAttribute('fill', '#ff5722');
+    lbl2.setAttribute('fill', '#C83803');
     lbl2.setAttribute('font-family', "'JetBrains Mono', monospace");
     lbl2.setAttribute('font-size', '11');
     lbl2.textContent = d.fars;
@@ -967,7 +967,7 @@ if (chart1El) observer.observe(chart1El);
   const r1 = document.createElementNS(ns, 'rect');
   r1.setAttribute('x', pad.left); r1.setAttribute('y', legendY - 8);
   r1.setAttribute('width', 14); r1.setAttribute('height', 14);
-  r1.setAttribute('fill', 'rgba(255,87,34,0.5)'); r1.setAttribute('rx', 2);
+  r1.setAttribute('fill', 'rgba(200,56,3,0.5)'); r1.setAttribute('rx', 2);
   svg.appendChild(r1);
   const l1 = document.createElementNS(ns, 'text');
   l1.setAttribute('x', pad.left + 20); l1.setAttribute('y', legendY + 3);
@@ -981,7 +981,7 @@ if (chart1El) observer.observe(chart1El);
   const r2 = document.createElementNS(ns, 'rect');
   r2.setAttribute('x', pad.left + 280); r2.setAttribute('y', legendY - 8);
   r2.setAttribute('width', 14); r2.setAttribute('height', 14);
-  r2.setAttribute('fill', 'rgba(255,179,71,0.4)'); r2.setAttribute('rx', 2);
+  r2.setAttribute('fill', 'rgba(255,140,42,0.4)'); r2.setAttribute('rx', 2);
   svg.appendChild(r2);
   const l2 = document.createElementNS(ns, 'text');
   l2.setAttribute('x', pad.left + 300); l2.setAttribute('y', legendY + 3);
@@ -997,7 +997,7 @@ if (chart1El) observer.observe(chart1El);
   const callout = document.createElementNS(ns, 'text');
   callout.setAttribute('x', calloutX - 40); callout.setAttribute('y', calloutY);
   callout.setAttribute('text-anchor', 'middle');
-  callout.setAttribute('fill', 'rgba(255,60,60,0.6)');
+  callout.setAttribute('fill', 'rgba(255,107,10,0.6)');
   callout.setAttribute('font-family', "'JetBrains Mono', monospace");
   callout.setAttribute('font-size', '9');
   callout.setAttribute('letter-spacing', '1');

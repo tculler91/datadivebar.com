@@ -10,13 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-red: #ff3c28;
-            --neon-blue: #00d4ff;
-            --neon-amber: #ffb800;
+            --neon-orange: #FF6B0A;
+            --neon-blue: #4A90FF;
+            --neon-amber: #FF8C2A;
             --neon-green: #39ff14;
-            --dark-bg: #0a0a0e;
-            --bar-wood: #1a1410;
-            --smoke: #1c1c24;
+            --dark-bg: #060C16;
+            --bar-wood: #0D1520;
+            --smoke: #111827;
             --glass: rgba(255, 255, 255, 0.04);
             --text-dim: #6b6b7b;
             --text-light: #c8c8d4;
@@ -45,16 +45,16 @@
                     0deg,
                     transparent,
                     transparent 48px,
-                    rgba(30, 25, 20, 0.7) 48px,
-                    rgba(30, 25, 20, 0.7) 50px
+                    rgba(10, 18, 32, 0.7) 48px,
+                    rgba(10, 18, 32, 0.7) 50px
                 ),
                 /* Vertical mortar - odd rows */
                 repeating-linear-gradient(
                     90deg,
                     transparent,
                     transparent 96px,
-                    rgba(30, 25, 20, 0.7) 96px,
-                    rgba(30, 25, 20, 0.7) 98px
+                    rgba(10, 18, 32, 0.7) 96px,
+                    rgba(10, 18, 32, 0.7) 98px
                 );
             background-size: 98px 50px;
             opacity: 0.3;
@@ -91,7 +91,7 @@
             position: fixed;
             inset: 0;
             background:
-                radial-gradient(ellipse at 20% 50%, rgba(255, 184, 0, 0.015) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 50%, rgba(255, 107, 10, 0.015) 0%, transparent 60%),
                 radial-gradient(ellipse at 80% 30%, rgba(255, 45, 123, 0.01) 0%, transparent 50%),
                 linear-gradient(180deg, rgba(28, 28, 36, 0.3) 0%, transparent 40%, rgba(28, 28, 36, 0.4) 100%);
             pointer-events: none;
@@ -107,19 +107,19 @@
         }
         .ambient-1 {
             width: 600px; height: 350px;
-            background: radial-gradient(ellipse, rgba(255, 50, 30, 0.06) 0%, rgba(255, 50, 30, 0.015) 40%, transparent 70%);
+            background: radial-gradient(ellipse, rgba(255, 107, 10, 0.06) 0%, rgba(255, 107, 10, 0.015) 40%, transparent 70%);
             top: -5%; left: -8%;
             filter: blur(60px);
         }
         .ambient-2 {
             width: 500px; height: 300px;
-            background: radial-gradient(ellipse, rgba(0, 212, 255, 0.05) 0%, rgba(0, 212, 255, 0.01) 40%, transparent 70%);
+            background: radial-gradient(ellipse, rgba(74, 144, 255, 0.05) 0%, rgba(74, 144, 255, 0.01) 40%, transparent 70%);
             bottom: 5%; right: -8%;
             filter: blur(60px);
         }
         .ambient-3 {
             width: 800px; height: 250px;
-            background: radial-gradient(ellipse, rgba(255, 184, 0, 0.03) 0%, transparent 60%);
+            background: radial-gradient(ellipse, rgba(255, 107, 10, 0.03) 0%, transparent 60%);
             top: 35%; left: 20%;
             filter: blur(80px);
         }
@@ -158,7 +158,7 @@
             color: var(--neon-amber);
             letter-spacing: 2px;
             text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(255, 184, 0, 0.2);
+            text-shadow: 0 0 10px rgba(255, 107, 10, 0.2);
         }
         .nav-status {
             display: flex;
@@ -247,7 +247,7 @@
         .sign-wall-glow {
             position: absolute;
             top: -20px; left: -40px; right: -40px; bottom: -20px;
-            background: radial-gradient(ellipse at 50% 50%, rgba(255, 50, 30, 0.04) 0%, transparent 65%);
+            background: radial-gradient(ellipse at 50% 50%, rgba(255, 107, 10, 0.04) 0%, transparent 65%);
             filter: blur(20px);
             z-index: -1;
             pointer-events: none;
@@ -266,7 +266,7 @@
             font-family: 'Special Elite', cursive;
             font-size: clamp(1rem, 2.5vw, 1.35rem);
             color: var(--neon-amber);
-            text-shadow: 0 0 15px rgba(255, 184, 0, 0.2);
+            text-shadow: 0 0 15px rgba(255, 107, 10, 0.2);
             margin-bottom: 1.5rem;
             letter-spacing: 1px;
             text-align: center;
@@ -288,7 +288,7 @@
             align-items: center;
             margin: 1.5rem auto 2rem;
             opacity: 0.7;
-            filter: drop-shadow(0 0 12px rgba(255, 50, 30, 0.1)) drop-shadow(0 0 25px rgba(0, 212, 255, 0.05));
+            filter: drop-shadow(0 0 12px rgba(255, 107, 10, 0.1)) drop-shadow(0 0 25px rgba(74, 144, 255, 0.05));
             width: 100%;
         }
         .pixel-scene svg {
@@ -337,7 +337,7 @@
             letter-spacing: 4px;
             margin-bottom: 3rem;
             text-align: center;
-            text-shadow: 0 0 10px rgba(255, 184, 0, 0.12);
+            text-shadow: 0 0 10px rgba(255, 107, 10, 0.12);
         }
 
         .menu-grid {
@@ -367,12 +367,12 @@
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--neon-red), transparent);
+            background: linear-gradient(90deg, transparent, var(--neon-orange), transparent);
             opacity: 0;
             transition: opacity 0.4s ease;
         }
         .menu-item:hover {
-            border-color: rgba(255, 50, 30, 0.15);
+            border-color: rgba(255, 107, 10, 0.15);
             background: rgba(255, 255, 255, 0.06);
             transform: translateY(-2px);
         }
@@ -466,11 +466,11 @@
             border-radius: 1px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(255, 184, 0, 0.15);
+            box-shadow: 0 0 15px rgba(255, 107, 10, 0.15);
         }
         .cta-btn:hover {
-            background: #ffc933;
-            box-shadow: 0 0 25px rgba(255, 184, 0, 0.3);
+            background: #FF9944;
+            box-shadow: 0 0 25px rgba(255, 107, 10, 0.3);
             transform: translateY(-1px);
         }
 
@@ -492,7 +492,7 @@
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 184, 0, 0.15), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 10, 0.15), transparent);
         }
         .footer-left {
             font-size: 0.7rem;
@@ -553,7 +553,7 @@
         .featured-card::before {
             content: ''; position: absolute; top: 0; left: 0;
             width: 100%; height: 3px;
-            background: linear-gradient(90deg, var(--neon-red), var(--neon-amber), var(--neon-red));
+            background: linear-gradient(90deg, var(--neon-orange), var(--neon-amber), var(--neon-orange));
             background-size: 200% 100%;
             animation: shimmer 3s ease-in-out infinite;
         }
@@ -581,7 +581,7 @@
             text-shadow: 0 0 12px rgba(255,184,0,0.2);
         }
         .pulse-dot {
-            width: 6px; height: 6px; background: var(--neon-red);
+            width: 6px; height: 6px; background: var(--neon-orange);
             border-radius: 50%; box-shadow: 0 0 6px rgba(255,60,40,0.4);
             animation: pulse 2s ease-in-out infinite;
         }
@@ -597,7 +597,7 @@
             margin-bottom: 0.75rem; max-width: 600px;
         }
         .featured-title em {
-            font-style: normal; color: var(--neon-red);
+            font-style: normal; color: var(--neon-orange);
             text-shadow: 0 0 20px rgba(255,60,40,0.3);
         }
         .featured-hook {
@@ -661,7 +661,7 @@
         .featured-cta {
             display: inline-flex; align-items: center; gap: 0.5rem;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem; font-weight: 700; color: var(--neon-red);
+            font-size: 0.75rem; font-weight: 700; color: var(--neon-orange);
             letter-spacing: 1px; text-transform: uppercase;
             transition: all 0.3s ease;
         }
@@ -720,10 +720,10 @@
                         <div style="flex:1; min-width:160px;">
                             <div style="font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px;">America's water preparedness</div>
                             <div style="height:20px; border-radius:3px; overflow:hidden; display:flex; background:rgba(255,255,255,0.03);">
-                                <div style="width:53%; background:#b71c1c; opacity:0.85;"></div>
-                                <div style="width:27%; background:#d32f2f; opacity:0.75;"></div>
-                                <div style="width:13%; background:#ff7043; opacity:0.7;"></div>
-                                <div style="width:5%;  background:#ffb347; opacity:0.8;"></div>
+                                <div style="width:53%; background:#0B162A; opacity:0.85;"></div>
+                                <div style="width:27%; background:#1E3A6E; opacity:0.75;"></div>
+                                <div style="width:13%; background:#E85D04; opacity:0.7;"></div>
+                                <div style="width:5%;  background:#FF8C2A; opacity:0.8;"></div>
                                 <div style="width:2%;  background:#69f0ae; opacity:0.9;"></div>
                             </div>
                             <div style="display:flex; justify-content:space-between; margin-top:4px;">
@@ -732,7 +732,7 @@
                             </div>
                         </div>
                         <div style="text-align:center; padding:8px 16px; background:rgba(255,179,71,0.07); border:1px solid rgba(255,179,71,0.2); border-radius:4px;">
-                            <div style="font-size:1.6rem; font-family:'Special Elite',cursive; color:#ffb347; line-height:1;">1 gal</div>
+                            <div style="font-size:1.6rem; font-family:'Special Elite',cursive; color:#FF8C2A; line-height:1;">1 gal</div>
                             <div style="font-size:0.5rem; letter-spacing:1px; color:var(--text-dim); margin-top:2px;">PER PERSON / PER DAY</div>
                             <div style="font-size:0.48rem; color:var(--text-dim); opacity:0.7; margin-top:1px;">THE number. Write it on your hand.</div>
                         </div>
@@ -837,11 +837,11 @@
                 <rect x="17" y="22" width="3" height="0.5" fill="#39ff14" opacity="0.3"/>
 
                 <!-- Beer mug -->
-                <rect x="39" y="22" width="4" height="5" fill="#C88800" opacity="0.85"/>
+                <rect x="39" y="22" width="4" height="5" fill="#C83803" opacity="0.85"/>
                 <rect x="39" y="21" width="4" height="1.5" fill="#FFF8E0" opacity="0.9"/>
-                <rect x="43" y="23" width="1.5" height="3" fill="#C88800" opacity="0.6"/>
+                <rect x="43" y="23" width="1.5" height="3" fill="#C83803" opacity="0.6"/>
                 <!-- Beer glow -->
-                <rect x="39" y="22" width="4" height="5" fill="#FFB800" opacity="0.15"/>
+                <rect x="39" y="22" width="4" height="5" fill="#FF8C2A" opacity="0.15"/>
 
                 <!-- Bar stool (just hints below bar) -->
                 <rect x="28" y="32" width="4" height="2" fill="#2A2A2A"/>
@@ -883,15 +883,15 @@
                 <rect x="56" y="21" width="5" height="6" fill="#2A2A32"/>
                 <rect x="56" y="21" width="5" height="5" fill="#1a1a24"/>
                 <!-- Screen - scatter plot -->
-                <rect x="57" y="22" width="0.5" height="0.5" fill="#ff2d7b" opacity="0.7"/>
-                <rect x="58" y="23" width="0.5" height="0.5" fill="#ff2d7b" opacity="0.7"/>
-                <rect x="59" y="22.5" width="0.5" height="0.5" fill="#ff2d7b" opacity="0.7"/>
-                <rect x="57.5" y="24" width="0.5" height="0.5" fill="#ff2d7b" opacity="0.7"/>
-                <rect x="59.5" y="23.5" width="0.5" height="0.5" fill="#ff2d7b" opacity="0.7"/>
+                <rect x="57" y="22" width="0.5" height="0.5" fill="#FF6B0A" opacity="0.7"/>
+                <rect x="58" y="23" width="0.5" height="0.5" fill="#FF6B0A" opacity="0.7"/>
+                <rect x="59" y="22.5" width="0.5" height="0.5" fill="#FF6B0A" opacity="0.7"/>
+                <rect x="57.5" y="24" width="0.5" height="0.5" fill="#FF6B0A" opacity="0.7"/>
+                <rect x="59.5" y="23.5" width="0.5" height="0.5" fill="#FF6B0A" opacity="0.7"/>
                 <!-- Regression line -->
-                <rect x="57" y="24" width="1" height="0.3" fill="#00d4ff" opacity="0.5"/>
-                <rect x="58" y="23.5" width="1" height="0.3" fill="#00d4ff" opacity="0.5"/>
-                <rect x="59" y="23" width="1" height="0.3" fill="#00d4ff" opacity="0.5"/>
+                <rect x="57" y="24" width="1" height="0.3" fill="#4A90FF" opacity="0.5"/>
+                <rect x="58" y="23.5" width="1" height="0.3" fill="#4A90FF" opacity="0.5"/>
+                <rect x="59" y="23" width="1" height="0.3" fill="#4A90FF" opacity="0.5"/>
 
                 <!-- Energy drink can -->
                 <rect x="77" y="23" width="2" height="4" fill="#1A3A1A"/>
@@ -945,9 +945,9 @@
                 <rect x="104" y="23" width="3" height="4" fill="#1E1E28"/>
                 <rect x="104" y="23" width="3" height="3" fill="#1a1a24"/>
                 <!-- Phone screen - text lines -->
-                <rect x="105" y="23.5" width="1.5" height="0.3" fill="#ffb800" opacity="0.4"/>
-                <rect x="105" y="24.2" width="1.5" height="0.3" fill="#ffb800" opacity="0.3"/>
-                <rect x="105" y="24.9" width="1" height="0.3" fill="#ffb800" opacity="0.3"/>
+                <rect x="105" y="23.5" width="1.5" height="0.3" fill="#FF8C2A" opacity="0.4"/>
+                <rect x="105" y="24.2" width="1.5" height="0.3" fill="#FF8C2A" opacity="0.3"/>
+                <rect x="105" y="24.9" width="1" height="0.3" fill="#FF8C2A" opacity="0.3"/>
 
                 <!-- Bar stool -->
                 <rect x="93" y="32" width="4" height="2" fill="#2A2A2A"/>
@@ -969,11 +969,11 @@
                 <!-- Hat brim -->
                 <rect x="120" y="11" width="14" height="1.5" fill="#3A2870"/>
                 <!-- Hat stars / sparkles -->
-                <rect x="126" y="4" width="0.8" height="0.8" fill="#ffb800" class="orb-glow" style="animation-delay:0.3s"/>
-                <rect x="124" y="7" width="0.8" height="0.8" fill="#00d4ff" class="orb-glow" style="animation-delay:0.8s"/>
-                <rect x="128" y="6" width="0.8" height="0.8" fill="#ff2d7b" class="orb-glow" style="animation-delay:1.3s"/>
+                <rect x="126" y="4" width="0.8" height="0.8" fill="#FF8C2A" class="orb-glow" style="animation-delay:0.3s"/>
+                <rect x="124" y="7" width="0.8" height="0.8" fill="#4A90FF" class="orb-glow" style="animation-delay:0.8s"/>
+                <rect x="128" y="6" width="0.8" height="0.8" fill="#FF6B0A" class="orb-glow" style="animation-delay:1.3s"/>
                 <rect x="125" y="9" width="0.8" height="0.8" fill="#39ff14" class="orb-glow" style="animation-delay:1.8s"/>
-                <rect x="129" y="9" width="0.8" height="0.8" fill="#ffb800" class="orb-glow" style="animation-delay:2.3s"/>
+                <rect x="129" y="9" width="0.8" height="0.8" fill="#FF8C2A" class="orb-glow" style="animation-delay:2.3s"/>
                 <!-- Hat band -->
                 <rect x="122" y="10" width="10" height="1" fill="#4A30A0" opacity="0.6"/>
 
@@ -997,9 +997,9 @@
                 <!-- Robe trim -->
                 <rect x="121" y="18" width="12" height="0.5" fill="#4A30A0" opacity="0.4"/>
                 <!-- Robe data symbols -->
-                <rect x="124" y="21" width="0.5" height="0.5" fill="#00d4ff" opacity="0.3"/>
-                <rect x="127" y="22" width="0.5" height="0.5" fill="#ff2d7b" opacity="0.3"/>
-                <rect x="129" y="20" width="0.5" height="0.5" fill="#ffb800" opacity="0.3"/>
+                <rect x="124" y="21" width="0.5" height="0.5" fill="#4A90FF" opacity="0.3"/>
+                <rect x="127" y="22" width="0.5" height="0.5" fill="#FF6B0A" opacity="0.3"/>
+                <rect x="129" y="20" width="0.5" height="0.5" fill="#FF8C2A" opacity="0.3"/>
 
                 <!-- Arms -->
                 <rect x="118" y="22" width="4" height="2" fill="#2A1A5A"/>
@@ -1018,10 +1018,10 @@
                 <rect x="114" y="3" width="3.5" height="3.5" rx="1.5" fill="#1a1a24"/>
                 <rect x="114.5" y="3.5" width="2.5" height="2.5" rx="1" fill="#2A1A5A" opacity="0.6"/>
                 <!-- Orb glow -->
-                <rect x="115" y="4" width="1.5" height="1.5" fill="#00d4ff" opacity="0.4" class="orb-glow"/>
+                <rect x="115" y="4" width="1.5" height="1.5" fill="#4A90FF" opacity="0.4" class="orb-glow"/>
                 <rect x="115.3" y="4.3" width="0.8" height="0.8" fill="#fff" opacity="0.3" class="orb-glow"/>
                 <!-- Orb ambient glow -->
-                <rect x="113" y="2" width="6" height="6" fill="#00d4ff" opacity="0.04" rx="3"/>
+                <rect x="113" y="2" width="6" height="6" fill="#4A90FF" opacity="0.04" rx="3"/>
 
                 <!-- Crystal ball on bar -->
                 <rect x="137" y="21" width="4" height="4" rx="2" fill="#1a1a24"/>
@@ -1036,12 +1036,12 @@
                 <rect x="139.5" y="23.2" width="0.5" height="0.8" fill="#39ff14" opacity="0.4" class="orb-glow" style="animation-delay:1.7s"/>
 
                 <!-- Sparkle particles around wizard -->
-                <rect x="119" y="16" width="0.7" height="0.7" fill="#ffb800" class="orb-glow" style="animation-delay:0s"/>
-                <rect x="134" y="18" width="0.7" height="0.7" fill="#00d4ff" class="orb-glow" style="animation-delay:0.5s"/>
-                <rect x="121" y="13" width="0.7" height="0.7" fill="#ff2d7b" class="orb-glow" style="animation-delay:1s"/>
+                <rect x="119" y="16" width="0.7" height="0.7" fill="#FF8C2A" class="orb-glow" style="animation-delay:0s"/>
+                <rect x="134" y="18" width="0.7" height="0.7" fill="#4A90FF" class="orb-glow" style="animation-delay:0.5s"/>
+                <rect x="121" y="13" width="0.7" height="0.7" fill="#FF6B0A" class="orb-glow" style="animation-delay:1s"/>
                 <rect x="133" y="14" width="0.7" height="0.7" fill="#39ff14" class="orb-glow" style="animation-delay:1.5s"/>
-                <rect x="117" y="19" width="0.5" height="0.5" fill="#ffb800" class="orb-glow" style="animation-delay:2s"/>
-                <rect x="136" y="16" width="0.5" height="0.5" fill="#ff2d7b" class="orb-glow" style="animation-delay:2.5s"/>
+                <rect x="117" y="19" width="0.5" height="0.5" fill="#FF8C2A" class="orb-glow" style="animation-delay:2s"/>
+                <rect x="136" y="16" width="0.5" height="0.5" fill="#FF6B0A" class="orb-glow" style="animation-delay:2.5s"/>
 
                 <!-- Bar stool -->
                 <rect x="125" y="32" width="4" height="2" fill="#2A2A2A"/>
@@ -1076,7 +1076,7 @@
                         <span class="menu-item-icon">💧</span>
                         <h3>Now Pouring</h3>
                         <p>Bobby Pinkeye's guide to not dying when the pipes fail. Vol. 1: Water.</p>
-                        <span class="price" style="color:#ffb347;">→ Read Now</span>
+                        <span class="price" style="color:#FF8C2A;">→ Read Now</span>
                     </div>
                     </a>
                     <a href="/americas-deadliest-animal/" style="text-decoration:none;color:inherit;">
@@ -1084,7 +1084,7 @@
                         <span class="menu-item-icon">🦌</span>
                         <h3>The House Pour</h3>
                         <p>America's Deadliest Animal Is a Deer and It's Not Even Close</p>
-                        <span class="price" style="color:#ff3c28;">→ Read Now</span>
+                        <span class="price" style="color:#FF6B0A;">→ Read Now</span>
                     </div>
                     </a>
                 <div class="menu-item fade-up stagger-2">
@@ -1098,7 +1098,7 @@
                     <span class="menu-item-icon">🕹️</span>
                     <h3>The Barcade</h3>
                     <p>Retro arcade games in the back. High scores are public, excuses are not. Currently serving: Bar Invaders.</p>
-                    <span class="price" style="color:#ff3c28;">→ Play Now</span>
+                    <span class="price" style="color:#FF6B0A;">→ Play Now</span>
                 </div>
                 </a>
                 <a href="/weather/" style="text-decoration:none;color:inherit;">
@@ -1106,7 +1106,7 @@
                     <span class="menu-item-icon">⛈️</span>
                     <h3>The Weather Desk</h3>
                     <p>Ohio NEXRAD radar. Smooth jazz. Auto-panning camera. Leave it running all night. You'll feel like it's 1994.</p>
-                    <span class="price" style="color:#00d4ff;">→ Watch Now</span>
+                    <span class="price" style="color:#4A90FF;">→ Watch Now</span>
                 </div>
                 </a>
             </div>

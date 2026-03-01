@@ -8,23 +8,23 @@
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Jacquard+12&family=Share+Tech+Mono&display=swap');
 
   :root {
-    --neon-pink: #ff2d7b;
-    --neon-blue: #00d4ff;
+    --neon-pink: #FF6B0A;
+    --neon-blue: #4A90FF;
     --neon-green: #39ff14;
-    --neon-yellow: #ffea00;
-    --neon-orange: #ff6a00;
+    --neon-yellow: #FF8C2A;
+    --neon-orange: #E85D04;
     --neon-purple: #b44aff;
-    --bar-dark: #0a0806;
-    --bar-wood: #1a120a;
-    --bar-wood-light: #2a1c10;
-    --ui-bg: rgba(10, 8, 6, 0.92);
+    --bar-dark: #060C16;
+    --bar-wood: #0D1520;
+    --bar-wood-light: #0F1E30;
+    --ui-bg: rgba(6, 12, 22, 0.92);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     background: var(--bar-dark);
-    color: #e8d5b7;
+    color: #D4E0F0;
     font-family: 'Share Tech Mono', monospace;
     overflow: hidden;
     height: 100vh;
@@ -48,7 +48,7 @@
     height: 100%;
     display: block;
     border: 2px solid var(--neon-pink);
-    box-shadow: 0 0 15px rgba(255, 45, 123, 0.4), 0 0 40px rgba(255, 45, 123, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 15px rgba(255, 107, 10, 0.4), 0 0 40px rgba(255, 107, 10, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.5);
     border-radius: 4px;
     image-rendering: pixelated;
   }
@@ -71,15 +71,15 @@
   }
   #hud .wave-display {
     color: var(--neon-yellow);
-    text-shadow: 0 0 8px rgba(255, 234, 0, 0.6);
+    text-shadow: 0 0 8px rgba(255, 140, 42, 0.6);
   }
   #hud .lives-display {
     color: var(--neon-pink);
-    text-shadow: 0 0 8px rgba(255, 45, 123, 0.6);
+    text-shadow: 0 0 8px rgba(255, 107, 10, 0.6);
   }
   #hud .hi-score {
     color: var(--neon-blue);
-    text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+    text-shadow: 0 0 8px rgba(74, 144, 255, 0.5);
     font-size: 9px;
   }
 
@@ -87,7 +87,7 @@
     font-family: 'Jacquard 12', serif;
     font-size: 68px;
     color: var(--neon-pink);
-    text-shadow: 0 0 20px rgba(255, 45, 123, 0.8), 0 0 40px rgba(255, 45, 123, 0.4), 0 0 80px rgba(255, 45, 123, 0.2);
+    text-shadow: 0 0 20px rgba(255, 45, 123, 0.8), 0 0 40px rgba(255, 107, 10, 0.4), 0 0 80px rgba(255, 45, 123, 0.2);
     letter-spacing: 4px;
     line-height: 1;
   }
@@ -114,7 +114,7 @@
     font-family: 'Press Start 2P', monospace;
     font-size: 10px;
     color: var(--neon-blue);
-    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    text-shadow: 0 0 10px rgba(74, 144, 255, 0.5);
     margin-top: 14px;
     letter-spacing: 2px;
   }
@@ -201,7 +201,7 @@
     font-family: 'Jacquard 12', serif;
     font-size: 52px;
     color: var(--neon-pink);
-    text-shadow: 0 0 20px rgba(255, 45, 123, 0.8), 0 0 40px rgba(255, 45, 123, 0.4);
+    text-shadow: 0 0 20px rgba(255, 45, 123, 0.8), 0 0 40px rgba(255, 107, 10, 0.4);
   }
   #game-over-panel .final-score {
     font-family: 'Press Start 2P', monospace;
@@ -231,15 +231,15 @@
     background: rgba(0,0,0,0.6);
     border: 2px solid var(--neon-blue);
     color: var(--neon-blue);
-    text-shadow: 0 0 6px rgba(0, 212, 255, 0.5);
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+    text-shadow: 0 0 6px rgba(74, 144, 255, 0.5);
+    box-shadow: 0 0 10px rgba(74, 144, 255, 0.2);
     border-radius: 2px;
     outline: none;
     text-transform: uppercase;
     letter-spacing: 4px;
   }
   #game-over-panel .name-entry input::placeholder {
-    color: rgba(0, 212, 255, 0.3);
+    color: rgba(74, 144, 255, 0.3);
     letter-spacing: 2px;
   }
 
@@ -257,7 +257,7 @@
     font-family: 'Jacquard 12', serif;
     font-size: 36px;
     color: var(--neon-yellow);
-    text-shadow: 0 0 15px rgba(255, 234, 0, 0.6);
+    text-shadow: 0 0 15px rgba(255, 140, 42, 0.6);
     margin-bottom: 4px;
   }
   #leaderboard-panel .lb-table {
@@ -310,7 +310,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   #mobile-controls button:active {
-    background: rgba(0, 212, 255, 0.15);
+    background: rgba(74, 144, 255, 0.15);
   }
   #fire-btn {
     border-color: var(--neon-pink) !important;
@@ -619,7 +619,7 @@ function drawPlayer(x, y) {
   ctx.fillRect(cx - 8, cy - 2, 3, 10);
   // Shield indicator
   if (player.shieldHP > 0) {
-    ctx.strokeStyle = `rgba(0, 212, 255, ${0.4 + Math.sin(frameCount * 0.1) * 0.3})`;
+    ctx.strokeStyle = `rgba(74, 144, 255, ${0.4 + Math.sin(frameCount * 0.1) * 0.3})`;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(cx, cy, 20, 0, Math.PI * 2);
@@ -630,8 +630,8 @@ function drawPlayer(x, y) {
 // Enemy types
 const ENEMY_TYPES = {
   martini: { w: 24, h: 24, points: 10, color: '#c9f0ff', accent: '#7aecff', hp: 1 },
-  wine: { w: 20, h: 28, points: 20, color: '#8b0033', accent: '#ff2d7b', hp: 1 },
-  cocktail: { w: 26, h: 22, points: 30, color: '#ff6a00', accent: '#ffea00', hp: 2 },
+  wine: { w: 20, h: 28, points: 20, color: '#1E3A6E', accent: '#FF6B0A', hp: 1 },
+  cocktail: { w: 26, h: 22, points: 30, color: '#E85D04', accent: '#FF8C2A', hp: 2 },
   champagne: { w: 22, h: 30, points: 50, color: '#ffe066', accent: '#ffd700', hp: 2 },
   absinthe: { w: 24, h: 26, points: 75, color: '#39ff14', accent: '#00ff88', hp: 3 }
 };
@@ -658,7 +658,7 @@ function drawEnemy(type, x, y, frame) {
       // Olive
       ctx.fillStyle = '#39ff14';
       ctx.fillRect(cx + 4, ey - 6, 5, 5);
-      ctx.fillStyle = '#ff2d7b';
+      ctx.fillStyle = '#FF6B0A';
       ctx.fillRect(cx + 5, ey - 5, 3, 3);
       break;
     }
@@ -839,8 +839,8 @@ function spawnParticles(x, y, color, count = 8, speed = 3) {
 function spawnExplosion(x, y, type) {
   const colors = {
     martini: ['#c9f0ff', '#7aecff', '#fff'],
-    wine: ['#8b0033', '#ff2d7b', '#ff6699'],
-    cocktail: ['#ff6a00', '#ffea00', '#ffa500'],
+    wine: ['#1E3A6E', '#FF6B0A', '#ff6699'],
+    cocktail: ['#E85D04', '#FF8C2A', '#ffa500'],
     champagne: ['#ffe066', '#ffd700', '#fff8dc'],
     absinthe: ['#39ff14', '#00ff88', '#88ff88']
   };
@@ -853,11 +853,11 @@ function spawnExplosion(x, y, type) {
 // POWER-UPS
 // ============================================================
 const POWERUP_TYPES = [
-  { type: 'rapid', color: '#ff2d7b', label: '⚡', desc: 'RAPID FIRE' },
-  { type: 'multi', color: '#00d4ff', label: '✦', desc: 'MULTI SHOT' },
+  { type: 'rapid', color: '#FF6B0A', label: '⚡', desc: 'RAPID FIRE' },
+  { type: 'multi', color: '#4A90FF', label: '✦', desc: 'MULTI SHOT' },
   { type: 'shield', color: '#39ff14', label: '♦', desc: 'SHIELD' },
-  { type: 'bomb', color: '#ffea00', label: '✸', desc: 'BAR BOMB' },
-  { type: 'life', color: '#ff6a00', label: '♥', desc: 'EXTRA LIFE' }
+  { type: 'bomb', color: '#FF8C2A', label: '✸', desc: 'BAR BOMB' },
+  { type: 'life', color: '#E85D04', label: '♥', desc: 'EXTRA LIFE' }
 ];
 
 function maybeDropPowerup(x, y) {
@@ -900,7 +900,7 @@ function activatePowerup(p) {
       });
       shakeAmount = 12;
       // Big flash
-      spawnParticles(W/2, H/2, '#ffea00', 30, 8);
+      spawnParticles(W/2, H/2, '#FF8C2A', 30, 8);
       spawnParticles(W/2, H/2, '#fff', 20, 6);
       audio.play('explode');
       break;
@@ -1103,7 +1103,7 @@ function update() {
           const points = e.points * multiplier;
           score += points;
           if (multiplier > 1) {
-            showFloatingText(e.x, e.y - 10, `x${multiplier}`, '#ffea00', 12);
+            showFloatingText(e.x, e.y - 10, `x${multiplier}`, '#FF8C2A', 12);
           }
           showFloatingText(e.x, e.y, `+${points}`, ENEMY_TYPES[e.type].accent, 9);
           spawnExplosion(e.x, e.y, e.type);
@@ -1126,7 +1126,7 @@ function update() {
         b.y = H + 100;
         if (player.shieldHP > 0) {
           player.shieldHP--;
-          spawnParticles(player.x, player.y, '#00d4ff', 8, 2);
+          spawnParticles(player.x, player.y, '#4A90FF', 8, 2);
           audio.play('bonus');
         } else {
           playerHit();
@@ -1182,7 +1182,7 @@ function update() {
     // Bonus for completing wave
     const waveBonus = wave * 100;
     score += waveBonus;
-    showFloatingText(W/2, H/2 + 30, `WAVE BONUS +${waveBonus}`, '#ffea00', 12);
+    showFloatingText(W/2, H/2 + 30, `WAVE BONUS +${waveBonus}`, '#FF8C2A', 12);
     updateHUD();
 
     if (wave >= 100) {
@@ -1212,8 +1212,8 @@ function playerHit() {
   audio.play('playerhit');
   lives--;
   player.invincible = 120;
-  spawnParticles(player.x, player.y, '#ff2d7b', 15, 4);
-  spawnParticles(player.x, player.y, '#ffea00', 10, 3);
+  spawnParticles(player.x, player.y, '#FF6B0A', 15, 4);
+  spawnParticles(player.x, player.y, '#FF8C2A', 10, 3);
   shakeAmount = 8;
   updateHUD();
   if (lives <= 0) {
@@ -1334,7 +1334,7 @@ function draw() {
     ctx.beginPath();
     ctx.arc(0, 0, 3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#ff2d7b';
+    ctx.fillStyle = '#FF6B0A';
     ctx.beginPath();
     ctx.arc(0, 0, 2, 0, Math.PI * 2);
     ctx.fill();
@@ -1350,7 +1350,7 @@ function draw() {
     ctx.beginPath();
     ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#ff2d7b';
+    ctx.fillStyle = '#FF6B0A';
     ctx.fillRect(b.x - 1, b.y - 1, 2, 2);
     // Trail
     ctx.fillStyle = 'rgba(57, 255, 20, 0.2)';
@@ -1413,14 +1413,14 @@ function draw() {
   if (player.rapidFire) {
     const alpha = player.rapidTimer < 60 ? (Math.sin(frameCount * 0.3) * 0.5 + 0.5) : 1;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = '#ff2d7b';
+    ctx.fillStyle = '#FF6B0A';
     ctx.fillText('⚡ RAPID', 8, indicatorY);
     indicatorY += 12;
   }
   if (player.multiShot) {
     const alpha = player.multiTimer < 60 ? (Math.sin(frameCount * 0.3) * 0.5 + 0.5) : 1;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = '#00d4ff';
+    ctx.fillStyle = '#4A90FF';
     ctx.fillText('✦ MULTI', 8, indicatorY);
     indicatorY += 12;
   }
@@ -1435,7 +1435,7 @@ function draw() {
   if (waveTransition > 0) {
     const alpha = waveTransition > 60 ? (120 - waveTransition) / 60 : waveTransition / 60;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = '#ffea00';
+    ctx.fillStyle = '#FF8C2A';
     ctx.font = '20px "Press Start 2P"';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -1447,7 +1447,7 @@ function draw() {
   if (state === 'paused') {
     ctx.fillStyle = 'rgba(10, 8, 6, 0.7)';
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#ffea00';
+    ctx.fillStyle = '#FF8C2A';
     ctx.font = '20px "Press Start 2P"';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
