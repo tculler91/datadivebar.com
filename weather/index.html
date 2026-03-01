@@ -18,15 +18,15 @@
 
     <style>
         :root {
-            --bg:             #020510;
-            --navy:           #04082a;
-            --panel:          rgba(4, 8, 38, 0.94);
+            --bg:             #010813;
+            --navy:           #040B1E;
+            --panel:          rgba(4, 10, 30, 0.94);
             --panel-border:   rgba(48, 148, 220, 0.18);
             --blue:           #3888c8;
             --teal:           #30c8d4;
             --teal-dim:       rgba(48, 200, 212, 0.12);
-            --amber:          #e4a83c;
-            --amber-bright:   #f0c060;
+            --amber:          #E85D04;
+            --amber-bright:   #FF7A2A;
             --purple:         #8868c0;
             --text:           #b8d0f0;
             --text-secondary: #6888b0;
@@ -35,7 +35,7 @@
             --chyron-h:       48px;
             --glow-blue:      0 0 8px rgba(48, 136, 200, 0.6), 0 0 20px rgba(48, 136, 200, 0.2);
             --glow-teal:      0 0 8px rgba(48, 200, 212, 0.7), 0 0 20px rgba(48, 200, 212, 0.25);
-            --glow-amber:     0 0 8px rgba(228, 168, 60, 0.7), 0 0 24px rgba(228, 168, 60, 0.2);
+            --glow-amber:     0 0 8px rgba(232, 93, 4, 0.7), 0 0 24px rgba(232, 93, 4, 0.2);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -210,15 +210,15 @@
         }
         .live-dot {
             width: 7px; height: 7px;
-            background: #e84040;
+            background: #FF6B0A;
             border-radius: 50%;
             flex-shrink: 0;
-            box-shadow: 0 0 6px rgba(232, 64, 64, 0.8), 0 0 14px rgba(232, 64, 64, 0.4);
+            box-shadow: 0 0 6px rgba(255, 107, 10, 0.8), 0 0 14px rgba(255, 107, 10, 0.4);
             animation: livepulse 2s ease-in-out infinite;
         }
         @keyframes livepulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(232,64,64,0.9), 0 0 14px rgba(232,64,64,0.5); }
-            50%       { opacity: 0.5; box-shadow: 0 0 3px rgba(232,64,64,0.4); }
+            0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(255,107,10,0.9), 0 0 14px rgba(255,107,10,0.5); }
+            50%       { opacity: 0.5; box-shadow: 0 0 3px rgba(255,107,10,0.4); }
         }
         .top-center-sub {
             font-family: 'IBM Plex Mono', monospace;
@@ -559,8 +559,8 @@
             left: 0; right: 0;
             background: rgba(50, 8, 8, 0.95);
             border-bottom: 1.5px solid rgba(255, 60, 40, 0.35);
-            box-shadow: 0 2px 20px rgba(232, 64, 64, 0.2);
-            color: #ff8888;
+            box-shadow: 0 2px 20px rgba(255, 107, 10, 0.2);
+            color: #FFAA66;
             font-family: 'VT323', monospace;
             font-size: 0.9rem;
             letter-spacing: 0.14em;
@@ -643,9 +643,9 @@
             cursor: pointer;
         }
         .traffic-marker.police   { border-color: #3888c8; box-shadow: 0 0 8px rgba(56,136,200,0.8), 0 0 20px rgba(56,136,200,0.3); }
-        .traffic-marker.accident { border-color: #e84040; box-shadow: 0 0 8px rgba(232,64,64,0.8), 0 0 20px rgba(232,64,64,0.3); }
-        .traffic-marker.hazard   { border-color: #e4a83c; box-shadow: 0 0 8px rgba(228,168,60,0.8), 0 0 20px rgba(228,168,60,0.3); }
-        .traffic-marker.closure  { border-color: #e87050; box-shadow: 0 0 8px rgba(232,112,80,0.8), 0 0 20px rgba(232,112,80,0.3); }
+        .traffic-marker.accident { border-color: #FF6B0A; box-shadow: 0 0 8px rgba(255,107,10,0.8), 0 0 20px rgba(255,107,10,0.3); }
+        .traffic-marker.hazard   { border-color: #E85D04; box-shadow: 0 0 8px rgba(232,93,4,0.8), 0 0 20px rgba(232,93,4,0.3); }
+        .traffic-marker.closure  { border-color: #E85D04; box-shadow: 0 0 8px rgba(232,112,80,0.8), 0 0 20px rgba(232,112,80,0.3); }
 
         /* ── LEAFLET POPUP (dark theme) ───────────────────────── */
         .leaflet-popup-content-wrapper {
@@ -1024,8 +1024,8 @@
         if (tempF < 32)  return '#4ab8d8';
         if (tempF < 50)  return '#5ab8aa';
         if (tempF < 68)  return '#88c870';
-        if (tempF < 85)  return '#e4a83c';
-        return '#e87050';
+        if (tempF < 85)  return '#E85D04';
+        return '#E85D04';
     }
 
     // ── NWS ALERTS ───────────────────────────────────────────────
@@ -1369,7 +1369,7 @@
             var lng = alert.location && alert.location.x;
             if (!lat || !lng) return;
 
-            var colorMap = { police: '#3888c8', accident: '#e84040', hazard: '#e4a83c', closure: '#e87050' };
+            var colorMap = { police: '#3888c8', accident: '#FF6B0A', hazard: '#E85D04', closure: '#E85D04' };
             var labelColor = colorMap[typeDef.cls] || '#b8d0f0';
 
             var popupHtml =

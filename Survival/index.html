@@ -7,16 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --neon-red: #ff3c3c;
-    --neon-amber: #ffb347;
-    --neon-blue: #4fc3f7;
+    --neon-orange: #FF6B0A;
+    --neon-amber: #FF8C2A;
+    --neon-blue: #4A90FF;
     --neon-green: #69f0ae;
-    --dark-bg: #0d0d0d;
-    --panel-bg: #1a1a1a;
+    --dark-bg: #060C16;
+    --panel-bg: #0D1520;
     --chalk: #e8e0d4;
     --muted: #7a7265;
-    --water-blue: #29b6f6;
-    --danger-red: #ff5722;
+    --water-blue: #4A90FF;
+    --danger-red: #C83803;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -75,7 +75,7 @@
   .hero h1 em {
     font-style: italic;
     color: var(--neon-amber);
-    text-shadow: 0 0 30px rgba(255, 179, 71, 0.35);
+    text-shadow: 0 0 30px rgba(255, 140, 42, 0.35);
   }
 
   .hero-sub {
@@ -175,7 +175,7 @@
   .teaser {
     margin: 28px 0;
     padding: 20px 24px;
-    background: rgba(255, 179, 71, 0.05);
+    background: rgba(255, 140, 42, 0.05);
     border-left: 3px solid var(--neon-amber);
     font-style: italic;
     font-size: 0.95rem;
@@ -370,7 +370,7 @@
   .fear-callout {
     margin-top: 20px;
     padding: 18px 22px;
-    background: rgba(255, 179, 71, 0.05);
+    background: rgba(255, 140, 42, 0.05);
     border-left: 3px solid var(--neon-amber);
     border-radius: 0 8px 8px 0;
   }
@@ -551,17 +551,17 @@
     <div id="gallonChart">
       <div class="gallon-row">
         <div class="gallon-label">Solo / 72-hr emergency</div>
-        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="2.7" style="background: linear-gradient(90deg, #29b6f6, #4fc3f7);"></div></div>
+        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="2.7" style="background: linear-gradient(90deg, #4A90FF, #4A90FF);"></div></div>
         <div class="gallon-value">3 gal</div>
       </div>
       <div class="gallon-row">
         <div class="gallon-label">2 people / 72 hours</div>
-        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="5.4" style="background: linear-gradient(90deg, #29b6f6, #4fc3f7);"></div></div>
+        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="5.4" style="background: linear-gradient(90deg, #4A90FF, #4A90FF);"></div></div>
         <div class="gallon-value">6 gal</div>
       </div>
       <div class="gallon-row">
         <div class="gallon-label">2 people / 2 weeks</div>
-        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="25.2" style="background: linear-gradient(90deg, #0288d1, #29b6f6);"></div></div>
+        <div class="gallon-bar-container"><div class="gallon-bar-fill" data-width="25.2" style="background: linear-gradient(90deg, #0288d1, #4A90FF);"></div></div>
         <div class="gallon-value">28 gal</div>
       </div>
       <div class="gallon-row">
@@ -689,10 +689,10 @@
   if (!track) return;
 
   const segments = [
-    { label: 'No emergency water stored',         pct: 53, color: '#b71c1c', textDark: false },
-    { label: 'Less than 3 days stored',            pct: 27, color: '#d32f2f', textDark: false },
-    { label: '3–7 days stored',                    pct: 13, color: '#ff7043', textDark: false },
-    { label: '14+ days (FEMA target)',              pct:  5, color: '#ffb347', textDark: true  },
+    { label: 'No emergency water stored',         pct: 53, color: '#0B162A', textDark: false },
+    { label: 'Less than 3 days stored',            pct: 27, color: '#1E3A6E', textDark: false },
+    { label: '3–7 days stored',                    pct: 13, color: '#E85D04', textDark: false },
+    { label: '14+ days (FEMA target)',              pct:  5, color: '#FF8C2A', textDark: true  },
     { label: 'Bobby level (60+ gal, distributed)', pct:  2, color: '#69f0ae', textDark: true  },
   ];
 
@@ -744,13 +744,13 @@
   const barY = pad.top;
 
   const stages = [
-    { start: 0,  end: 4,  label: 'Thirst,\ndry mouth',             color: '#ffb347', severity: 0.18 },
-    { start: 4,  end: 12, label: 'Headache,\nfatigue',              color: '#ff9800', severity: 0.38 },
-    { start: 12, end: 24, label: 'Dizziness,\nnausea',              color: '#ff7043', severity: 0.56 },
-    { start: 24, end: 36, label: 'Confusion,\nrapid heartbeat',     color: '#ff5722', severity: 0.73 },
-    { start: 36, end: 48, label: "★ BOBBY'S ZONE\nhallucinations",  color: '#ff3c3c', severity: 0.89, bobby: true },
+    { start: 0,  end: 4,  label: 'Thirst,\ndry mouth',             color: '#FF8C2A', severity: 0.18 },
+    { start: 4,  end: 12, label: 'Headache,\nfatigue',              color: '#FF8C2A', severity: 0.38 },
+    { start: 12, end: 24, label: 'Dizziness,\nnausea',              color: '#E85D04', severity: 0.56 },
+    { start: 24, end: 36, label: 'Confusion,\nrapid heartbeat',     color: '#C83803', severity: 0.73 },
+    { start: 36, end: 48, label: "★ BOBBY'S ZONE\nhallucinations",  color: '#FF6B0A', severity: 0.89, bobby: true },
     { start: 48, end: 60, label: 'Critical organ\nstress',          color: '#e53935', severity: 0.96 },
-    { start: 60, end: 72, label: 'Kidney\nfailure',                 color: '#b71c1c', severity: 1.0  },
+    { start: 60, end: 72, label: 'Kidney\nfailure',                 color: '#0B162A', severity: 1.0  },
   ];
 
   const xScale = h => pad.left + (h / 72) * plotW;
@@ -773,7 +773,7 @@
     rect.setAttribute('fill', s.color);
     rect.setAttribute('opacity', (0.22 + s.severity * 0.68).toFixed(2));
     if (s.bobby) {
-      rect.setAttribute('stroke', '#ff3c3c');
+      rect.setAttribute('stroke', '#FF6B0A');
       rect.setAttribute('stroke-width', '2');
       rect.setAttribute('opacity', '0.88');
     }
@@ -856,7 +856,7 @@
   const calloutLine = document.createElementNS(ns, 'line');
   calloutLine.setAttribute('x1', bobbyX); calloutLine.setAttribute('x2', bobbyX);
   calloutLine.setAttribute('y1', barY + barH); calloutLine.setAttribute('y2', barY + barH + 44);
-  calloutLine.setAttribute('stroke', '#ff3c3c');
+  calloutLine.setAttribute('stroke', '#FF6B0A');
   calloutLine.setAttribute('stroke-width', '1.5');
   calloutLine.setAttribute('stroke-dasharray', '3,3');
   svg.appendChild(calloutLine);
