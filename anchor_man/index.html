@@ -14,13 +14,16 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            width: 100vw;
             font-family: 'Press Start 2P', monospace;
         }
         #gameContainer {
             position: relative;
-            width: 640px;
-            max-width: 100vw;
-            aspect-ratio: 4/3;
+            /* Scale to fill viewport while maintaining 4:3 */
+            width: min(100vw, calc(100vh * 4 / 3));
+            height: min(100vh, calc(100vw * 3 / 4));
+            max-width: 1200px;
+            max-height: 900px;
         }
         canvas {
             width: 100%;
@@ -28,21 +31,16 @@
             display: block;
             image-rendering: pixelated;
         }
-        /* CRT Scanlines */
         #scanlines {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0,0,0,0.06) 2px,
-                rgba(0,0,0,0.06) 4px
+                0deg, transparent, transparent 2px,
+                rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px
             );
             pointer-events: none;
             z-index: 10;
         }
-        /* Vignette */
         #vignette {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -50,7 +48,6 @@
             pointer-events: none;
             z-index: 11;
         }
-        /* Mobile controls */
         #mobileControls {
             display: none;
             position: absolute;
@@ -81,17 +78,13 @@
         }
         .dpad-btn:active { background: rgba(255, 107, 10, 0.6); }
         .dpad-blank { background: none; border: none; }
-        @media (max-width: 768px) {
-            #mobileControls { display: flex; }
-        }
-        @media (hover: none) and (pointer: coarse) {
-            #mobileControls { display: flex; }
-        }
+        @media (max-width: 768px) { #mobileControls { display: flex; } }
+        @media (hover: none) and (pointer: coarse) { #mobileControls { display: flex; } }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="640" height="480"></canvas>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="scanlines"></div>
         <div id="vignette"></div>
         <div id="mobileControls">
@@ -109,53 +102,84 @@
         </div>
     </div>
 
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 <script>
 // ============================================================
 // ANCHOR MAN - A Dodge Game
-// "Back in 2018, on Burt Lake, Northern Michigan..."
+// "Burt Lake, Michigan - 2018"
 // ============================================================
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const W = 640, H = 480;
+const W = 800, H = 600;
+
+// ============================================================
+// SUPABASE LEADERBOARD
+// Same Supabase project as Bar Invaders. Run this SQL once:
+//
+//   CREATE TABLE anchor_man_scores (
+//     id          BIGSERIAL PRIMARY KEY,
+//     name        TEXT    NOT NULL,
+//     score       INTEGER NOT NULL,
+//     wave        INTEGER NOT NULL,
+//     timestamp   BIGINT  NOT NULL,
+//     created_at  TIMESTAMPTZ DEFAULT NOW()
+//   );
+//   ALTER TABLE anchor_man_scores ENABLE ROW LEVEL SECURITY;
+//   CREATE POLICY "public read"
+//     ON anchor_man_scores FOR SELECT USING (true);
+//   CREATE POLICY "public insert"
+//     ON anchor_man_scores FOR INSERT WITH CHECK (true);
+//
+// ============================================================
+const SUPABASE_URL = 'https://lfxfutgrgzygqnwdeyby.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmeGZ1dGdyZ3p5Z3Fud2RleWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMjQ5MzAsImV4cCI6MjA4NzgwMDkzMH0.xBWGRbrBloOZgUqIpnd-aHC89MgqBAZhZkx57u3FwQo';
+const TABLE_NAME = 'anchor_man_scores';
+
+let sbClient = null;
+let cloudReady = false;
+try {
+    if (typeof supabase !== 'undefined') {
+        sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        cloudReady = true;
+    }
+} catch(e) {
+    console.warn('Supabase init failed — localStorage fallback:', e);
+}
+
+// Flush pending offline scores
+const _pending = JSON.parse(localStorage.getItem('anchorManPending') || '[]');
+if (cloudReady && _pending.length > 0) {
+    sbClient.from(TABLE_NAME).insert(_pending)
+        .then(({ error }) => { if (!error) localStorage.removeItem('anchorManPending'); });
+}
 
 // Game states
 const STATE = { MENU: 0, PLAYING: 1, PAUSED: 2, GAMEOVER: 3, LEADERBOARD: 4, WAVE_INTRO: 5 };
 let state = STATE.MENU;
 
-// Colors
 const COL = {
-    water1: '#0a2a4a',
-    water2: '#0d3560',
-    water3: '#082040',
-    boat: '#8B6914',
-    boatDark: '#6B4F10',
-    boatDeck: '#C4A35A',
-    anchor: '#708090',
-    anchorDark: '#4a5a6a',
-    neonOrange: '#FF6B0A',
-    neonBlue: '#4A90FF',
-    neonGreen: '#39ff14',
-    neonPink: '#FF1493',
-    neonAmber: '#FF8C2A',
-    textLight: '#c8c8d4',
-    textDim: '#6b6b7b',
-    hud: '#060C16',
-    red: '#ff4444',
-    gold: '#FFD700',
-    white: '#ffffff',
+    water1: '#0a2a4a', water2: '#0d3560', water3: '#082040',
+    boat: '#8B6914', boatDark: '#6B4F10', boatDeck: '#C4A35A', boatDeckLight: '#d4b86a',
+    anchor: '#708090', anchorDark: '#4a5a6a',
+    neonOrange: '#FF6B0A', neonBlue: '#4A90FF', neonGreen: '#39ff14',
+    neonPink: '#FF1493', neonAmber: '#FF8C2A',
+    textLight: '#c8c8d4', textDim: '#6b6b7b',
+    red: '#ff4444', gold: '#FFD700', white: '#ffffff',
+    treeDark: '#0a3a1a', treeMid: '#1a5a2a', treeLight: '#2a7a3a',
+    sky: '#1a2a4a', mountain: '#1a2035',
 };
 
 // ============================================================
-// AUDIO SYSTEM (Procedural Web Audio)
+// AUDIO SYSTEM
 // ============================================================
 let audioCtx = null;
 let muted = false;
 
 function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
 function playSound(type) {
@@ -163,34 +187,29 @@ function playSound(type) {
     const t = audioCtx.currentTime;
     const g = audioCtx.createGain();
     g.connect(audioCtx.destination);
-
     switch(type) {
-        case 'dodge': { // near miss
+        case 'dodge': {
             const o = audioCtx.createOscillator();
             o.type = 'sine';
             o.frequency.setValueAtTime(880, t);
             o.frequency.exponentialRampToValueAtTime(1320, t + 0.08);
             g.gain.setValueAtTime(0.12, t);
             g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-            o.connect(g);
-            o.start(t); o.stop(t + 0.15);
+            o.connect(g); o.start(t); o.stop(t + 0.15);
             break;
         }
-        case 'hit': { // player hit by anchor
+        case 'hit': {
             const o = audioCtx.createOscillator();
             o.type = 'sawtooth';
             o.frequency.setValueAtTime(200, t);
             o.frequency.exponentialRampToValueAtTime(60, t + 0.4);
             g.gain.setValueAtTime(0.2, t);
             g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-            o.connect(g);
-            o.start(t); o.stop(t + 0.4);
-            // noise burst
+            o.connect(g); o.start(t); o.stop(t + 0.4);
             const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.15, audioCtx.sampleRate);
             const data = buf.getChannelData(0);
             for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.3;
-            const n = audioCtx.createBufferSource();
-            n.buffer = buf;
+            const n = audioCtx.createBufferSource(); n.buffer = buf;
             const g2 = audioCtx.createGain();
             g2.gain.setValueAtTime(0.25, t);
             g2.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
@@ -199,23 +218,19 @@ function playSound(type) {
             break;
         }
         case 'powerup': {
-            const o = audioCtx.createOscillator();
-            o.type = 'sine';
+            const o = audioCtx.createOscillator(); o.type = 'sine';
             o.frequency.setValueAtTime(440, t);
             o.frequency.setValueAtTime(554, t + 0.06);
             o.frequency.setValueAtTime(660, t + 0.12);
             o.frequency.setValueAtTime(880, t + 0.18);
             g.gain.setValueAtTime(0.15, t);
             g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-            o.connect(g);
-            o.start(t); o.stop(t + 0.3);
+            o.connect(g); o.start(t); o.stop(t + 0.3);
             break;
         }
         case 'waveClear': {
             [523, 659, 784, 1047].forEach((freq, i) => {
-                const o = audioCtx.createOscillator();
-                o.type = 'square';
-                o.frequency.value = freq;
+                const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = freq;
                 const gn = audioCtx.createGain();
                 gn.gain.setValueAtTime(0, t + i * 0.1);
                 gn.gain.linearRampToValueAtTime(0.1, t + i * 0.1 + 0.02);
@@ -227,9 +242,7 @@ function playSound(type) {
         }
         case 'gameOver': {
             [400, 350, 300, 200].forEach((freq, i) => {
-                const o = audioCtx.createOscillator();
-                o.type = 'sawtooth';
-                o.frequency.value = freq;
+                const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = freq;
                 const gn = audioCtx.createGain();
                 gn.gain.setValueAtTime(0.12, t + i * 0.2);
                 gn.gain.exponentialRampToValueAtTime(0.001, t + i * 0.2 + 0.3);
@@ -239,22 +252,19 @@ function playSound(type) {
             break;
         }
         case 'collect': {
-            const o = audioCtx.createOscillator();
-            o.type = 'sine';
+            const o = audioCtx.createOscillator(); o.type = 'sine';
             o.frequency.setValueAtTime(660, t);
             o.frequency.exponentialRampToValueAtTime(990, t + 0.1);
             g.gain.setValueAtTime(0.12, t);
             g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-            o.connect(g);
-            o.start(t); o.stop(t + 0.12);
+            o.connect(g); o.start(t); o.stop(t + 0.12);
             break;
         }
         case 'splash': {
             const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.3, audioCtx.sampleRate);
             const data = buf.getChannelData(0);
             for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
-            const n = audioCtx.createBufferSource();
-            n.buffer = buf;
+            const n = audioCtx.createBufferSource(); n.buffer = buf;
             const filt = audioCtx.createBiquadFilter();
             filt.type = 'lowpass';
             filt.frequency.setValueAtTime(2000, t);
@@ -265,20 +275,31 @@ function playSound(type) {
             n.start(t); n.stop(t + 0.3);
             break;
         }
+        case 'victory': {
+            [523, 659, 784, 1047, 784, 1047, 1319].forEach((freq, i) => {
+                const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = freq;
+                const gn = audioCtx.createGain();
+                gn.gain.setValueAtTime(0, t + i * 0.12);
+                gn.gain.linearRampToValueAtTime(0.12, t + i * 0.12 + 0.02);
+                gn.gain.exponentialRampToValueAtTime(0.001, t + i * 0.12 + 0.25);
+                o.connect(gn); gn.connect(audioCtx.destination);
+                o.start(t + i * 0.12); o.stop(t + i * 0.12 + 0.25);
+            });
+            break;
+        }
     }
 }
 
 // ============================================================
-// INPUT HANDLING
+// INPUT
 // ============================================================
 const keys = {};
 window.addEventListener('keydown', e => {
     keys[e.key] = true;
-    if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
-
+    if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
     if (state === STATE.MENU) {
         if (e.key === 'Enter' || e.key === ' ') startGame();
-        else if (e.key === 'l' || e.key === 'L') showLeaderboard();
+        else if (e.key === 'l' || e.key === 'L') { state = STATE.LEADERBOARD; loadLeaderboard(); }
         return;
     }
     if (state === STATE.PLAYING) {
@@ -305,17 +326,15 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { keys[e.key] = false; });
 
-// Mobile controls
 const mobileDir = { up: false, down: false, left: false, right: false };
 document.querySelectorAll('.dpad-btn').forEach(btn => {
     const dir = btn.dataset.dir;
     btn.addEventListener('touchstart', e => { e.preventDefault(); mobileDir[dir] = true; initAudio(); });
     btn.addEventListener('touchend', e => { e.preventDefault(); mobileDir[dir] = false; });
-    btn.addEventListener('mousedown', e => { mobileDir[dir] = true; });
-    btn.addEventListener('mouseup', e => { mobileDir[dir] = false; });
+    btn.addEventListener('mousedown', () => { mobileDir[dir] = true; });
+    btn.addEventListener('mouseup', () => { mobileDir[dir] = false; });
 });
 
-// Canvas click/tap for menu
 canvas.addEventListener('click', () => {
     initAudio();
     if (state === STATE.MENU) startGame();
@@ -328,90 +347,90 @@ canvas.addEventListener('click', () => {
 // ============================================================
 let player, anchors, collectibles, particles, floatingTexts;
 let wave, score, hiScore, combo, comboTimer, lives;
-let playerName, waveTimer, waveIntroTimer;
-let dodgeCount, totalAnchorsThisWave, anchorsSpawned;
+let playerName, dodgeCount, totalAnchorsThisWave, anchorsSpawned;
 let spawnTimer, spawnInterval;
 let invincibleTimer, shieldTimer, slowmoTimer;
-let screenShake, shakeTimer;
+let screenShake;
 let waterOffset = 0;
 let frameCount = 0;
+let perfectWave = true;
+let leaderboardData = [];
+const TOTAL_WAVES = 25;
 
-// Leaderboard
-let leaderboard = [];
 const STORAGE_KEY = 'anchorman_scores';
 const NAME_KEY = 'anchorman_name';
 
-function loadScores() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) leaderboard = JSON.parse(raw);
-        const savedName = localStorage.getItem(NAME_KEY);
-        if (savedName) playerName = savedName;
-    } catch(e) {}
-}
-function saveScores() {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(leaderboard));
-        localStorage.setItem(NAME_KEY, playerName);
-    } catch(e) {}
-}
-
 hiScore = 0;
 playerName = '';
-loadScores();
-if (leaderboard.length > 0) hiScore = leaderboard[0].score;
+try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { const lb = JSON.parse(raw); if (lb.length > 0) hiScore = lb[0].score; }
+    const savedName = localStorage.getItem(NAME_KEY);
+    if (savedName) playerName = savedName;
+} catch(e) {}
 
 // ============================================================
-// DIFFICULTY SCALING
+// DIFFICULTY SYSTEM - 25 Waves, Optimized for Engagement
+// ============================================================
+// Design principles:
+// - Waves 1-5: "I can do this!" - Build confidence
+// - Waves 6-10: "Getting interesting" - Introduce new threats
+// - Waves 11-16: "Oh no" - Real challenge begins
+// - Waves 17-24: "One more try" - Expert territory
+// - Wave 25: "The Anchor Storm" - Final boss wave
+//
+// Difficulty increases use logarithmic easing in early waves
+// and exponential ramps in later waves for "felt" progression.
 // ============================================================
 function getWaveConfig(w) {
-    const w10 = Math.min(w, 10);
-    const wOver10 = Math.max(0, w - 10);
+    // Normalized progress (0 to 1)
+    const p = (w - 1) / (TOTAL_WAVES - 1);
 
-    // Anchor count per wave
-    const count = Math.floor(8 + w10 * 2 + wOver10 * 1.5);
+    // Anchor count: starts easy, ramps hard
+    // W1=8, W5=13, W10=22, W15=32, W20=44, W25=60
+    const count = Math.floor(8 + p * p * 52);
 
-    // Anchor speed
-    const speed = 1.5 + w10 * 0.15 + wOver10 * 0.04;
+    // Anchor speed: gentle start, meaningful late ramp
+    // W1=1.5, W5=1.8, W10=2.3, W15=2.9, W20=3.6, W25=4.5
+    const speed = 1.5 + p * 3.0;
 
-    // Spawn interval (frames between anchors) - lower = faster
-    const interval = Math.max(6, Math.floor(45 - w10 * 2 - wOver10 * 0.25));
+    // Spawn interval (frames between anchors): lower = harder
+    // W1=50, W5=40, W10=28, W15=20, W20=14, W25=10
+    const interval = Math.max(10, Math.floor(50 - p * 40));
 
-    // Chance of aimed anchors (thrown at player position)
-    const aimChance = Math.min(0.7, 0.05 + w10 * 0.03 + wOver10 * 0.005);
+    // Aimed anchors: start at 0%, ramp to 65%
+    // These create "oh crap" moments - most important difficulty lever
+    const aimChance = w <= 2 ? 0 : Math.min(0.65, p * 0.72);
 
-    // Chance of cluster spawns (multiple at once)
-    const clusterChance = Math.min(0.4, w > 5 ? 0.02 + wOver10 * 0.004 : 0);
+    // Cluster spawns (2-4 anchors at once): creates burst pressure
+    const clusterChance = w <= 5 ? 0 : Math.min(0.35, (p - 0.2) * 0.5);
 
-    // Chance of spinning anchors (harder to read trajectory)
-    const spinChance = Math.min(0.5, w > 8 ? 0.05 + wOver10 * 0.005 : 0);
+    // Spinning anchors: visual noise, harder to read trajectory
+    const spinChance = w <= 7 ? 0 : Math.min(0.45, (p - 0.28) * 0.65);
 
-    // Big anchor chance (larger hitbox, slower)
-    const bigChance = Math.min(0.25, w > 15 ? 0.02 + (w - 15) * 0.003 : 0);
+    // Big anchors: larger hitbox, slower, appear mid-game
+    const bigChance = w <= 11 ? 0 : Math.min(0.2, (p - 0.44) * 0.4);
 
-    // Collectible spawn chance per wave
-    const collectibleCount = Math.floor(1 + w / 8);
+    // Cross volleys: anchors from opposite sides simultaneously
+    const crossVolley = w >= 14;
+    const crossChance = w < 14 ? 0 : Math.min(0.3, (w - 14) * 0.03);
 
-    return { count, speed, interval, aimChance, clusterChance, spinChance, bigChance, collectibleCount };
+    // Collectibles per wave: more in harder waves to compensate
+    const collectibleCount = Math.floor(1 + w / 6);
+
+    return { count, speed, interval, aimChance, clusterChance, spinChance,
+             bigChance, crossVolley, crossChance, collectibleCount };
 }
 
 // ============================================================
 // PLAYER
 // ============================================================
 function createPlayer() {
-    return {
-        x: W / 2,
-        y: H / 2 + 60,
-        w: 22,
-        h: 28,
-        speed: 3.5,
-    };
+    return { x: W / 2, y: H / 2 + 80, w: 26, h: 34, speed: 4 };
 }
 
 function drawPlayer(p) {
     const px = Math.floor(p.x), py = Math.floor(p.y);
-
-    // Skip drawing during invincibility flash
     if (invincibleTimer > 0 && Math.floor(frameCount / 4) % 2 === 0) return;
 
     // Shield glow
@@ -419,150 +438,193 @@ function drawPlayer(p) {
         ctx.globalAlpha = 0.2 + Math.sin(frameCount * 0.15) * 0.1;
         ctx.fillStyle = COL.neonGreen;
         ctx.beginPath();
-        ctx.arc(px, py - 4, 22, 0, Math.PI * 2);
+        ctx.arc(px, py - 4, 26, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1;
     }
 
-    // Body (standing person, top-down-ish side view)
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(px, py + 16, 10, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
     // Legs
     ctx.fillStyle = '#2a4a7a';
-    ctx.fillRect(px - 5, py + 4, 4, 10);
-    ctx.fillRect(px + 1, py + 4, 4, 10);
+    ctx.fillRect(px - 6, py + 5, 5, 12);
+    ctx.fillRect(px + 1, py + 5, 5, 12);
 
-    // Torso (t-shirt)
+    // Shoes
+    ctx.fillStyle = '#3a2a1a';
+    ctx.fillRect(px - 7, py + 15, 6, 3);
+    ctx.fillRect(px + 1, py + 15, 6, 3);
+
+    // Torso
     ctx.fillStyle = '#cc3333';
-    ctx.fillRect(px - 7, py - 8, 14, 14);
+    ctx.fillRect(px - 8, py - 10, 16, 17);
+
+    // Shirt collar
+    ctx.fillStyle = '#aa2222';
+    ctx.fillRect(px - 3, py - 10, 6, 3);
 
     // Arms
-    ctx.fillRect(px - 10, py - 6, 4, 10);
-    ctx.fillRect(px + 6, py - 6, 4, 10);
+    ctx.fillStyle = '#cc3333';
+    ctx.fillRect(px - 12, py - 7, 5, 12);
+    ctx.fillRect(px + 7, py - 7, 5, 12);
+
+    // Hands
+    ctx.fillStyle = '#f4c99a';
+    ctx.fillRect(px - 12, py + 3, 5, 4);
+    ctx.fillRect(px + 7, py + 3, 5, 4);
 
     // Head
     ctx.fillStyle = '#f4c99a';
-    ctx.fillRect(px - 5, py - 16, 10, 9);
+    ctx.fillRect(px - 6, py - 20, 12, 11);
 
     // Hair
     ctx.fillStyle = '#5a3a1a';
-    ctx.fillRect(px - 5, py - 18, 10, 4);
+    ctx.fillRect(px - 7, py - 23, 14, 5);
+    ctx.fillRect(px - 7, py - 20, 2, 4);
+    ctx.fillRect(px + 5, py - 20, 2, 4);
 
     // Sunglasses
     ctx.fillStyle = '#111';
-    ctx.fillRect(px - 4, py - 13, 4, 2);
-    ctx.fillRect(px + 1, py - 13, 4, 2);
-    ctx.fillRect(px - 1, py - 13, 2, 1);
+    ctx.fillRect(px - 5, py - 16, 5, 3);
+    ctx.fillRect(px + 1, py - 16, 5, 3);
+    ctx.fillRect(px - 1, py - 15, 2, 1);
 
-    // Beer in hand
+    // Mouth (slight grin)
+    ctx.fillStyle = '#c4846a';
+    ctx.fillRect(px - 2, py - 11, 5, 1);
+
+    // Beer in right hand
     ctx.fillStyle = COL.neonAmber;
-    ctx.fillRect(px + 8, py - 2, 4, 6);
+    ctx.fillRect(px + 10, py - 1, 5, 8);
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(px + 8, py - 3, 4, 2);
+    ctx.fillRect(px + 10, py - 2, 5, 2);
+    ctx.fillStyle = COL.boatDark;
+    ctx.fillRect(px + 14, py, 2, 6);
 }
 
 // ============================================================
 // ANCHORS
 // ============================================================
-function spawnAnchor(config) {
-    const aimed = Math.random() < config.aimChance;
+function spawnAnchor(config, forceAimed) {
+    const aimed = forceAimed || Math.random() < config.aimChance;
     const big = Math.random() < config.bigChance;
     const spinning = Math.random() < config.spinChance;
+    const side = Math.floor(Math.random() * 4);
+    let x, y;
+    const spd = config.speed * (big ? 0.55 : 1) * (0.85 + Math.random() * 0.3);
+    const margin = 40;
 
-    // Spawn from edges
-    const side = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
-    let x, y, vx, vy;
-    const spd = config.speed * (big ? 0.6 : 1) * (0.8 + Math.random() * 0.4);
-    const margin = 30;
+    if (side === 0) { x = margin + Math.random() * (W - margin * 2); y = -25; }
+    else if (side === 1) { x = W + 25; y = margin + Math.random() * (H - margin * 2 - 80); }
+    else if (side === 2) { x = margin + Math.random() * (W - margin * 2); y = H + 25; }
+    else { x = -25; y = margin + Math.random() * (H - margin * 2 - 80); }
 
-    if (side === 0) { // top
-        x = margin + Math.random() * (W - margin * 2);
-        y = -20;
-    } else if (side === 1) { // right
-        x = W + 20;
-        y = margin + Math.random() * (H - margin * 2 - 60);
-    } else if (side === 2) { // bottom
-        x = margin + Math.random() * (W - margin * 2);
-        y = H + 20;
-    } else { // left
-        x = -20;
-        y = margin + Math.random() * (H - margin * 2 - 60);
-    }
-
+    let vx, vy;
     if (aimed) {
-        const dx = player.x - x;
-        const dy = player.y - y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        // Add slight randomness to aim
-        const spread = 0.15;
+        const dx = player.x - x, dy = player.y - y;
+        const spread = 0.12;
         const angle = Math.atan2(dy, dx) + (Math.random() - 0.5) * spread;
         vx = Math.cos(angle) * spd;
         vy = Math.sin(angle) * spd;
     } else {
-        // Aim toward center area with randomness
-        const tx = W * 0.2 + Math.random() * W * 0.6;
-        const ty = H * 0.2 + Math.random() * H * 0.5;
-        const dx = tx - x;
-        const dy = ty - y;
+        const tx = W * 0.15 + Math.random() * W * 0.7;
+        const ty = H * 0.15 + Math.random() * H * 0.55;
+        const dx = tx - x, dy = ty - y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         vx = (dx / dist) * spd;
         vy = (dy / dist) * spd;
     }
 
-    const size = big ? 20 : 12;
+    const size = big ? 24 : 14;
     anchors.push({
-        x, y, vx, vy,
-        size,
-        big,
-        spinning,
+        x, y, vx, vy, size, big, spinning,
         rotation: Math.random() * Math.PI * 2,
-        rotSpeed: spinning ? (0.05 + Math.random() * 0.1) * (Math.random() < 0.5 ? 1 : -1) : 0,
-        dodged: false,
+        rotSpeed: spinning ? (0.06 + Math.random() * 0.1) * (Math.random() < 0.5 ? 1 : -1) : 0.02,
         nearMissScored: false,
     });
+}
+
+function spawnCrossVolley(config) {
+    // Anchors from two opposite sides aimed at player
+    const horizontal = Math.random() < 0.5;
+    const spd = config.speed * 0.9;
+    const count = 2 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+        const offset = (i - (count-1)/2) * 40;
+        if (horizontal) {
+            // Left and right
+            const y = player.y + offset + (Math.random() - 0.5) * 20;
+            anchors.push({ x: -20, y, vx: spd, vy: (Math.random()-0.5)*0.5, size: 14,
+                big: false, spinning: false, rotation: 0, rotSpeed: 0.02, nearMissScored: false });
+            anchors.push({ x: W+20, y: y + (Math.random()-0.5)*30, vx: -spd, vy: (Math.random()-0.5)*0.5, size: 14,
+                big: false, spinning: false, rotation: 0, rotSpeed: 0.02, nearMissScored: false });
+            anchorsSpawned += 2;
+        } else {
+            const x = player.x + offset + (Math.random() - 0.5) * 20;
+            anchors.push({ x, y: -20, vx: (Math.random()-0.5)*0.5, vy: spd, size: 14,
+                big: false, spinning: false, rotation: 0, rotSpeed: 0.02, nearMissScored: false });
+            anchors.push({ x: x + (Math.random()-0.5)*30, y: H+20, vx: (Math.random()-0.5)*0.5, vy: -spd, size: 14,
+                big: false, spinning: false, rotation: 0, rotSpeed: 0.02, nearMissScored: false });
+            anchorsSpawned += 2;
+        }
+    }
 }
 
 function drawAnchor(a) {
     ctx.save();
     ctx.translate(a.x, a.y);
     ctx.rotate(a.rotation);
-
     const s = a.size;
-    const ratio = s / 12; // scale factor
+    const r = s / 14;
 
-    // Anchor shaft
+    // Danger glow for big anchors
+    if (a.big) {
+        ctx.globalAlpha = 0.15 + Math.sin(frameCount * 0.1) * 0.05;
+        ctx.fillStyle = COL.red;
+        ctx.beginPath();
+        ctx.arc(0, 0, s + 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+
+    // Shaft
     ctx.fillStyle = a.big ? '#5a6a7a' : COL.anchor;
-    ctx.fillRect(-1.5 * ratio, -s, 3 * ratio, s * 2);
+    ctx.fillRect(-2 * r, -s, 4 * r, s * 2);
 
-    // Anchor ring (top)
+    // Ring
     ctx.strokeStyle = a.big ? '#5a6a7a' : COL.anchor;
-    ctx.lineWidth = 2 * ratio;
+    ctx.lineWidth = 2.5 * r;
     ctx.beginPath();
-    ctx.arc(0, -s - 3 * ratio, 4 * ratio, 0, Math.PI * 2);
+    ctx.arc(0, -s - 4 * r, 5 * r, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Anchor flukes (bottom curved arms)
-    ctx.fillStyle = a.big ? '#4a5a6a' : COL.anchorDark;
     // Left fluke
+    ctx.fillStyle = a.big ? '#4a5a6a' : COL.anchorDark;
     ctx.beginPath();
-    ctx.moveTo(-1 * ratio, s);
-    ctx.lineTo(-8 * ratio, s - 2 * ratio);
-    ctx.lineTo(-7 * ratio, s + 3 * ratio);
-    ctx.lineTo(-1 * ratio, s + 2 * ratio);
+    ctx.moveTo(-1 * r, s);
+    ctx.lineTo(-9 * r, s - 3 * r);
+    ctx.lineTo(-8 * r, s + 4 * r);
+    ctx.lineTo(-1 * r, s + 2 * r);
     ctx.fill();
     // Right fluke
     ctx.beginPath();
-    ctx.moveTo(1 * ratio, s);
-    ctx.lineTo(8 * ratio, s - 2 * ratio);
-    ctx.lineTo(7 * ratio, s + 3 * ratio);
-    ctx.lineTo(1 * ratio, s + 2 * ratio);
+    ctx.moveTo(1 * r, s);
+    ctx.lineTo(9 * r, s - 3 * r);
+    ctx.lineTo(8 * r, s + 4 * r);
+    ctx.lineTo(1 * r, s + 2 * r);
     ctx.fill();
 
     // Cross bar
     ctx.fillStyle = a.big ? '#5a6a7a' : COL.anchor;
-    ctx.fillRect(-6 * ratio, -s * 0.3, 12 * ratio, 2.5 * ratio);
+    ctx.fillRect(-7 * r, -s * 0.3, 14 * r, 3 * r);
 
-    // Metallic highlight
+    // Highlight
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.fillRect(-0.5 * ratio, -s, 1.5 * ratio, s * 2);
+    ctx.fillRect(-0.5 * r, -s, 2 * r, s * 2);
 
     ctx.restore();
 }
@@ -572,22 +634,19 @@ function drawAnchor(a) {
 // ============================================================
 function spawnCollectible() {
     const types = ['beer', 'lifejacket', 'slowmo', 'shield'];
-    const weights = [50, 10, 20, 20]; // weighted random
+    const weights = [50, 8, 22, 20];
     let total = weights.reduce((a, b) => a + b, 0);
     let r = Math.random() * total;
     let type = types[0];
     for (let i = 0; i < weights.length; i++) {
-        r -= weights[i];
-        if (r <= 0) { type = types[i]; break; }
+        r -= weights[i]; if (r <= 0) { type = types[i]; break; }
     }
-
     collectibles.push({
-        x: 40 + Math.random() * (W - 80),
-        y: 60 + Math.random() * (H - 160),
-        type,
-        size: 10,
+        x: 80 + Math.random() * (W - 160),
+        y: 80 + Math.random() * (H - 200),
+        type, size: 12,
         bobOffset: Math.random() * Math.PI * 2,
-        life: 600, // frames until disappear
+        life: 540,
     });
 }
 
@@ -595,8 +654,7 @@ function drawCollectible(c) {
     const bob = Math.sin(frameCount * 0.05 + c.bobOffset) * 3;
     const cx = c.x, cy = c.y + bob;
 
-    // Glow
-    ctx.globalAlpha = 0.3 + Math.sin(frameCount * 0.08) * 0.1;
+    ctx.globalAlpha = 0.25 + Math.sin(frameCount * 0.08) * 0.1;
     let glowColor;
     switch(c.type) {
         case 'beer': glowColor = COL.neonAmber; break;
@@ -605,64 +663,43 @@ function drawCollectible(c) {
         case 'shield': glowColor = COL.neonGreen; break;
     }
     ctx.fillStyle = glowColor;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 14, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, 16, 0, Math.PI * 2); ctx.fill();
     ctx.globalAlpha = 1;
 
     switch(c.type) {
         case 'beer':
-            // Beer mug
             ctx.fillStyle = COL.neonAmber;
-            ctx.fillRect(cx - 5, cy - 6, 10, 12);
+            ctx.fillRect(cx - 6, cy - 7, 12, 14);
             ctx.fillStyle = '#fff';
-            ctx.fillRect(cx - 5, cy - 8, 10, 3);
+            ctx.fillRect(cx - 6, cy - 9, 12, 3);
             ctx.fillStyle = COL.boatDark;
-            ctx.fillRect(cx + 4, cy - 4, 3, 8);
+            ctx.fillRect(cx + 5, cy - 5, 3, 9);
             break;
         case 'lifejacket':
-            // Life ring
-            ctx.strokeStyle = COL.red;
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.arc(cx, cy, 7, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = COL.red; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI * 2); ctx.stroke();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
             [0, Math.PI/2, Math.PI, Math.PI*1.5].forEach(a => {
-                ctx.beginPath();
-                ctx.arc(cx, cy, 7, a - 0.3, a + 0.3);
-                ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx, cy, 8, a - 0.3, a + 0.3); ctx.stroke();
             });
             break;
         case 'slowmo':
-            // Clock icon
-            ctx.strokeStyle = COL.neonBlue;
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = COL.neonBlue; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(cx, cy, 9, 0, Math.PI * 2); ctx.stroke();
             ctx.beginPath();
-            ctx.arc(cx, cy, 8, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx, cy - 5);
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx + 4, cy + 1);
+            ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - 6);
+            ctx.moveTo(cx, cy); ctx.lineTo(cx + 4, cy + 1);
             ctx.stroke();
             break;
         case 'shield':
-            // Shield icon
             ctx.fillStyle = COL.neonGreen;
             ctx.beginPath();
-            ctx.moveTo(cx, cy - 9);
-            ctx.lineTo(cx + 7, cy - 4);
-            ctx.lineTo(cx + 5, cy + 5);
-            ctx.lineTo(cx, cy + 9);
-            ctx.lineTo(cx - 5, cy + 5);
-            ctx.lineTo(cx - 7, cy - 4);
-            ctx.closePath();
-            ctx.fill();
+            ctx.moveTo(cx, cy - 10); ctx.lineTo(cx + 8, cy - 5);
+            ctx.lineTo(cx + 6, cy + 6); ctx.lineTo(cx, cy + 10);
+            ctx.lineTo(cx - 6, cy + 6); ctx.lineTo(cx - 8, cy - 5);
+            ctx.closePath(); ctx.fill();
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.fillRect(cx - 1, cy - 5, 2, 10);
+            ctx.fillRect(cx - 1, cy - 6, 2, 12);
             ctx.fillRect(cx - 4, cy - 2, 8, 2);
             break;
     }
@@ -677,277 +714,437 @@ function addParticles(x, y, color, count) {
         const speed = 1 + Math.random() * 3;
         particles.push({
             x, y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            life: 20 + Math.random() * 20,
-            maxLife: 40,
-            color,
-            size: 1 + Math.random() * 3,
+            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+            life: 20 + Math.random() * 20, maxLife: 40,
+            color, size: 1.5 + Math.random() * 3,
         });
     }
 }
-
 function addSplash(x, y) {
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
         const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.8;
-        const speed = 1 + Math.random() * 2;
+        const speed = 1 + Math.random() * 2.5;
         particles.push({
             x, y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed - 1,
-            life: 15 + Math.random() * 10,
-            maxLife: 25,
-            color: '#6ab4f7',
-            size: 2 + Math.random() * 2,
+            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 1,
+            life: 18 + Math.random() * 12, maxLife: 30,
+            color: '#6ab4f7', size: 2 + Math.random() * 3,
         });
     }
 }
-
 function addFloatingText(x, y, text, color) {
-    floatingTexts.push({ x, y, text, color, life: 60, maxLife: 60 });
+    floatingTexts.push({ x, y, text, color, life: 70, maxLife: 70 });
 }
 
 // ============================================================
-// WATER RENDERING
+// SCENERY RENDERING
 // ============================================================
 function drawWater() {
-    // Base water
     ctx.fillStyle = COL.water1;
     ctx.fillRect(0, 0, W, H);
 
-    // Animated wave lines
-    waterOffset += 0.02;
-    ctx.strokeStyle = 'rgba(74, 144, 255, 0.08)';
+    waterOffset += 0.018;
+    ctx.strokeStyle = 'rgba(74, 144, 255, 0.07)';
     ctx.lineWidth = 1;
-    for (let row = 0; row < H; row += 12) {
+    for (let row = 0; row < H; row += 10) {
         ctx.beginPath();
-        for (let x = 0; x < W; x += 4) {
-            const y = row + Math.sin(x * 0.02 + waterOffset + row * 0.1) * 3;
-            if (x === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+        for (let x = 0; x < W; x += 3) {
+            const y = row + Math.sin(x * 0.018 + waterOffset + row * 0.08) * 3.5;
+            if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
         ctx.stroke();
     }
 
-    // Shimmer spots
-    ctx.fillStyle = 'rgba(74, 144, 255, 0.06)';
-    for (let i = 0; i < 15; i++) {
-        const sx = (i * 97 + frameCount * 0.3) % (W + 40) - 20;
-        const sy = (i * 61 + Math.sin(frameCount * 0.01 + i) * 20) % H;
+    // Shimmer reflections
+    ctx.fillStyle = 'rgba(74, 144, 255, 0.05)';
+    for (let i = 0; i < 20; i++) {
+        const sx = (i * 107 + frameCount * 0.25) % (W + 40) - 20;
+        const sy = (i * 53 + Math.sin(frameCount * 0.009 + i) * 25) % H;
         ctx.beginPath();
-        ctx.ellipse(sx, sy, 15 + Math.sin(frameCount * 0.03 + i) * 5, 3, 0, 0, Math.PI * 2);
+        ctx.ellipse(sx, sy, 18 + Math.sin(frameCount * 0.025 + i) * 6, 3, 0, 0, Math.PI * 2);
         ctx.fill();
     }
 }
 
-// ============================================================
-// BOAT DECK (play area boundary visual)
-// ============================================================
-function drawBoatDeck() {
-    const bx = 40, by = 35, bw = W - 80, bh = H - 100;
+function drawShoreline() {
+    // Distant treeline along top edge (Burt Lake shoreline)
+    const shoreY = 18;
 
-    // Water shadow under boat
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    // Sky gradient at very top
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, shoreY + 30);
+    skyGrad.addColorStop(0, 'rgba(20, 30, 55, 0.6)');
+    skyGrad.addColorStop(1, 'rgba(10, 42, 74, 0)');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, shoreY + 30);
+
+    // Distant hills/mountains
+    ctx.fillStyle = COL.mountain;
     ctx.beginPath();
-    ctx.ellipse(W/2, by + bh + 8, bw/2 + 10, 15, 0, 0, Math.PI * 2);
+    ctx.moveTo(0, shoreY + 12);
+    for (let x = 0; x <= W; x += 20) {
+        const h = Math.sin(x * 0.008) * 6 + Math.sin(x * 0.02 + 1) * 3 + Math.sin(x * 0.05) * 2;
+        ctx.lineTo(x, shoreY + 4 - h);
+    }
+    ctx.lineTo(W, shoreY + 20);
+    ctx.lineTo(0, shoreY + 20);
+    ctx.closePath();
     ctx.fill();
 
-    // Boat hull shape
-    ctx.fillStyle = COL.boat;
-    ctx.beginPath();
-    ctx.moveTo(bx + 10, by);
-    ctx.lineTo(bx + bw - 10, by);
-    ctx.quadraticCurveTo(bx + bw + 15, by + bh * 0.3, bx + bw - 5, by + bh);
-    ctx.lineTo(W/2, by + bh + 20); // bow point
-    ctx.lineTo(bx + 5, by + bh);
-    ctx.quadraticCurveTo(bx - 15, by + bh * 0.3, bx + 10, by);
-    ctx.fill();
-
-    // Deck planks
-    ctx.fillStyle = COL.boatDeck;
-    ctx.beginPath();
-    ctx.moveTo(bx + 15, by + 5);
-    ctx.lineTo(bx + bw - 15, by + 5);
-    ctx.quadraticCurveTo(bx + bw + 5, by + bh * 0.3, bx + bw - 10, by + bh - 5);
-    ctx.lineTo(W/2, by + bh + 12);
-    ctx.lineTo(bx + 10, by + bh - 5);
-    ctx.quadraticCurveTo(bx - 5, by + bh * 0.3, bx + 15, by + 5);
-    ctx.fill();
-
-    // Plank lines
-    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-    ctx.lineWidth = 1;
-    for (let py = by + 20; py < by + bh; py += 18) {
+    // Tree line
+    ctx.fillStyle = COL.treeDark;
+    for (let x = 0; x < W; x += 8) {
+        const treeH = 8 + Math.sin(x * 0.15) * 3 + Math.sin(x * 0.4 + 2) * 2;
+        const ty = shoreY + 6;
+        // Triangle tree
         ctx.beginPath();
-        ctx.moveTo(bx + 20, py);
-        ctx.lineTo(bx + bw - 20, py);
+        ctx.moveTo(x, ty);
+        ctx.lineTo(x + 4, ty - treeH);
+        ctx.lineTo(x + 8, ty);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // Second layer of trees (lighter, in front)
+    ctx.fillStyle = COL.treeMid;
+    for (let x = 3; x < W; x += 12) {
+        const treeH = 6 + Math.sin(x * 0.2 + 1) * 2.5;
+        const ty = shoreY + 10;
+        ctx.beginPath();
+        ctx.moveTo(x, ty);
+        ctx.lineTo(x + 5, ty - treeH);
+        ctx.lineTo(x + 10, ty);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // Shore reflection in water
+    const reflGrad = ctx.createLinearGradient(0, shoreY + 10, 0, shoreY + 35);
+    reflGrad.addColorStop(0, 'rgba(10, 40, 20, 0.15)');
+    reflGrad.addColorStop(1, 'rgba(10, 42, 74, 0)');
+    ctx.fillStyle = reflGrad;
+    ctx.fillRect(0, shoreY + 10, W, 25);
+}
+
+function drawBoatDeck() {
+    const bx = 60, by = 50, bw = W - 120, bh = H - 120;
+
+    // Water shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath();
+    ctx.ellipse(W/2, by + bh + 12, bw/2 + 15, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Wake lines behind boat
+    ctx.strokeStyle = 'rgba(150, 200, 255, 0.08)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 3; i++) {
+        const wy = by + bh + 20 + i * 8;
+        const wobble = Math.sin(frameCount * 0.03 + i) * 3;
+        ctx.beginPath();
+        ctx.moveTo(W/2 - 60 - i * 30, wy + wobble);
+        ctx.quadraticCurveTo(W/2, wy - 5 + wobble, W/2 + 60 + i * 30, wy + wobble);
         ctx.stroke();
     }
 
-    // Hull trim
-    ctx.strokeStyle = COL.boatDark;
+    // Hull
+    ctx.fillStyle = COL.boat;
+    ctx.beginPath();
+    ctx.moveTo(bx + 15, by);
+    ctx.lineTo(bx + bw - 15, by);
+    ctx.quadraticCurveTo(bx + bw + 20, by + bh * 0.3, bx + bw - 8, by + bh);
+    ctx.lineTo(W/2, by + bh + 25);
+    ctx.lineTo(bx + 8, by + bh);
+    ctx.quadraticCurveTo(bx - 20, by + bh * 0.3, bx + 15, by);
+    ctx.fill();
+
+    // Hull stripe
+    ctx.strokeStyle = '#aa8030';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(bx + 10, by);
-    ctx.lineTo(bx + bw - 10, by);
-    ctx.quadraticCurveTo(bx + bw + 15, by + bh * 0.3, bx + bw - 5, by + bh);
-    ctx.lineTo(W/2, by + bh + 20);
-    ctx.lineTo(bx + 5, by + bh);
-    ctx.quadraticCurveTo(bx - 15, by + bh * 0.3, bx + 10, by);
+    ctx.moveTo(bx + 20, by + 15);
+    ctx.quadraticCurveTo(bx + bw/2, by + 12, bx + bw - 20, by + 15);
     ctx.stroke();
+
+    // Deck
+    ctx.fillStyle = COL.boatDeck;
+    ctx.beginPath();
+    ctx.moveTo(bx + 20, by + 8);
+    ctx.lineTo(bx + bw - 20, by + 8);
+    ctx.quadraticCurveTo(bx + bw + 8, by + bh * 0.3, bx + bw - 14, by + bh - 6);
+    ctx.lineTo(W/2, by + bh + 16);
+    ctx.lineTo(bx + 14, by + bh - 6);
+    ctx.quadraticCurveTo(bx - 8, by + bh * 0.3, bx + 20, by + 8);
+    ctx.fill();
+
+    // Plank lines
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 1;
+    for (let py = by + 24; py < by + bh; py += 16) {
+        ctx.beginPath();
+        ctx.moveTo(bx + 28, py);
+        ctx.lineTo(bx + bw - 28, py);
+        ctx.stroke();
+    }
+    // Vertical plank seams
+    for (let px = bx + 60; px < bx + bw - 40; px += 55) {
+        const seamy = by + 20 + (Math.abs(px - W/2) / (bw/2)) * 20;
+        ctx.beginPath();
+        ctx.moveTo(px, seamy);
+        ctx.lineTo(px, by + bh - 20);
+        ctx.stroke();
+    }
+
+    // Gunwale (top rail)
+    ctx.strokeStyle = COL.boatDark;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(bx + 15, by);
+    ctx.lineTo(bx + bw - 15, by);
+    ctx.quadraticCurveTo(bx + bw + 20, by + bh * 0.3, bx + bw - 8, by + bh);
+    ctx.lineTo(W/2, by + bh + 25);
+    ctx.lineTo(bx + 8, by + bh);
+    ctx.quadraticCurveTo(bx - 20, by + bh * 0.3, bx + 15, by);
+    ctx.stroke();
+
+    // Seats (two bench seats)
+    ctx.fillStyle = '#7a6030';
+    // Front seat
+    ctx.fillRect(bx + 80, by + bh - 60, bw - 160, 8);
+    ctx.fillStyle = '#6a5020';
+    ctx.fillRect(bx + 80, by + bh - 53, 4, 10);
+    ctx.fillRect(bx + bw - 84, by + bh - 53, 4, 10);
+
+    // Back seat
+    ctx.fillStyle = '#7a6030';
+    ctx.fillRect(bx + 60, by + 30, bw - 120, 8);
+    ctx.fillStyle = '#6a5020';
+    ctx.fillRect(bx + 60, by + 37, 4, 10);
+    ctx.fillRect(bx + bw - 64, by + 37, 4, 10);
+
+    // Steering console (back center)
+    ctx.fillStyle = '#555';
+    ctx.fillRect(W/2 - 20, by + 14, 40, 20);
+    ctx.fillStyle = '#444';
+    ctx.fillRect(W/2 - 18, by + 16, 36, 16);
+    // Steering wheel
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(W/2, by + 24, 7, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(W/2, by + 17); ctx.lineTo(W/2, by + 31);
+    ctx.moveTo(W/2 - 7, by + 24); ctx.lineTo(W/2 + 7, by + 24);
+    ctx.stroke();
+
+    // Windshield
+    ctx.strokeStyle = 'rgba(150, 200, 255, 0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(W/2 - 50, by + 12);
+    ctx.quadraticCurveTo(W/2, by + 6, W/2 + 50, by + 12);
+    ctx.stroke();
+    // Glass reflection
+    ctx.fillStyle = 'rgba(100, 180, 255, 0.06)';
+    ctx.beginPath();
+    ctx.moveTo(W/2 - 48, by + 12);
+    ctx.quadraticCurveTo(W/2, by + 7, W/2 + 48, by + 12);
+    ctx.lineTo(W/2 + 40, by + 5);
+    ctx.quadraticCurveTo(W/2, by + 1, W/2 - 40, by + 5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Cleats (tie-down points on gunwale)
+    ctx.fillStyle = '#aaa';
+    [[bx + 30, by + bh * 0.3], [bx + bw - 30, by + bh * 0.3],
+     [bx + 20, by + bh * 0.7], [bx + bw - 20, by + bh * 0.7]].forEach(([cx, cy]) => {
+        ctx.fillRect(cx - 4, cy - 1, 8, 3);
+        ctx.fillRect(cx - 2, cy - 3, 1, 6);
+        ctx.fillRect(cx + 1, cy - 3, 1, 6);
+    });
+
+    // Cooler in the back
+    ctx.fillStyle = '#2a5a9a';
+    ctx.fillRect(bx + bw - 80, by + 42, 26, 16);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(bx + bw - 80, by + 42, 26, 3);
+    ctx.fillStyle = '#1a4a8a';
+    ctx.fillRect(bx + bw - 80, by + 56, 26, 2);
+
+    // Fishing rod holder (right side)
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bx + bw - 18, by + bh * 0.5);
+    ctx.lineTo(bx + bw - 10, by + bh * 0.5 - 40);
+    ctx.stroke();
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(bx + bw - 10, by + bh * 0.5 - 40);
+    ctx.lineTo(bx + bw - 5, by + bh * 0.5 - 50);
+    ctx.stroke();
+
+    // Rope coil near front
+    ctx.strokeStyle = '#b89a60';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(bx + 50, by + bh - 35, 8, 0, Math.PI * 1.7);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(bx + 50, by + bh - 35, 5, 0.5, Math.PI * 1.4);
+    ctx.stroke();
+
+    // Life jacket draped on back seat
+    ctx.fillStyle = 'rgba(220, 80, 30, 0.6)';
+    ctx.fillRect(bx + 90, by + 26, 18, 8);
+    ctx.fillStyle = 'rgba(200, 60, 20, 0.5)';
+    ctx.fillRect(bx + 92, by + 28, 14, 3);
+
+    // Cup holder with drink
+    ctx.fillStyle = '#555';
+    ctx.beginPath();
+    ctx.arc(bx + bw - 55, by + 28, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = COL.neonAmber;
+    ctx.beginPath();
+    ctx.arc(bx + bw - 55, by + 28, 3.5, 0, Math.PI * 2);
+    ctx.fill();
 }
 
 // ============================================================
 // HUD
 // ============================================================
 function drawHUD() {
-    // Top bar background
     ctx.fillStyle = 'rgba(6, 12, 22, 0.85)';
-    ctx.fillRect(0, 0, W, 30);
+    ctx.fillRect(0, 0, W, 36);
     ctx.fillStyle = COL.neonOrange;
-    ctx.fillRect(0, 30, W, 1);
+    ctx.fillRect(0, 36, W, 1);
 
-    // Score
-    ctx.font = '8px "Press Start 2P"';
+    ctx.font = '10px "Press Start 2P"';
     ctx.fillStyle = COL.textLight;
     ctx.textAlign = 'left';
-    ctx.fillText('SCORE', 8, 12);
+    ctx.fillText('SCORE', 10, 14);
     ctx.fillStyle = COL.neonOrange;
-    ctx.fillText(score.toLocaleString(), 8, 24);
+    ctx.fillText(score.toLocaleString(), 10, 28);
 
-    // Wave
     ctx.fillStyle = COL.textLight;
     ctx.textAlign = 'center';
-    ctx.fillText('WAVE', W/2, 12);
+    ctx.fillText('WAVE', W/2, 14);
     ctx.fillStyle = COL.neonBlue;
-    ctx.fillText(wave + '/100', W/2, 24);
+    ctx.fillText(wave + '/' + TOTAL_WAVES, W/2, 28);
 
-    // Lives (hearts)
     ctx.textAlign = 'right';
     ctx.fillStyle = COL.textLight;
-    ctx.fillText('LIVES', W - 8, 12);
+    ctx.fillText('LIVES', W - 10, 14);
     for (let i = 0; i < lives; i++) {
         ctx.fillStyle = COL.red;
-        ctx.fillText('\u2665', W - 8 - i * 14, 24);
+        ctx.fillText('\u2665', W - 10 - i * 16, 28);
     }
 
-    // Hi Score
     if (hiScore > 0) {
         ctx.textAlign = 'center';
         ctx.fillStyle = COL.textDim;
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('HI ' + hiScore.toLocaleString(), W/2 + 120, 18);
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText('HI ' + hiScore.toLocaleString(), W/2 + 140, 22);
     }
 
-    // Combo display
     if (combo > 1) {
         ctx.textAlign = 'left';
         ctx.fillStyle = COL.neonGreen;
-        ctx.font = '7px "Press Start 2P"';
-        ctx.fillText('DODGE x' + combo, 8, H - 10);
+        ctx.font = '9px "Press Start 2P"';
+        ctx.fillText('DODGE x' + combo, 10, H - 14);
     }
 
-    // Active power-up indicators
     let pIdx = 0;
     if (shieldTimer > 0) {
         ctx.fillStyle = COL.neonGreen;
-        ctx.font = '7px "Press Start 2P"';
+        ctx.font = '8px "Press Start 2P"';
         ctx.textAlign = 'right';
-        ctx.fillText('SHIELD ' + Math.ceil(shieldTimer / 60) + 's', W - 8, H - 10 - pIdx * 12);
+        ctx.fillText('SHIELD ' + Math.ceil(shieldTimer / 60) + 's', W - 10, H - 14 - pIdx * 14);
         pIdx++;
     }
     if (slowmoTimer > 0) {
         ctx.fillStyle = COL.neonBlue;
-        ctx.font = '7px "Press Start 2P"';
+        ctx.font = '8px "Press Start 2P"';
         ctx.textAlign = 'right';
-        ctx.fillText('SLOW-MO ' + Math.ceil(slowmoTimer / 60) + 's', W - 8, H - 10 - pIdx * 12);
+        ctx.fillText('SLOW-MO ' + Math.ceil(slowmoTimer / 60) + 's', W - 10, H - 14 - pIdx * 14);
         pIdx++;
     }
 
-    // Mute indicator
     if (muted) {
         ctx.fillStyle = COL.textDim;
-        ctx.font = '6px "Press Start 2P"';
+        ctx.font = '7px "Press Start 2P"';
         ctx.textAlign = 'right';
-        ctx.fillText('MUTED', W - 8, 42);
+        ctx.fillText('MUTED', W - 10, 50);
     }
+
+    // Cloud status indicator
+    ctx.font = '6px "Share Tech Mono"';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = cloudReady ? 'rgba(57,255,20,0.4)' : 'rgba(255,140,42,0.3)';
+    ctx.fillText(cloudReady ? 'GLOBAL' : 'LOCAL', 10, H - 3);
 }
 
 // ============================================================
-// MENU SCREEN
+// MENU
 // ============================================================
 function drawMenu() {
     drawWater();
+    drawShoreline();
 
-    // Draw a big anchor in the center
+    // Big anchor swinging
     ctx.save();
-    ctx.translate(W/2, H/2 - 30);
-    ctx.rotate(Math.sin(frameCount * 0.015) * 0.1);
-    const ms = 4;
+    ctx.translate(W/2, H/2 - 20);
+    ctx.rotate(Math.sin(frameCount * 0.012) * 0.12);
+    const ms = 4.5;
     ctx.fillStyle = COL.anchor;
     ctx.fillRect(-2 * ms, -12 * ms, 4 * ms, 24 * ms);
-    ctx.strokeStyle = COL.anchor;
-    ctx.lineWidth = 3 * ms;
-    ctx.beginPath();
-    ctx.arc(0, -12 * ms - 4 * ms, 5 * ms, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.strokeStyle = COL.anchor; ctx.lineWidth = 3 * ms;
+    ctx.beginPath(); ctx.arc(0, -12 * ms - 4.5 * ms, 5.5 * ms, 0, Math.PI * 2); ctx.stroke();
     ctx.fillStyle = COL.anchorDark;
     ctx.beginPath();
-    ctx.moveTo(-1 * ms, 12 * ms);
-    ctx.lineTo(-10 * ms, 10 * ms);
-    ctx.lineTo(-9 * ms, 14 * ms);
-    ctx.lineTo(-1 * ms, 13 * ms);
+    ctx.moveTo(-1*ms,12*ms); ctx.lineTo(-10*ms,10*ms); ctx.lineTo(-9*ms,14*ms); ctx.lineTo(-1*ms,13*ms);
     ctx.fill();
     ctx.beginPath();
-    ctx.moveTo(1 * ms, 12 * ms);
-    ctx.lineTo(10 * ms, 10 * ms);
-    ctx.lineTo(9 * ms, 14 * ms);
-    ctx.lineTo(1 * ms, 13 * ms);
+    ctx.moveTo(1*ms,12*ms); ctx.lineTo(10*ms,10*ms); ctx.lineTo(9*ms,14*ms); ctx.lineTo(1*ms,13*ms);
     ctx.fill();
     ctx.fillStyle = COL.anchor;
-    ctx.fillRect(-8 * ms, -3 * ms, 16 * ms, 3 * ms);
+    ctx.fillRect(-8*ms, -3*ms, 16*ms, 3*ms);
     ctx.restore();
 
-    // Title
-    ctx.font = '28px "Jacquard 12"';
+    ctx.font = '36px "Jacquard 12"';
     ctx.fillStyle = COL.neonOrange;
     ctx.textAlign = 'center';
-    ctx.shadowColor = COL.neonOrange;
-    ctx.shadowBlur = 20;
-    ctx.fillText('ANCHOR MAN', W/2, 60);
+    ctx.shadowColor = COL.neonOrange; ctx.shadowBlur = 25;
+    ctx.fillText('ANCHOR MAN', W/2, 65);
     ctx.shadowBlur = 0;
 
-    // Subtitle
-    ctx.font = '8px "Press Start 2P"';
+    ctx.font = '10px "Press Start 2P"';
     ctx.fillStyle = COL.neonBlue;
-    ctx.fillText('Burt Lake, Michigan - 2018', W/2, 80);
+    ctx.fillText('Burt Lake, Michigan - 2018', W/2, 90);
 
-    // Backstory
-    ctx.font = '7px "Share Tech Mono"';
+    ctx.font = '9px "Share Tech Mono"';
     ctx.fillStyle = COL.textDim;
-    const story = [
-        '"The anchor came loose and hit me',
-        'in the back of the head. Hard."',
-        '',
-        'Now the anchors are back for more.',
-        'Dodge them all. Survive 100 waves.',
-    ];
-    story.forEach((line, i) => {
-        ctx.fillText(line, W/2, H/2 + 70 + i * 14);
+    ['"The anchor came loose and hit me',
+     'in the back of the head. Hard."',
+     '',
+     'Now the anchors are back for more.',
+     'Dodge them all. Survive ' + TOTAL_WAVES + ' waves.',
+    ].forEach((line, i) => {
+        ctx.fillText(line, W/2, H/2 + 75 + i * 16);
     });
 
-    // Controls
     ctx.fillStyle = COL.textLight;
-    ctx.font = '7px "Press Start 2P"';
-    const blink = Math.floor(frameCount / 30) % 2 === 0;
-    if (blink) {
-        ctx.fillText('PRESS ENTER OR TAP TO START', W/2, H - 60);
+    ctx.font = '9px "Press Start 2P"';
+    if (Math.floor(frameCount / 30) % 2 === 0) {
+        ctx.fillText('PRESS ENTER OR TAP TO START', W/2, H - 70);
     }
 
     ctx.fillStyle = COL.textDim;
-    ctx.font = '6px "Press Start 2P"';
-    ctx.fillText('ARROWS/WASD: MOVE  |  P: PAUSE  |  M: MUTE', W/2, H - 35);
-    ctx.fillText('L: LEADERBOARD', W/2, H - 20);
+    ctx.font = '7px "Press Start 2P"';
+    ctx.fillText('ARROWS/WASD: MOVE  |  P: PAUSE  |  M: MUTE', W/2, H - 42);
+    ctx.fillText('L: LEADERBOARD', W/2, H - 25);
 }
 
 // ============================================================
@@ -955,50 +1152,61 @@ function drawMenu() {
 // ============================================================
 function drawWaveIntro() {
     drawWater();
+    drawShoreline();
     drawBoatDeck();
     drawHUD();
 
-    // Overlay
-    ctx.fillStyle = 'rgba(6, 12, 22, 0.7)';
-    ctx.fillRect(0, 30, W, H - 30);
+    ctx.fillStyle = 'rgba(6, 12, 22, 0.65)';
+    ctx.fillRect(0, 36, W, H - 36);
 
     ctx.textAlign = 'center';
-    ctx.font = '24px "Jacquard 12"';
+    ctx.font = '30px "Jacquard 12"';
     ctx.fillStyle = COL.neonOrange;
-    ctx.shadowColor = COL.neonOrange;
-    ctx.shadowBlur = 15;
-    ctx.fillText('WAVE ' + wave, W/2, H/2 - 20);
+    ctx.shadowColor = COL.neonOrange; ctx.shadowBlur = 18;
+    ctx.fillText('WAVE ' + wave, W/2, H/2 - 25);
     ctx.shadowBlur = 0;
 
     const config = getWaveConfig(wave);
-    ctx.font = '7px "Press Start 2P"';
+    ctx.font = '9px "Press Start 2P"';
     ctx.fillStyle = COL.textLight;
     ctx.fillText(config.count + ' anchors incoming', W/2, H/2 + 10);
 
-    // Fun wave messages
+    // Phase labels + flavor text
     let msg = '';
     if (wave === 1) msg = 'Welcome to the lake. Watch your head.';
-    else if (wave === 5) msg = 'They\'re getting faster...';
-    else if (wave === 10) msg = 'Hope you\'re warmed up.';
-    else if (wave === 11) msg = 'Easy mode is over.';
-    else if (wave === 25) msg = 'Katie, slow the boat down!';
-    else if (wave === 50) msg = 'Halfway through. Still standing?';
-    else if (wave === 75) msg = 'Your headache is legendary.';
-    else if (wave === 99) msg = 'One more wave. ONE MORE.';
-    else if (wave === 100) msg = 'THE FINAL WAVE. SURVIVE THIS.';
-    else if (wave % 10 === 0) msg = 'Wave ' + wave + '. Keep dodging.';
+    else if (wave === 3) msg = 'They\'re starting to aim at you...';
+    else if (wave === 6) msg = 'The anchors are spinning now. Great.';
+    else if (wave === 8) msg = 'Cluster incoming!';
+    else if (wave === 10) msg = 'Halfway there. Still standing?';
+    else if (wave === 11) msg = '"Katie, slow the boat down!"';
+    else if (wave === 14) msg = 'Cross volleys! Watch both sides!';
+    else if (wave === 16) msg = 'Your headache is legendary.';
+    else if (wave === 20) msg = 'Five more. You got this.';
+    else if (wave === 24) msg = 'ONE. MORE. WAVE.';
+    else if (wave === 25) msg = 'THE ANCHOR STORM. Survive this.';
 
     if (msg) {
         ctx.fillStyle = COL.neonBlue;
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText(msg, W/2, H/2 + 30);
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText(msg, W/2, H/2 + 35);
     }
 
-    const blink = Math.floor(frameCount / 25) % 2 === 0;
-    if (blink) {
+    // Phase indicator
+    let phase = '';
+    if (wave <= 5) phase = 'PHASE 1: LEARNING THE LAKE';
+    else if (wave <= 10) phase = 'PHASE 2: RISING TIDE';
+    else if (wave <= 16) phase = 'PHASE 3: STORM BREWING';
+    else if (wave <= 24) phase = 'PHASE 4: EXPERT WATERS';
+    else phase = 'FINAL WAVE';
+
+    ctx.fillStyle = COL.textDim;
+    ctx.font = '6px "Press Start 2P"';
+    ctx.fillText(phase, W/2, H/2 + 55);
+
+    if (Math.floor(frameCount / 25) % 2 === 0) {
         ctx.fillStyle = COL.textDim;
-        ctx.font = '6px "Press Start 2P"';
-        ctx.fillText('PRESS ENTER OR TAP', W/2, H/2 + 60);
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText('PRESS ENTER OR TAP', W/2, H/2 + 80);
     }
 }
 
@@ -1007,125 +1215,137 @@ function drawWaveIntro() {
 // ============================================================
 function drawGameOver() {
     drawWater();
+    drawShoreline();
 
     ctx.fillStyle = 'rgba(6, 12, 22, 0.8)';
     ctx.fillRect(0, 0, W, H);
 
     ctx.textAlign = 'center';
-
-    const isVictory = wave > 100;
+    const isVictory = wave > TOTAL_WAVES;
 
     if (isVictory) {
-        ctx.font = '20px "Jacquard 12"';
+        ctx.font = '26px "Jacquard 12"';
         ctx.fillStyle = COL.gold;
-        ctx.shadowColor = COL.gold;
-        ctx.shadowBlur = 20;
-        ctx.fillText('YOU SURVIVED!', W/2, 80);
+        ctx.shadowColor = COL.gold; ctx.shadowBlur = 25;
+        ctx.fillText('YOU SURVIVED!', W/2, 85);
         ctx.shadowBlur = 0;
-        ctx.font = '7px "Press Start 2P"';
+        ctx.font = '9px "Press Start 2P"';
         ctx.fillStyle = COL.neonGreen;
-        ctx.fillText('All 100 waves conquered!', W/2, 105);
-        ctx.fillText('The true Anchor Man.', W/2, 120);
+        ctx.fillText('All ' + TOTAL_WAVES + ' waves conquered!', W/2, 115);
+        ctx.fillText('The true Anchor Man.', W/2, 135);
     } else {
-        ctx.font = '20px "Jacquard 12"';
+        ctx.font = '26px "Jacquard 12"';
         ctx.fillStyle = COL.red;
-        ctx.shadowColor = COL.red;
-        ctx.shadowBlur = 15;
-        ctx.fillText('ANCHORED!', W/2, 80);
+        ctx.shadowColor = COL.red; ctx.shadowBlur = 18;
+        ctx.fillText('ANCHORED!', W/2, 85);
         ctx.shadowBlur = 0;
-        ctx.font = '7px "Press Start 2P"';
+        ctx.font = '8px "Press Start 2P"';
         ctx.fillStyle = COL.textDim;
-        ctx.fillText('Too many anchors to the dome.', W/2, 105);
+        ctx.fillText('Too many anchors to the dome.', W/2, 112);
     }
 
-    // Stats
-    ctx.font = '8px "Press Start 2P"';
+    ctx.font = '10px "Press Start 2P"';
     ctx.fillStyle = COL.textLight;
-    ctx.fillText('SCORE: ' + score.toLocaleString(), W/2, 155);
-    ctx.fillText('WAVE: ' + Math.min(wave, 100), W/2, 175);
-    ctx.fillText('DODGES: ' + dodgeCount, W/2, 195);
+    ctx.fillText('SCORE: ' + score.toLocaleString(), W/2, 170);
+    ctx.fillText('WAVE: ' + Math.min(wave, TOTAL_WAVES), W/2, 192);
+    ctx.fillText('DODGES: ' + dodgeCount, W/2, 214);
 
-    // Name entry
     ctx.fillStyle = COL.neonOrange;
-    ctx.font = '8px "Press Start 2P"';
-    ctx.fillText('ENTER YOUR NAME:', W/2, 235);
+    ctx.font = '9px "Press Start 2P"';
+    ctx.fillText('ENTER YOUR NAME:', W/2, 260);
 
-    // Name box
-    ctx.strokeStyle = COL.neonOrange;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(W/2 - 70, 245, 140, 25);
+    ctx.strokeStyle = COL.neonOrange; ctx.lineWidth = 2;
+    ctx.strokeRect(W/2 - 80, 272, 160, 30);
     ctx.fillStyle = 'rgba(255, 107, 10, 0.1)';
-    ctx.fillRect(W/2 - 70, 245, 140, 25);
+    ctx.fillRect(W/2 - 80, 272, 160, 30);
 
     ctx.fillStyle = COL.white;
-    ctx.font = '10px "Press Start 2P"';
+    ctx.font = '12px "Press Start 2P"';
     const displayName = playerName + (Math.floor(frameCount / 20) % 2 === 0 ? '_' : '');
-    ctx.fillText(displayName, W/2, 262);
+    ctx.fillText(displayName, W/2, 293);
 
-    // Submit hint
     ctx.fillStyle = COL.textDim;
-    ctx.font = '6px "Press Start 2P"';
-    if (playerName.length > 0) {
-        const blink = Math.floor(frameCount / 25) % 2 === 0;
-        if (blink) ctx.fillText('PRESS ENTER TO SUBMIT', W/2, 290);
+    ctx.font = '7px "Press Start 2P"';
+    if (playerName.length > 0 && Math.floor(frameCount / 25) % 2 === 0) {
+        ctx.fillText('PRESS ENTER TO SUBMIT', W/2, 322);
     }
-    ctx.fillText('TYPE YOUR NAME (8 CHARS MAX)', W/2, 305);
+    ctx.fillText('TYPE YOUR NAME (8 CHARS MAX)', W/2, 340);
 }
 
 // ============================================================
 // LEADERBOARD
 // ============================================================
-function showLeaderboard() { state = STATE.LEADERBOARD; }
+async function loadLeaderboard() {
+    if (cloudReady) {
+        try {
+            const { data, error } = await sbClient
+                .from(TABLE_NAME)
+                .select('name, score, wave, timestamp')
+                .order('score', { ascending: false })
+                .limit(20);
+            if (error) throw error;
+            leaderboardData = data || [];
+            return;
+        } catch(e) {
+            console.warn('Cloud read failed — using local scores:', e);
+        }
+    }
+    // Fallback to local
+    try {
+        leaderboardData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+            .sort((a, b) => b.score - a.score).slice(0, 20);
+    } catch(e) { leaderboardData = []; }
+}
 
 function drawLeaderboard() {
     drawWater();
-    ctx.fillStyle = 'rgba(6, 12, 22, 0.85)';
+    ctx.fillStyle = 'rgba(6, 12, 22, 0.88)';
     ctx.fillRect(0, 0, W, H);
 
     ctx.textAlign = 'center';
-    ctx.font = '18px "Jacquard 12"';
+    ctx.font = '22px "Jacquard 12"';
     ctx.fillStyle = COL.neonOrange;
-    ctx.shadowColor = COL.neonOrange;
-    ctx.shadowBlur = 15;
-    ctx.fillText('LEADERBOARD', W/2, 40);
+    ctx.shadowColor = COL.neonOrange; ctx.shadowBlur = 15;
+    ctx.fillText('LEADERBOARD', W/2, 45);
     ctx.shadowBlur = 0;
 
-    if (leaderboard.length === 0) {
-        ctx.font = '7px "Press Start 2P"';
+    // Cloud status
+    ctx.font = '7px "Share Tech Mono"';
+    ctx.fillStyle = cloudReady ? COL.neonGreen : COL.neonAmber;
+    ctx.fillText(cloudReady ? 'GLOBAL SCORES' : 'LOCAL SCORES', W/2, 62);
+
+    if (leaderboardData.length === 0) {
+        ctx.font = '9px "Press Start 2P"';
         ctx.fillStyle = COL.textDim;
         ctx.fillText('No scores yet. Be the first!', W/2, H/2);
     } else {
-        ctx.font = '7px "Press Start 2P"';
-        const top = leaderboard.slice(0, 15);
+        ctx.font = '8px "Press Start 2P"';
+        const top = leaderboardData.slice(0, 15);
         top.forEach((entry, i) => {
-            const y = 70 + i * 22;
-            // Rank
+            const y = 85 + i * 24;
             ctx.textAlign = 'left';
             if (i === 0) ctx.fillStyle = COL.gold;
             else if (i === 1) ctx.fillStyle = '#C0C0C0';
             else if (i === 2) ctx.fillStyle = '#CD7F32';
             else ctx.fillStyle = COL.textDim;
-            ctx.fillText((i + 1) + '.', 120, y);
+            ctx.fillText((i + 1) + '.', 150, y);
 
-            // Name
             ctx.fillStyle = COL.textLight;
-            ctx.fillText(entry.name, 160, y);
+            ctx.fillText(entry.name, 195, y);
 
-            // Score
             ctx.textAlign = 'right';
             ctx.fillStyle = COL.neonOrange;
-            ctx.fillText(entry.score.toLocaleString(), 440, y);
+            ctx.fillText(entry.score.toLocaleString(), 540, y);
 
-            // Wave
             ctx.fillStyle = COL.textDim;
-            ctx.fillText('W' + entry.wave, 510, y);
+            ctx.fillText('W' + entry.wave, 620, y);
         });
     }
 
     ctx.textAlign = 'center';
     ctx.fillStyle = COL.textDim;
-    ctx.font = '6px "Press Start 2P"';
-    ctx.fillText('PRESS ESC OR ENTER TO RETURN', W/2, H - 20);
+    ctx.font = '7px "Press Start 2P"';
+    ctx.fillText('PRESS ESC OR ENTER TO RETURN', W/2, H - 25);
 }
 
 // ============================================================
@@ -1151,7 +1371,7 @@ function startGame() {
     shieldTimer = 0;
     slowmoTimer = 0;
     screenShake = 0;
-    shakeTimer = 0;
+    perfectWave = true;
     playerName = localStorage.getItem(NAME_KEY) || '';
     startWave();
 }
@@ -1160,118 +1380,156 @@ function startWave() {
     const config = getWaveConfig(wave);
     totalAnchorsThisWave = config.count;
     anchorsSpawned = 0;
-    spawnTimer = 60; // brief delay before spawning
+    spawnTimer = 60;
     spawnInterval = config.interval;
+    perfectWave = true;
     state = STATE.WAVE_INTRO;
-    waveIntroTimer = 0;
 
-    // Spawn collectibles for this wave
     for (let i = 0; i < config.collectibleCount; i++) {
         setTimeout(() => {
             if (state === STATE.PLAYING) spawnCollectible();
-        }, (i + 1) * 2000);
+        }, (i + 1) * 2500);
     }
 }
 
 function clearWave() {
     playSound('waveClear');
-    const waveBonus = wave * 100;
+    const waveBonus = wave * 150;
     score += waveBonus;
-    addFloatingText(W/2, H/2, '+' + waveBonus + ' WAVE BONUS', COL.gold);
+    addFloatingText(W/2, H/2 - 20, '+' + waveBonus + ' WAVE BONUS', COL.gold);
+
+    // Perfect wave bonus (no hits taken)
+    if (perfectWave) {
+        const perfectBonus = wave * 100;
+        score += perfectBonus;
+        setTimeout(() => {
+            addFloatingText(W/2, H/2 + 10, 'PERFECT! +' + perfectBonus, COL.neonPink);
+        }, 300);
+    }
 
     wave++;
-    if (wave > 100) {
-        // Victory!
+    if (wave > TOTAL_WAVES) {
+        playSound('victory');
         endGame();
         return;
     }
-
-    // Clear remaining collectibles
     collectibles = [];
     startWave();
 }
 
 function endGame() {
     if (score > hiScore) hiScore = score;
-    playSound('gameOver');
+    if (wave <= TOTAL_WAVES) playSound('gameOver');
     state = STATE.GAMEOVER;
 }
 
-function submitScore() {
+async function submitScore() {
     if (playerName.length === 0) return;
-    leaderboard.push({ name: playerName, score, wave: Math.min(wave, 100), date: Date.now() });
-    leaderboard.sort((a, b) => b.score - a.score);
-    leaderboard = leaderboard.slice(0, 20);
-    saveScores();
+
+    const entry = {
+        name: playerName.toUpperCase().substring(0, 8),
+        score: score,
+        wave: Math.min(wave, TOTAL_WAVES),
+        timestamp: Date.now()
+    };
+
+    // Save locally
+    try {
+        const scores = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        scores.push(entry);
+        scores.sort((a, b) => b.score - a.score);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(scores.slice(0, 20)));
+        localStorage.setItem(NAME_KEY, playerName);
+    } catch(e) {}
+
+    // Save to cloud
+    if (cloudReady) {
+        try {
+            const { error } = await sbClient.from(TABLE_NAME).insert(entry);
+            if (error) throw error;
+            // Flush pending
+            const pending = JSON.parse(localStorage.getItem('anchorManPending') || '[]');
+            if (pending.length > 0) {
+                const { error: flushErr } = await sbClient.from(TABLE_NAME).insert(pending);
+                if (!flushErr) localStorage.removeItem('anchorManPending');
+            }
+        } catch(e) {
+            console.warn('Cloud write failed — queuing:', e);
+            const pending = JSON.parse(localStorage.getItem('anchorManPending') || '[]');
+            pending.push(entry);
+            localStorage.setItem('anchorManPending', JSON.stringify(pending));
+        }
+    } else {
+        const pending = JSON.parse(localStorage.getItem('anchorManPending') || '[]');
+        pending.push(entry);
+        localStorage.setItem('anchorManPending', JSON.stringify(pending));
+    }
+
+    await loadLeaderboard();
     state = STATE.LEADERBOARD;
 }
 
 function hitPlayer() {
     if (invincibleTimer > 0) return;
+    perfectWave = false;
 
     if (shieldTimer > 0) {
         shieldTimer = 0;
         invincibleTimer = 30;
-        addParticles(player.x, player.y, COL.neonGreen, 10);
-        addFloatingText(player.x, player.y - 20, 'SHIELD BREAK', COL.neonGreen);
+        addParticles(player.x, player.y, COL.neonGreen, 12);
+        addFloatingText(player.x, player.y - 25, 'SHIELD BREAK', COL.neonGreen);
         playSound('hit');
-        screenShake = 5;
+        screenShake = 6;
         return;
     }
 
     lives--;
     playSound('hit');
-    addParticles(player.x, player.y, COL.red, 15);
-    screenShake = 8;
+    addParticles(player.x, player.y, COL.red, 18);
+    screenShake = 10;
     combo = 0;
     comboTimer = 0;
-    invincibleTimer = 90; // 1.5 seconds of invincibility
+    invincibleTimer = 90;
 
-    if (lives <= 0) {
-        endGame();
-    }
+    if (lives <= 0) endGame();
 }
 
 function collectItem(c) {
     switch(c.type) {
         case 'beer':
-            const pts = 250 + wave * 10;
+            const pts = 300 + wave * 15;
             score += pts;
-            addFloatingText(c.x, c.y - 10, '+' + pts, COL.neonAmber);
+            addFloatingText(c.x, c.y - 12, '+' + pts, COL.neonAmber);
             playSound('collect');
             break;
         case 'lifejacket':
             if (lives < 5) {
                 lives++;
-                addFloatingText(c.x, c.y - 10, '+1 LIFE', COL.red);
+                addFloatingText(c.x, c.y - 12, '+1 LIFE', COL.red);
             } else {
                 score += 500;
-                addFloatingText(c.x, c.y - 10, '+500', COL.red);
+                addFloatingText(c.x, c.y - 12, '+500', COL.red);
             }
             playSound('powerup');
             break;
         case 'slowmo':
-            slowmoTimer = 300; // 5 seconds
-            addFloatingText(c.x, c.y - 10, 'SLOW-MO!', COL.neonBlue);
+            slowmoTimer = 300;
+            addFloatingText(c.x, c.y - 12, 'SLOW-MO!', COL.neonBlue);
             playSound('powerup');
             break;
         case 'shield':
-            shieldTimer = 600; // 10 seconds
-            addFloatingText(c.x, c.y - 10, 'SHIELD!', COL.neonGreen);
+            shieldTimer = 480;
+            addFloatingText(c.x, c.y - 12, 'SHIELD!', COL.neonGreen);
             playSound('powerup');
             break;
     }
-    addParticles(c.x, c.y, COL.white, 6);
+    addParticles(c.x, c.y, COL.white, 8);
 }
 
-// ============================================================
-// COLLISION DETECTION
-// ============================================================
 function circleRect(cx, cy, cr, rx, ry, rw, rh) {
     const closestX = Math.max(rx, Math.min(cx, rx + rw));
     const closestY = Math.max(ry, Math.min(cy, ry + rh));
-    const dx = cx - closestX;
-    const dy = cy - closestY;
+    const dx = cx - closestX, dy = cy - closestY;
     return (dx * dx + dy * dy) < (cr * cr);
 }
 
@@ -1280,20 +1538,14 @@ function circleRect(cx, cy, cr, rx, ry, rw, rh) {
 // ============================================================
 function update() {
     frameCount++;
-
     if (state !== STATE.PLAYING) return;
 
     const slowFactor = slowmoTimer > 0 ? 0.4 : 1;
 
-    // Update timers
     if (invincibleTimer > 0) invincibleTimer--;
     if (shieldTimer > 0) shieldTimer--;
     if (slowmoTimer > 0) slowmoTimer--;
-    if (comboTimer > 0) {
-        comboTimer--;
-        if (comboTimer <= 0) combo = 0;
-    }
-    if (shakeTimer > 0) shakeTimer--;
+    if (comboTimer > 0) { comboTimer--; if (comboTimer <= 0) combo = 0; }
 
     // Player movement
     const spd = player.speed;
@@ -1303,18 +1555,13 @@ function update() {
     if (keys['ArrowUp'] || keys['w'] || keys['W'] || mobileDir.up) dy -= spd;
     if (keys['ArrowDown'] || keys['s'] || keys['S'] || mobileDir.down) dy += spd;
 
-    // Normalize diagonal movement
-    if (dx !== 0 && dy !== 0) {
-        dx *= 0.707;
-        dy *= 0.707;
-    }
-
+    if (dx !== 0 && dy !== 0) { dx *= 0.707; dy *= 0.707; }
     player.x += dx;
     player.y += dy;
 
-    // Clamp to boat deck bounds
-    const deckLeft = 60, deckRight = W - 60;
-    const deckTop = 50, deckBottom = H - 70;
+    // Boat deck bounds
+    const deckLeft = 82, deckRight = W - 82;
+    const deckTop = 65, deckBottom = H - 85;
     player.x = Math.max(deckLeft, Math.min(deckRight, player.x));
     player.y = Math.max(deckTop, Math.min(deckBottom, player.y));
 
@@ -1323,8 +1570,12 @@ function update() {
     if (spawnTimer <= 0 && anchorsSpawned < totalAnchorsThisWave) {
         const config = getWaveConfig(wave);
 
-        // Cluster spawns
-        if (Math.random() < config.clusterChance) {
+        // Cross volley check
+        if (config.crossVolley && Math.random() < config.crossChance && anchorsSpawned + 4 <= totalAnchorsThisWave) {
+            spawnCrossVolley(config);
+        }
+        // Cluster check
+        else if (Math.random() < config.clusterChance) {
             const clusterSize = 2 + Math.floor(Math.random() * 3);
             for (let i = 0; i < clusterSize && anchorsSpawned < totalAnchorsThisWave; i++) {
                 spawnAnchor(config);
@@ -1344,87 +1595,75 @@ function update() {
         a.y += a.vy * slowFactor;
         a.rotation += a.rotSpeed * slowFactor;
 
-        // Check collision with player
-        const hitRadius = a.size * 0.8;
+        // Collision
+        const hitRadius = a.size * 0.75;
         if (circleRect(a.x, a.y, hitRadius, player.x - player.w/2, player.y - player.h/2, player.w, player.h)) {
             hitPlayer();
-            addParticles(a.x, a.y, COL.anchor, 8);
+            addParticles(a.x, a.y, COL.anchor, 10);
             addSplash(a.x, a.y);
             playSound('splash');
             anchors.splice(i, 1);
             continue;
         }
 
-        // Near miss detection (for combo/points)
+        // Near miss
         if (!a.nearMissScored) {
-            const nearDist = a.size + 20;
-            const pdx = a.x - player.x;
-            const pdy = a.y - player.y;
+            const nearDist = a.size + 22;
+            const pdx = a.x - player.x, pdy = a.y - player.y;
             const dist = Math.sqrt(pdx * pdx + pdy * pdy);
             if (dist < nearDist) {
-                // Check if anchor is moving away from player (already passed)
                 const dotProduct = pdx * a.vx + pdy * a.vy;
                 if (dotProduct > 0) {
                     a.nearMissScored = true;
                     combo++;
-                    comboTimer = 90; // 1.5 seconds
+                    comboTimer = 90;
                     dodgeCount++;
-                    const dodgePts = 10 * Math.min(combo, 8);
+                    const dodgePts = 15 * Math.min(combo, 10);
                     score += dodgePts;
-                    if (combo >= 3) {
-                        addFloatingText(player.x, player.y - 25, 'x' + combo + ' DODGE +' + dodgePts, COL.neonGreen);
+                    if (combo >= 2) {
+                        addFloatingText(player.x, player.y - 30, 'x' + combo + ' +' + dodgePts, COL.neonGreen);
                         playSound('dodge');
                     }
                 }
             }
         }
 
-        // Remove if off screen
+        // Off screen removal
         if (a.x < -60 || a.x > W + 60 || a.y < -60 || a.y > H + 60) {
-            if (!a.dodged) {
-                a.dodged = true;
-            }
             anchors.splice(i, 1);
         }
     }
 
-    // Check wave completion
+    // Wave completion
     if (anchorsSpawned >= totalAnchorsThisWave && anchors.length === 0) {
         clearWave();
     }
 
-    // Update collectibles
+    // Collectibles
     for (let i = collectibles.length - 1; i >= 0; i--) {
         const c = collectibles[i];
         c.life--;
-        if (c.life <= 0) {
-            collectibles.splice(i, 1);
-            continue;
-        }
-
-        // Check collection
-        const cdx = c.x - player.x;
-        const cdy = c.y - player.y;
-        if (Math.sqrt(cdx * cdx + cdy * cdy) < 18) {
+        if (c.life <= 0) { collectibles.splice(i, 1); continue; }
+        const cdx = c.x - player.x, cdy = c.y - player.y;
+        if (Math.sqrt(cdx * cdx + cdy * cdy) < 20) {
             collectItem(c);
             collectibles.splice(i, 1);
         }
     }
 
-    // Update particles
+    // Particles
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.05; // gravity
+        p.x += p.vx; p.y += p.vy;
+        p.vy += 0.05;
         p.life--;
         if (p.life <= 0) particles.splice(i, 1);
     }
 
-    // Update floating texts
+    // Floating texts
     for (let i = floatingTexts.length - 1; i >= 0; i--) {
         const ft = floatingTexts[i];
-        ft.y -= 0.8;
+        ft.y -= 0.7;
         ft.life--;
         if (ft.life <= 0) floatingTexts.splice(i, 1);
     }
@@ -1436,80 +1675,54 @@ function update() {
 function render() {
     ctx.save();
 
-    // Screen shake
     if (screenShake > 0) {
-        const sx = (Math.random() - 0.5) * screenShake * 2;
-        const sy = (Math.random() - 0.5) * screenShake * 2;
-        ctx.translate(sx, sy);
-        screenShake *= 0.85;
+        ctx.translate((Math.random()-0.5) * screenShake * 2, (Math.random()-0.5) * screenShake * 2);
+        screenShake *= 0.82;
         if (screenShake < 0.5) screenShake = 0;
     }
 
     switch(state) {
-        case STATE.MENU:
-            drawMenu();
-            break;
-        case STATE.WAVE_INTRO:
-            drawWaveIntro();
-            break;
+        case STATE.MENU: drawMenu(); break;
+        case STATE.WAVE_INTRO: drawWaveIntro(); break;
         case STATE.PLAYING:
         case STATE.PAUSED:
             drawWater();
+            drawShoreline();
             drawBoatDeck();
-
-            // Draw collectibles
             collectibles.forEach(c => {
-                // Blink when about to expire
-                if (c.life > 60 || Math.floor(frameCount / 8) % 2 === 0) {
-                    drawCollectible(c);
-                }
+                if (c.life > 60 || Math.floor(frameCount / 8) % 2 === 0) drawCollectible(c);
             });
-
-            // Draw player
             drawPlayer(player);
-
-            // Draw anchors
             anchors.forEach(a => drawAnchor(a));
-
-            // Draw particles
             particles.forEach(p => {
                 ctx.globalAlpha = p.life / p.maxLife;
                 ctx.fillStyle = p.color;
                 ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
             });
             ctx.globalAlpha = 1;
-
-            // Draw floating texts
             floatingTexts.forEach(ft => {
                 ctx.globalAlpha = ft.life / ft.maxLife;
-                ctx.font = '7px "Press Start 2P"';
+                ctx.font = '8px "Press Start 2P"';
                 ctx.fillStyle = ft.color;
                 ctx.textAlign = 'center';
                 ctx.fillText(ft.text, ft.x, ft.y);
             });
             ctx.globalAlpha = 1;
-
             drawHUD();
-
-            // Pause overlay
             if (state === STATE.PAUSED) {
                 ctx.fillStyle = 'rgba(6, 12, 22, 0.6)';
                 ctx.fillRect(0, 0, W, H);
-                ctx.font = '20px "Jacquard 12"';
+                ctx.font = '24px "Jacquard 12"';
                 ctx.fillStyle = COL.neonOrange;
                 ctx.textAlign = 'center';
                 ctx.fillText('PAUSED', W/2, H/2);
-                ctx.font = '7px "Press Start 2P"';
+                ctx.font = '8px "Press Start 2P"';
                 ctx.fillStyle = COL.textDim;
-                ctx.fillText('PRESS P TO RESUME', W/2, H/2 + 25);
+                ctx.fillText('PRESS P TO RESUME', W/2, H/2 + 30);
             }
             break;
-        case STATE.GAMEOVER:
-            drawGameOver();
-            break;
-        case STATE.LEADERBOARD:
-            drawLeaderboard();
-            break;
+        case STATE.GAMEOVER: drawGameOver(); break;
+        case STATE.LEADERBOARD: drawLeaderboard(); break;
     }
 
     ctx.restore();
