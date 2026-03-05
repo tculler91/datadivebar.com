@@ -481,7 +481,7 @@ class AudioEngine {
   // iOS Safari requires playing an actual buffer during a user gesture to unlock audio
   _playsilent() {
     try {
-      const buf = this.ctx.createBuffer(1, 1, 22050);
+      const buf = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
       const src = this.ctx.createBufferSource();
       src.buffer = buf;
       src.connect(this.ctx.destination);
