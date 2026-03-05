@@ -310,13 +310,23 @@ function initAudio() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
     // Mobile browsers suspend AudioContext until resumed inside a user gesture
-    if (audioCtx && audioCtx.state === 'suspended') {
+    if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
+    // iOS Safari requires actually playing a sound during the gesture to fully unlock
+    try {
+        const silent = audioCtx.createBuffer(1, 1, 22050);
+        const src = audioCtx.createBufferSource();
+        src.buffer = silent;
+        src.connect(audioCtx.destination);
+        src.start(0);
+    } catch(e) {}
 }
 
 function playSound(type) {
     if (muted || !audioCtx) return;
+    // Re-resume if context got suspended (e.g. tab backgrounded on mobile)
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     const t = audioCtx.currentTime;
     const g = audioCtx.createGain();
     g.connect(audioCtx.destination);
