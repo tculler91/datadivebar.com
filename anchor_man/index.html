@@ -50,34 +50,81 @@
         }
         #mobileControls {
             display: none;
-            position: absolute;
-            bottom: 10px;
+            position: fixed;
+            bottom: 0;
             left: 0; right: 0;
             z-index: 20;
             justify-content: space-between;
-            padding: 0 10px;
+            align-items: flex-end;
+            padding: 12px 16px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            pointer-events: none;
         }
+        #mobileControls > * { pointer-events: auto; }
         .dpad {
             display: grid;
-            grid-template-columns: 50px 50px 50px;
-            grid-template-rows: 50px 50px 50px;
-            gap: 2px;
+            grid-template-columns: 62px 62px 62px;
+            grid-template-rows: 62px 62px 62px;
+            gap: 4px;
         }
         .dpad-btn {
-            background: rgba(255, 107, 10, 0.3);
-            border: 2px solid rgba(255, 107, 10, 0.6);
-            border-radius: 6px;
-            color: #FF6B0A;
-            font-size: 20px;
+            background: rgba(255, 107, 10, 0.25);
+            border: 2px solid rgba(255, 107, 10, 0.5);
+            border-radius: 10px;
+            color: rgba(255, 107, 10, 0.9);
+            font-size: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
             touch-action: none;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.05s;
         }
-        .dpad-btn:active { background: rgba(255, 107, 10, 0.6); }
+        .dpad-btn.active { background: rgba(255, 107, 10, 0.6); border-color: rgba(255, 107, 10, 0.9); }
         .dpad-blank { background: none; border: none; }
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        .action-btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 2px solid rgba(74, 144, 255, 0.6);
+            background: rgba(74, 144, 255, 0.2);
+            color: rgba(74, 144, 255, 0.9);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .action-btn.active { background: rgba(74, 144, 255, 0.5); border-color: rgba(74, 144, 255, 0.9); }
+        .action-btn-sm {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid rgba(200, 200, 212, 0.3);
+            background: rgba(200, 200, 212, 0.1);
+            color: rgba(200, 200, 212, 0.7);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
         #mobileNameInput {
             position: fixed;
             left: -9999px;
@@ -88,8 +135,23 @@
             border: none;
             font-size: 16px; /* prevent iOS zoom */
         }
-        @media (max-width: 768px) { #mobileControls { display: flex; } }
-        @media (hover: none) and (pointer: coarse) { #mobileControls { display: flex; } }
+        @media (max-width: 768px) {
+            #mobileControls { display: flex; }
+            #gameContainer {
+                /* Shrink canvas to leave room for controls */
+                height: min(calc(100vh - 210px), calc(100vw * 3 / 4));
+                align-self: flex-start;
+                margin-top: 4px;
+            }
+        }
+        @media (hover: none) and (pointer: coarse) {
+            #mobileControls { display: flex; }
+            #gameContainer {
+                height: min(calc(100vh - 210px), calc(100vw * 3 / 4));
+                align-self: flex-start;
+                margin-top: 4px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -108,6 +170,10 @@
                 <div class="dpad-blank"></div>
                 <button class="dpad-btn" data-dir="down">&#9660;</button>
                 <div class="dpad-blank"></div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn" id="actionBtn">A</button>
+                <button class="action-btn-sm" id="muteBtn">MUTE</button>
             </div>
         </div>
         <input type="text" id="mobileNameInput" maxlength="8" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
@@ -190,7 +256,13 @@ let audioCtx = null;
 let muted = false;
 
 function initAudio() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    // Mobile browsers suspend AudioContext until resumed inside a user gesture
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
 }
 
 function playSound(type) {
@@ -340,10 +412,79 @@ window.addEventListener('keyup', e => { keys[e.key] = false; });
 const mobileDir = { up: false, down: false, left: false, right: false };
 document.querySelectorAll('.dpad-btn').forEach(btn => {
     const dir = btn.dataset.dir;
-    btn.addEventListener('touchstart', e => { e.preventDefault(); mobileDir[dir] = true; initAudio(); });
-    btn.addEventListener('touchend', e => { e.preventDefault(); mobileDir[dir] = false; });
-    btn.addEventListener('mousedown', () => { mobileDir[dir] = true; });
-    btn.addEventListener('mouseup', () => { mobileDir[dir] = false; });
+    btn.addEventListener('touchstart', e => {
+        e.preventDefault();
+        mobileDir[dir] = true;
+        btn.classList.add('active');
+        initAudio();
+    });
+    btn.addEventListener('touchend', e => {
+        e.preventDefault();
+        mobileDir[dir] = false;
+        btn.classList.remove('active');
+    });
+    btn.addEventListener('touchcancel', e => {
+        e.preventDefault();
+        mobileDir[dir] = false;
+        btn.classList.remove('active');
+    });
+    // Handle finger sliding off button
+    btn.addEventListener('touchmove', e => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = btn.getBoundingClientRect();
+        const inside = touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                       touch.clientY >= rect.top && touch.clientY <= rect.bottom;
+        if (!inside) {
+            mobileDir[dir] = false;
+            btn.classList.remove('active');
+        }
+    });
+    btn.addEventListener('mousedown', () => { mobileDir[dir] = true; btn.classList.add('active'); });
+    btn.addEventListener('mouseup', () => { mobileDir[dir] = false; btn.classList.remove('active'); });
+});
+
+// Action button (A) - context-sensitive
+const actionBtn = document.getElementById('actionBtn');
+const muteBtn = document.getElementById('muteBtn');
+
+function handleActionPress() {
+    initAudio();
+    if (state === STATE.MENU) { startGame(); }
+    else if (state === STATE.WAVE_INTRO) { state = STATE.PLAYING; }
+    else if (state === STATE.GAMEOVER) {
+        if (playerName.length > 0) submitScore();
+        else focusMobileInput();
+    }
+    else if (state === STATE.LEADERBOARD) { state = STATE.MENU; }
+    else if (state === STATE.PAUSED) { state = STATE.PLAYING; }
+}
+
+actionBtn.addEventListener('touchstart', e => {
+    e.preventDefault();
+    actionBtn.classList.add('active');
+    handleActionPress();
+});
+actionBtn.addEventListener('touchend', e => {
+    e.preventDefault();
+    actionBtn.classList.remove('active');
+});
+actionBtn.addEventListener('touchcancel', e => {
+    e.preventDefault();
+    actionBtn.classList.remove('active');
+});
+
+muteBtn.addEventListener('touchstart', e => {
+    e.preventDefault();
+    initAudio();
+    muted = !muted;
+    muteBtn.textContent = muted ? 'UNMUTE' : 'MUTE';
+});
+muteBtn.addEventListener('click', e => {
+    e.preventDefault();
+    initAudio();
+    muted = !muted;
+    muteBtn.textContent = muted ? 'UNMUTE' : 'MUTE';
 });
 
 const mobileNameInput = document.getElementById('mobileNameInput');
@@ -386,6 +527,12 @@ canvas.addEventListener('click', () => {
     else if (state === STATE.LEADERBOARD) state = STATE.MENU;
     else if (state === STATE.GAMEOVER) focusMobileInput();
 });
+
+// Ensure audio is unlocked on first touch anywhere (mobile autoplay policy)
+document.addEventListener('touchstart', function unlockAudio() {
+    initAudio();
+    document.removeEventListener('touchstart', unlockAudio);
+}, { once: true });
 
 // ============================================================
 // GAME STATE
@@ -1719,8 +1866,21 @@ function update() {
 // ============================================================
 // RENDER
 // ============================================================
+function updateActionBtnLabel() {
+    if (!isTouchDevice) return;
+    switch(state) {
+        case STATE.MENU: actionBtn.textContent = 'START'; break;
+        case STATE.WAVE_INTRO: actionBtn.textContent = 'GO'; break;
+        case STATE.PLAYING: actionBtn.textContent = 'A'; break;
+        case STATE.PAUSED: actionBtn.textContent = 'PLAY'; break;
+        case STATE.GAMEOVER: actionBtn.textContent = playerName.length > 0 ? 'SEND' : 'TYPE'; break;
+        case STATE.LEADERBOARD: actionBtn.textContent = 'BACK'; break;
+    }
+}
+
 function render() {
     ctx.save();
+    updateActionBtnLabel();
 
     if (screenShake > 0) {
         ctx.translate((Math.random()-0.5) * screenShake * 2, (Math.random()-0.5) * screenShake * 2);
