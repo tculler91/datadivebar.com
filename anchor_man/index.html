@@ -125,6 +125,50 @@
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
+        #coinSplash {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 100;
+            background: #060C16;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #coinSplash .splash-title {
+            font-family: 'VT323', monospace;
+            font-size: 48px;
+            color: #FF6B0A;
+            text-shadow: 0 0 30px rgba(255,107,10,0.6);
+            margin-bottom: 20px;
+        }
+        #coinSplash .splash-anchor {
+            font-size: 64px;
+            margin-bottom: 30px;
+            animation: anchorSwing 2s ease-in-out infinite;
+        }
+        @keyframes anchorSwing {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(8deg); }
+        }
+        #coinSplash .splash-coin {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            color: #C8C8D4;
+            animation: coinBlink 1s step-end infinite;
+        }
+        @keyframes coinBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        #coinSplash .splash-sub {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: rgba(200,200,212,0.4);
+            margin-top: 16px;
+        }
         #mobileNameInput {
             position: fixed;
             left: -9999px;
@@ -155,6 +199,12 @@
     </style>
 </head>
 <body>
+    <div id="coinSplash">
+        <div class="splash-anchor">⚓</div>
+        <div class="splash-title">ANCHOR MAN</div>
+        <div class="splash-coin">INSERT COIN</div>
+        <div class="splash-sub">tap anywhere to start</div>
+    </div>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="scanlines"></div>
@@ -528,11 +578,22 @@ canvas.addEventListener('click', () => {
     else if (state === STATE.GAMEOVER) focusMobileInput();
 });
 
-// Ensure audio is unlocked on first touch anywhere (mobile autoplay policy)
-document.addEventListener('touchstart', function unlockAudio() {
+// INSERT COIN splash — gates audio behind a user gesture
+const coinSplash = document.getElementById('coinSplash');
+function dismissSplash() {
+    if (!coinSplash) return;
     initAudio();
-    document.removeEventListener('touchstart', unlockAudio);
-}, { once: true });
+    coinSplash.style.transition = 'opacity 0.3s';
+    coinSplash.style.opacity = '0';
+    setTimeout(() => { coinSplash.style.display = 'none'; }, 300);
+    coinSplash.removeEventListener('click', dismissSplash);
+    coinSplash.removeEventListener('touchstart', dismissSplash);
+}
+coinSplash.addEventListener('click', dismissSplash);
+coinSplash.addEventListener('touchstart', e => {
+    e.preventDefault();
+    dismissSplash();
+});
 
 // ============================================================
 // GAME STATE
