@@ -338,6 +338,8 @@
 </style>
 </head>
 <body>
+<!-- Tiny silent WAV via <audio> — forces iOS out of "ambient" mode so Web Audio works even with silent switch on -->
+<audio id="silentAudio" preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 
 <div id="game-wrapper">
   <div id="hud">
@@ -462,6 +464,13 @@ class AudioEngine {
   }
 
   init() {
+    // Play <audio> element FIRST to switch iOS out of "ambient" audio session
+    // (ambient = muted by silent switch; playback = ignores silent switch)
+    try {
+      const el = document.getElementById('silentAudio');
+      if (el) { el.volume = 0.01; const p = el.play(); if (p && p.catch) p.catch(() => {}); }
+    } catch(e) {}
+
     if (this.initialized) {
       if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
       this._playsilent();

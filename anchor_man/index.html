@@ -199,6 +199,8 @@
     </style>
 </head>
 <body>
+    <!-- Tiny silent WAV via <audio> — forces iOS out of "ambient" mode so Web Audio works even with silent switch on -->
+    <audio id="silentAudio" preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
     <div id="coinSplash">
         <div class="splash-anchor">⚓</div>
         <div class="splash-title">ANCHOR MAN</div>
@@ -308,6 +310,21 @@ let muted = false;
 let audioUnlocked = false;
 
 function initAudio() {
+    // Step 1: Play the <audio> element — this switches iOS from "ambient" audio
+    // session (muted by silent switch) to "playback" session (ignores silent switch).
+    // Must happen during a user gesture BEFORE creating the AudioContext.
+    if (!audioUnlocked) {
+        try {
+            const el = document.getElementById('silentAudio');
+            if (el) {
+                el.volume = 0.01;
+                const p = el.play();
+                if (p && p.catch) p.catch(() => {});
+            }
+        } catch(e) {}
+    }
+
+    // Step 2: Create AudioContext (after <audio> play to inherit playback session)
     if (!audioCtx) {
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -316,11 +333,13 @@ function initAudio() {
             masterGain.connect(audioCtx.destination);
         } catch(e) { console.warn('Web Audio not supported'); return; }
     }
-    // Resume suspended context (required by mobile autoplay policy)
+
+    // Step 3: Resume suspended context
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
-    // iOS Safari needs an actual buffer played during a user gesture to unlock
+
+    // Step 4: Play a silent buffer through AudioContext to fully unlock the pipeline
     if (!audioUnlocked) {
         try {
             const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
@@ -1375,6 +1394,14 @@ function drawHUD() {
     ctx.textAlign = 'left';
     ctx.fillStyle = cloudReady ? 'rgba(57,255,20,0.4)' : 'rgba(255,140,42,0.3)';
     ctx.fillText(cloudReady ? 'GLOBAL' : 'LOCAL', 10, H - 3);
+
+    // Audio debug indicator
+    const aState = audioCtx ? audioCtx.state : 'null';
+    const aColor = aState === 'running' ? 'rgba(57,255,20,0.5)' : 'rgba(255,60,60,0.5)';
+    ctx.fillStyle = aColor;
+    ctx.font = '6px "Share Tech Mono"';
+    ctx.textAlign = 'left';
+    ctx.fillText('AUD:' + aState + (muted ? ' MUTED' : '') + (audioUnlocked ? ' OK' : ' LOCKED'), 10, H - 12);
 }
 
 // ============================================================
