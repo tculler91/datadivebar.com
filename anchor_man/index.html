@@ -78,6 +78,16 @@
         }
         .dpad-btn:active { background: rgba(255, 107, 10, 0.6); }
         .dpad-blank { background: none; border: none; }
+        #mobileNameInput {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+            border: none;
+            font-size: 16px; /* prevent iOS zoom */
+        }
         @media (max-width: 768px) { #mobileControls { display: flex; } }
         @media (hover: none) and (pointer: coarse) { #mobileControls { display: flex; } }
     </style>
@@ -100,6 +110,7 @@
                 <div class="dpad-blank"></div>
             </div>
         </div>
+        <input type="text" id="mobileNameInput" maxlength="8" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
     </div>
 
 <!-- Supabase SDK -->
@@ -335,11 +346,45 @@ document.querySelectorAll('.dpad-btn').forEach(btn => {
     btn.addEventListener('mouseup', () => { mobileDir[dir] = false; });
 });
 
+const mobileNameInput = document.getElementById('mobileNameInput');
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+mobileNameInput.addEventListener('input', () => {
+    const val = mobileNameInput.value.replace(/[^a-zA-Z0-9 ]/g, '').toUpperCase().substring(0, 8);
+    mobileNameInput.value = val;
+    playerName = val;
+});
+mobileNameInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && playerName.length > 0) {
+        e.preventDefault();
+        submitScore();
+    }
+});
+// Prevent the hidden input from losing focus on mobile during GAMEOVER
+mobileNameInput.addEventListener('blur', () => {
+    if (state === STATE.GAMEOVER && isTouchDevice) {
+        setTimeout(() => {
+            if (state === STATE.GAMEOVER) mobileNameInput.focus();
+        }, 100);
+    }
+});
+
+function focusMobileInput() {
+    if (isTouchDevice) {
+        mobileNameInput.value = playerName;
+        mobileNameInput.focus();
+    }
+}
+function blurMobileInput() {
+    mobileNameInput.blur();
+}
+
 canvas.addEventListener('click', () => {
     initAudio();
     if (state === STATE.MENU) startGame();
     else if (state === STATE.WAVE_INTRO) state = STATE.PLAYING;
     else if (state === STATE.LEADERBOARD) state = STATE.MENU;
+    else if (state === STATE.GAMEOVER) focusMobileInput();
 });
 
 // ============================================================
@@ -1269,7 +1314,7 @@ function drawGameOver() {
     if (playerName.length > 0 && Math.floor(frameCount / 25) % 2 === 0) {
         ctx.fillText('PRESS ENTER TO SUBMIT', W/2, 322);
     }
-    ctx.fillText('TYPE YOUR NAME (8 CHARS MAX)', W/2, 340);
+    ctx.fillText(isTouchDevice ? 'TAP HERE TO TYPE (8 MAX)' : 'TYPE YOUR NAME (8 CHARS MAX)', W/2, 340);
 }
 
 // ============================================================
@@ -1421,10 +1466,12 @@ function endGame() {
     if (score > hiScore) hiScore = score;
     if (wave <= TOTAL_WAVES) playSound('gameOver');
     state = STATE.GAMEOVER;
+    focusMobileInput();
 }
 
 async function submitScore() {
     if (playerName.length === 0) return;
+    blurMobileInput();
 
     const entry = {
         name: playerName.toUpperCase().substring(0, 8),
