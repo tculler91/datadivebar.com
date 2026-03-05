@@ -307,24 +307,14 @@ const COL = {
 let audioCtx = null;
 let masterGain = null;
 let muted = false;
-let audioUnlocked = false;
 
 function initAudio() {
-    // Step 1: Play the <audio> element — this switches iOS from "ambient" audio
-    // session (muted by silent switch) to "playback" session (ignores silent switch).
-    // Must happen during a user gesture BEFORE creating the AudioContext.
-    if (!audioUnlocked) {
-        try {
-            const el = document.getElementById('silentAudio');
-            if (el) {
-                el.volume = 0.01;
-                const p = el.play();
-                if (p && p.catch) p.catch(() => {});
-            }
-        } catch(e) {}
-    }
+    // Play <audio> element to switch iOS out of "ambient" audio session
+    try {
+        const el = document.getElementById('silentAudio');
+        if (el) { el.volume = 0.01; const p = el.play(); if (p && p.catch) p.catch(() => {}); }
+    } catch(e) {}
 
-    // Step 2: Create AudioContext (after <audio> play to inherit playback session)
     if (!audioCtx) {
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -334,22 +324,18 @@ function initAudio() {
         } catch(e) { console.warn('Web Audio not supported'); return; }
     }
 
-    // Step 3: Resume suspended context
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
 
-    // Step 4: Play a silent buffer through AudioContext to fully unlock the pipeline
-    if (!audioUnlocked) {
-        try {
-            const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
-            const src = audioCtx.createBufferSource();
-            src.buffer = buf;
-            src.connect(audioCtx.destination);
-            src.start(0);
-            audioUnlocked = true;
-        } catch(e) {}
-    }
+    // Play silent buffer to fully unlock the pipeline
+    try {
+        const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+        const src = audioCtx.createBufferSource();
+        src.buffer = buf;
+        src.connect(audioCtx.destination);
+        src.start(0);
+    } catch(e) {}
 }
 
 function playCoinSound() {
@@ -1401,7 +1387,7 @@ function drawHUD() {
     ctx.fillStyle = aColor;
     ctx.font = '6px "Share Tech Mono"';
     ctx.textAlign = 'left';
-    ctx.fillText('AUD:' + aState + (muted ? ' MUTED' : '') + (audioUnlocked ? ' OK' : ' LOCKED'), 10, H - 12);
+    ctx.fillText('AUD:' + aState + (muted ? ' MUTED' : ''), 10, H - 12);
 }
 
 // ============================================================
