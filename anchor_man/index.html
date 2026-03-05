@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Anchor Man | Data Dive Bar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Jacquard+12&family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -1112,7 +1112,7 @@ function drawMenu() {
     ctx.fillRect(-8*ms, -3*ms, 16*ms, 3*ms);
     ctx.restore();
 
-    ctx.font = '36px "Jacquard 12"';
+    ctx.font = '36px "VT323"';
     ctx.fillStyle = COL.neonOrange;
     ctx.textAlign = 'center';
     ctx.shadowColor = COL.neonOrange; ctx.shadowBlur = 25;
@@ -1159,7 +1159,7 @@ function drawWaveIntro() {
     ctx.fillRect(0, 36, W, H - 36);
 
     ctx.textAlign = 'center';
-    ctx.font = '30px "Jacquard 12"';
+    ctx.font = '30px "VT323"';
     ctx.fillStyle = COL.neonOrange;
     ctx.shadowColor = COL.neonOrange; ctx.shadowBlur = 18;
     ctx.fillText('WAVE ' + wave, W/2, H/2 - 25);
@@ -1224,7 +1224,7 @@ function drawGameOver() {
     const isVictory = wave > TOTAL_WAVES;
 
     if (isVictory) {
-        ctx.font = '26px "Jacquard 12"';
+        ctx.font = '26px "VT323"';
         ctx.fillStyle = COL.gold;
         ctx.shadowColor = COL.gold; ctx.shadowBlur = 25;
         ctx.fillText('YOU SURVIVED!', W/2, 85);
@@ -1234,7 +1234,7 @@ function drawGameOver() {
         ctx.fillText('All ' + TOTAL_WAVES + ' waves conquered!', W/2, 115);
         ctx.fillText('The true Anchor Man.', W/2, 135);
     } else {
-        ctx.font = '26px "Jacquard 12"';
+        ctx.font = '26px "VT323"';
         ctx.fillStyle = COL.red;
         ctx.shadowColor = COL.red; ctx.shadowBlur = 18;
         ctx.fillText('ANCHORED!', W/2, 85);
@@ -1303,7 +1303,7 @@ function drawLeaderboard() {
     ctx.fillRect(0, 0, W, H);
 
     ctx.textAlign = 'center';
-    ctx.font = '22px "Jacquard 12"';
+    ctx.font = '22px "VT323"';
     ctx.fillStyle = COL.neonOrange;
     ctx.shadowColor = COL.neonOrange; ctx.shadowBlur = 15;
     ctx.fillText('LEADERBOARD', W/2, 45);
@@ -1712,7 +1712,7 @@ function render() {
             if (state === STATE.PAUSED) {
                 ctx.fillStyle = 'rgba(6, 12, 22, 0.6)';
                 ctx.fillRect(0, 0, W, H);
-                ctx.font = '24px "Jacquard 12"';
+                ctx.font = '24px "VT323"';
                 ctx.fillStyle = COL.neonOrange;
                 ctx.textAlign = 'center';
                 ctx.fillText('PAUSED', W/2, H/2);
