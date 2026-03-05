@@ -303,40 +303,68 @@ const COL = {
 // AUDIO SYSTEM
 // ============================================================
 let audioCtx = null;
+let masterGain = null;
 let muted = false;
+let audioUnlocked = false;
 
 function initAudio() {
     if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.5;
+            masterGain.connect(audioCtx.destination);
+        } catch(e) { console.warn('Web Audio not supported'); return; }
     }
-    // Mobile browsers suspend AudioContext until resumed inside a user gesture
+    // Resume suspended context (required by mobile autoplay policy)
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
-    // iOS Safari requires actually playing a sound during the gesture to fully unlock
-    try {
-        const silent = audioCtx.createBuffer(1, 1, 22050);
-        const src = audioCtx.createBufferSource();
-        src.buffer = silent;
-        src.connect(audioCtx.destination);
-        src.start(0);
-    } catch(e) {}
+    // iOS Safari needs an actual buffer played during a user gesture to unlock
+    if (!audioUnlocked) {
+        try {
+            const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+            const src = audioCtx.createBufferSource();
+            src.buffer = buf;
+            src.connect(audioCtx.destination);
+            src.start(0);
+            audioUnlocked = true;
+        } catch(e) {}
+    }
+}
+
+function playCoinSound() {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    // Arcade coin-insert sound
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'square';
+    o.frequency.setValueAtTime(988, t);
+    o.frequency.setValueAtTime(1319, t + 0.08);
+    g.gain.setValueAtTime(0.4, t);
+    g.gain.setValueAtTime(0.35, t + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    o.start(t);
+    o.stop(t + 0.22);
 }
 
 function playSound(type) {
     if (muted || !audioCtx) return;
-    // Re-resume if context got suspended (e.g. tab backgrounded on mobile)
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const t = audioCtx.currentTime;
+    const dest = masterGain || audioCtx.destination;
     const g = audioCtx.createGain();
-    g.connect(audioCtx.destination);
+    g.connect(dest);
     switch(type) {
         case 'dodge': {
             const o = audioCtx.createOscillator();
             o.type = 'sine';
             o.frequency.setValueAtTime(880, t);
             o.frequency.exponentialRampToValueAtTime(1320, t + 0.08);
-            g.gain.setValueAtTime(0.12, t);
+            g.gain.setValueAtTime(0.25, t);
             g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
             o.connect(g); o.start(t); o.stop(t + 0.15);
             break;
@@ -346,17 +374,17 @@ function playSound(type) {
             o.type = 'sawtooth';
             o.frequency.setValueAtTime(200, t);
             o.frequency.exponentialRampToValueAtTime(60, t + 0.4);
-            g.gain.setValueAtTime(0.2, t);
+            g.gain.setValueAtTime(0.4, t);
             g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
             o.connect(g); o.start(t); o.stop(t + 0.4);
             const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.15, audioCtx.sampleRate);
             const data = buf.getChannelData(0);
-            for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.3;
+            for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
             const n = audioCtx.createBufferSource(); n.buffer = buf;
             const g2 = audioCtx.createGain();
-            g2.gain.setValueAtTime(0.25, t);
+            g2.gain.setValueAtTime(0.4, t);
             g2.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-            n.connect(g2); g2.connect(audioCtx.destination);
+            n.connect(g2); g2.connect(dest);
             n.start(t); n.stop(t + 0.15);
             break;
         }
@@ -366,7 +394,7 @@ function playSound(type) {
             o.frequency.setValueAtTime(554, t + 0.06);
             o.frequency.setValueAtTime(660, t + 0.12);
             o.frequency.setValueAtTime(880, t + 0.18);
-            g.gain.setValueAtTime(0.15, t);
+            g.gain.setValueAtTime(0.3, t);
             g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
             o.connect(g); o.start(t); o.stop(t + 0.3);
             break;
@@ -375,10 +403,10 @@ function playSound(type) {
             [523, 659, 784, 1047].forEach((freq, i) => {
                 const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = freq;
                 const gn = audioCtx.createGain();
-                gn.gain.setValueAtTime(0, t + i * 0.1);
-                gn.gain.linearRampToValueAtTime(0.1, t + i * 0.1 + 0.02);
+                gn.gain.setValueAtTime(0.01, t + i * 0.1);
+                gn.gain.linearRampToValueAtTime(0.2, t + i * 0.1 + 0.02);
                 gn.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.2);
-                o.connect(gn); gn.connect(audioCtx.destination);
+                o.connect(gn); gn.connect(dest);
                 o.start(t + i * 0.1); o.stop(t + i * 0.1 + 0.2);
             });
             break;
@@ -387,9 +415,9 @@ function playSound(type) {
             [400, 350, 300, 200].forEach((freq, i) => {
                 const o = audioCtx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = freq;
                 const gn = audioCtx.createGain();
-                gn.gain.setValueAtTime(0.12, t + i * 0.2);
+                gn.gain.setValueAtTime(0.25, t + i * 0.2);
                 gn.gain.exponentialRampToValueAtTime(0.001, t + i * 0.2 + 0.3);
-                o.connect(gn); gn.connect(audioCtx.destination);
+                o.connect(gn); gn.connect(dest);
                 o.start(t + i * 0.2); o.stop(t + i * 0.2 + 0.3);
             });
             break;
@@ -398,7 +426,7 @@ function playSound(type) {
             const o = audioCtx.createOscillator(); o.type = 'sine';
             o.frequency.setValueAtTime(660, t);
             o.frequency.exponentialRampToValueAtTime(990, t + 0.1);
-            g.gain.setValueAtTime(0.12, t);
+            g.gain.setValueAtTime(0.25, t);
             g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
             o.connect(g); o.start(t); o.stop(t + 0.12);
             break;
@@ -412,7 +440,7 @@ function playSound(type) {
             filt.type = 'lowpass';
             filt.frequency.setValueAtTime(2000, t);
             filt.frequency.exponentialRampToValueAtTime(200, t + 0.3);
-            g.gain.setValueAtTime(0.08, t);
+            g.gain.setValueAtTime(0.2, t);
             g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
             n.connect(filt); filt.connect(g);
             n.start(t); n.stop(t + 0.3);
@@ -422,10 +450,10 @@ function playSound(type) {
             [523, 659, 784, 1047, 784, 1047, 1319].forEach((freq, i) => {
                 const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.value = freq;
                 const gn = audioCtx.createGain();
-                gn.gain.setValueAtTime(0, t + i * 0.12);
-                gn.gain.linearRampToValueAtTime(0.12, t + i * 0.12 + 0.02);
+                gn.gain.setValueAtTime(0.01, t + i * 0.12);
+                gn.gain.linearRampToValueAtTime(0.25, t + i * 0.12 + 0.02);
                 gn.gain.exponentialRampToValueAtTime(0.001, t + i * 0.12 + 0.25);
-                o.connect(gn); gn.connect(audioCtx.destination);
+                o.connect(gn); gn.connect(dest);
                 o.start(t + i * 0.12); o.stop(t + i * 0.12 + 0.25);
             });
             break;
@@ -593,6 +621,7 @@ const coinSplash = document.getElementById('coinSplash');
 function dismissSplash() {
     if (!coinSplash) return;
     initAudio();
+    playCoinSound();
     coinSplash.style.transition = 'opacity 0.3s';
     coinSplash.style.opacity = '0';
     setTimeout(() => { coinSplash.style.display = 'none'; }, 300);
