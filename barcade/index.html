@@ -462,13 +462,19 @@ class AudioEngine {
   }
 
   init() {
-    if (this.initialized) return;
+    if (this.initialized) {
+      // Mobile browsers suspend AudioContext — resume on each user gesture
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+      return;
+    }
     try {
       this.ctx = new (window.AudioContext || window.webkitAudioContext)();
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.value = 0.3;
       this.masterGain.connect(this.ctx.destination);
       this.initialized = true;
+      // Resume immediately in case context started suspended
+      if (this.ctx.state === 'suspended') this.ctx.resume();
     } catch(e) { console.warn("Web Audio not supported"); }
   }
 
@@ -941,13 +947,18 @@ const mobileState = { left: false, right: false, fire: false };
 function setupMobileBtn(id, key) {
   const btn = document.getElementById(id);
   if (!btn) return;
-  btn.addEventListener('touchstart', e => { e.preventDefault(); mobileState[key] = true; });
+  btn.addEventListener('touchstart', e => { e.preventDefault(); mobileState[key] = true; audio.init(); });
   btn.addEventListener('touchend', e => { e.preventDefault(); mobileState[key] = false; });
   btn.addEventListener('touchcancel', e => { mobileState[key] = false; });
 }
 setupMobileBtn('left-btn', 'left');
 setupMobileBtn('right-btn', 'right');
 setupMobileBtn('fire-btn', 'fire');
+
+// Unlock audio on first touch anywhere (mobile autoplay policy)
+document.addEventListener('touchstart', function unlockAudio() {
+    audio.init();
+}, { once: true });
 
 // ============================================================
 // COLLISION
