@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Brofessor's Lab | Data Dive Bar</title>
+    <meta name="description" content="Where Real Stats Meet Ridiculous Science. Vibes-based MLB leaderboards from the Data Dive Bar Research Facility.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-orange: #FF6B0A;
+            --neon-amber: #FF8C2A;
+            --neon-blue: #4A90FF;
+            --neon-green: #69f0ae;
+            --neon-pink: #ff6b9d;
+            --dark-bg: #060C16;
+            --panel-bg: #0D1520;
+            --card-bg: #0A1018;
+            --chalk: #e8e0d4;
+            --muted: #7a7265;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { overflow-x: hidden; }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--chalk);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            padding: 3rem 1.5rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: clamp(2.4rem, 6vw, 4rem);
+            color: var(--neon-orange);
+            text-shadow:
+                0 0 20px rgba(255, 107, 10, 0.4),
+                0 0 60px rgba(255, 107, 10, 0.15);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .header .subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .header .meta-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .header .updated {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .season-select {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            background: var(--panel-bg);
+            color: var(--chalk);
+            border: 1px solid rgba(255, 107, 10, 0.3);
+            border-radius: 4px;
+            padding: 0.35rem 0.6rem;
+            cursor: pointer;
+            outline: none;
+        }
+        .season-select:focus {
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 8px rgba(255, 107, 10, 0.25);
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin: 0 auto 1.5rem;
+            max-width: 600px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tab-btn {
+            flex: 1;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--panel-bg);
+            color: var(--muted);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.02em;
+        }
+
+        .tab-btn:first-child { border-radius: 6px 0 0 6px; }
+        .tab-btn:last-child { border-radius: 0 6px 6px 0; }
+        .tab-btn:only-child { border-radius: 6px; }
+        .tab-btn.byrd-tab.active {
+            background: rgba(255, 140, 42, 0.12);
+            color: var(--neon-amber);
+            border-color: rgba(255, 140, 42, 0.4);
+            text-shadow: 0 0 12px rgba(255, 140, 42, 0.3);
+        }
+        .byrd-val {
+            color: var(--neon-amber);
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(255, 140, 42, 0.3);
+            animation: byrdPulse 3s ease-in-out infinite;
+        }
+        @keyframes byrdPulse {
+            0%, 100% { text-shadow: 0 0 8px rgba(255, 140, 42, 0.2); }
+            50% { text-shadow: 0 0 14px rgba(255, 140, 42, 0.5); }
+        }
+        .byrd-badge {
+            display: inline-block;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: rgba(255, 140, 42, 0.12);
+            color: var(--neon-amber);
+            border: 1px solid rgba(255, 140, 42, 0.25);
+            margin-left: 6px;
+            letter-spacing: 0.05em;
+            vertical-align: middle;
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 107, 10, 0.12);
+            color: var(--neon-orange);
+            border-color: rgba(255, 107, 10, 0.4);
+            text-shadow: 0 0 12px rgba(255, 107, 10, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--chalk);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        /* ── Table Container ── */
+        .table-wrap {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem 2rem;
+            overflow-x: auto;
+            position: relative;
+            z-index: 1;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-wrap::-webkit-scrollbar { height: 6px; }
+        .table-wrap::-webkit-scrollbar-track { background: var(--panel-bg); }
+        .table-wrap::-webkit-scrollbar-thumb { background: rgba(255, 107, 10, 0.3); border-radius: 3px; }
+
+        .leader-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            min-width: 1000px;
+        }
+
+        .leader-table thead th {
+            position: sticky;
+            top: 0;
+            background: var(--panel-bg);
+            padding: 0.65rem 0.5rem;
+            text-align: right;
+            color: var(--muted);
+            font-weight: 400;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            transition: color 0.2s;
+        }
+
+        .leader-table thead th:hover {
+            color: var(--chalk);
+        }
+
+        .leader-table thead th.sort-active {
+            color: var(--neon-orange);
+            border-bottom: 2px solid var(--neon-orange);
+        }
+
+        .leader-table thead th .sort-arrow {
+            font-size: 0.6rem;
+            margin-left: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .leader-table thead th.sort-active .sort-arrow {
+            opacity: 1;
+        }
+
+        .leader-table thead th.col-rank,
+        .leader-table thead th.col-player {
+            text-align: left;
+        }
+
+        .leader-table thead th.vibes-col {
+            color: var(--neon-green);
+            position: relative;
+        }
+        .leader-table thead th.vibes-col:hover {
+            color: var(--neon-green);
+        }
+        .leader-table thead th.vibes-col.sort-active {
+            color: var(--neon-green);
+            border-bottom-color: var(--neon-green);
+        }
+
+        /* Tooltip */
+        .leader-table thead th.vibes-col .formula-tip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: #1a2233;
+            border: 1px solid var(--neon-green);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.65rem;
+            color: var(--chalk);
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            text-transform: none;
+            letter-spacing: 0;
+            font-weight: 400;
+        }
+        .leader-table thead th.vibes-col:hover .formula-tip {
+            display: block;
+        }
+
+        .leader-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: background 0.15s;
+            opacity: 0;
+            animation: fadeRow 0.4s forwards;
+        }
+
+        .leader-table tbody tr:hover {
+            background: rgba(255, 107, 10, 0.05);
+        }
+
+        @keyframes fadeRow {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .leader-table tbody td {
+            padding: 0.55rem 0.5rem;
+            text-align: right;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .leader-table tbody td.col-rank {
+            text-align: left;
+            color: var(--muted);
+            font-size: 0.7rem;
+            width: 30px;
+        }
+
+        .leader-table tbody td.col-player {
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 180px;
+        }
+
+        .player-photo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--panel-bg);
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .player-name {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--chalk);
+        }
+
+        .player-team {
+            font-size: 0.65rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .team-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .vibes-val {
+            color: var(--neon-green);
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(105, 240, 174, 0.25);
+            animation: vibesPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes vibesPulse {
+            0%, 100% { text-shadow: 0 0 8px rgba(105, 240, 174, 0.2); }
+            50% { text-shadow: 0 0 14px rgba(105, 240, 174, 0.4); }
+        }
+
+        /* ── Loading / Error / Off-season ── */
+        .state-msg {
+            text-align: center;
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .state-msg h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--neon-amber);
+            margin-bottom: 0.75rem;
+        }
+
+        .state-msg p {
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .loading-pulse {
+            animation: loadPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes loadPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .retry-btn {
+            margin-top: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 0.6rem 1.5rem;
+            background: rgba(255, 107, 10, 0.15);
+            color: var(--neon-orange);
+            border: 1px solid var(--neon-orange);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .retry-btn:hover {
+            background: rgba(255, 107, 10, 0.3);
+        }
+
+        /* ── Methodology Chalkboard ── */
+        .chalkboard {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 2.5rem;
+            background:
+                linear-gradient(135deg, #1a2a1a 0%, #142014 50%, #1a2a1a 100%);
+            border: 3px solid #2a3a2a;
+            border-radius: 8px;
+            position: relative;
+            z-index: 1;
+            box-shadow:
+                inset 0 0 60px rgba(0,0,0,0.4),
+                0 4px 30px rgba(0,0,0,0.5);
+        }
+
+        .chalkboard::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 8px;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .chalkboard h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 1.6rem;
+            color: var(--chalk);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(232, 224, 212, 0.15);
+        }
+
+        .chalkboard-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chalk-tab {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 0.4rem 1rem;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chalk-tab.active {
+            color: var(--neon-green);
+            border-color: var(--neon-green);
+            background: rgba(105, 240, 174, 0.06);
+        }
+
+        .methodology-section { display: none; }
+        .methodology-section.active { display: block; }
+
+        .metric-explain {
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-explain h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        .metric-explain h3 .abbr {
+            color: var(--neon-green);
+            text-shadow: 0 0 8px rgba(105, 240, 174, 0.3);
+        }
+
+        .metric-explain h3 .full-name {
+            color: var(--muted);
+            font-weight: 400;
+            font-size: 0.75rem;
+        }
+
+        .metric-explain p {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            color: rgba(232, 224, 212, 0.7);
+            line-height: 1.7;
+            font-style: italic;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer a {
+            color: var(--neon-orange);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+        .footer a:hover {
+            text-shadow: 0 0 10px rgba(255, 107, 10, 0.4);
+        }
+
+        .footer .copy {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .header { padding: 2rem 1rem 1.5rem; }
+            .leader-table { font-size: 0.72rem; min-width: 800px; }
+            .chalkboard { margin: 2rem 1rem; padding: 1.5rem; }
+            .hide-mobile { display: none !important; }
+        }
+
+        @media (max-width: 480px) {
+            .tabs { flex-direction: column; max-width: 250px; }
+            .tab-btn:first-child { border-radius: 6px 6px 0 0; }
+            .tab-btn:last-child { border-radius: 0 0 6px 6px; }
+        }
+
+        /* Hidden tab panel */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <h1>The Brofessor's Lab</h1>
+    <div class="subtitle">Where Real Stats Meet Ridiculous Science</div>
+    <div class="meta-row">
+        <span class="updated" id="lastUpdated">Loading...</span>
+        <select class="season-select" id="seasonSelect"></select>
+    </div>
+</header>
+
+<!-- Tabs -->
+<nav class="tabs">
+    <button class="tab-btn active" data-tab="batters">Batters</button>
+    <button class="tab-btn" data-tab="pitchers">Pitchers</button>
+    <button class="tab-btn byrd-tab" data-tab="byrd">The BYRD Index</button>
+</nav>
+
+<!-- Loading -->
+<div class="state-msg" id="loadingState">
+    <h2 class="loading-pulse">The Brofessor is consulting his chalkboard...</h2>
+    <p>Crunching vibes. Calibrating BEEF sensors. Please stand by.</p>
+</div>
+
+<!-- Error -->
+<div class="state-msg" id="errorState" style="display:none;">
+    <h2>Laboratory Equipment Malfunction</h2>
+    <p>The Brofessor's laboratory equipment has malfunctioned. The data gnomes are working on it.</p>
+    <button class="retry-btn" onclick="loadData()">Retry Experiment</button>
+</div>
+
+<!-- Off-season -->
+<div class="state-msg" id="offseasonBanner" style="display:none;">
+    <p style="color:var(--neon-amber);">The lab is closed for the off-season. Displaying last season's final readings.</p>
+</div>
+
+<!-- Batters Table -->
+<div class="tab-panel active" id="panel-batters">
+    <div class="table-wrap">
+        <table class="leader-table" id="battersTable">
+            <thead>
+                <tr>
+                    <th class="col-rank">#</th>
+                    <th class="col-player">Player</th>
+                    <th data-sort="hr">HR <span class="sort-arrow"></span></th>
+                    <th data-sort="avg">AVG <span class="sort-arrow"></span></th>
+                    <th data-sort="ops" class="hide-mobile">OPS <span class="sort-arrow"></span></th>
+                    <th data-sort="rbi" class="hide-mobile">RBI <span class="sort-arrow"></span></th>
+                    <th data-sort="sb" class="hide-mobile">SB <span class="sort-arrow"></span></th>
+                    <th data-sort="var" class="vibes-col sort-active">VAR <span class="sort-arrow">&#9660;</span><span class="formula-tip">(HR &times; OPS &times; weight&sup2;) / 1000</span></th>
+                    <th data-sort="beef" class="vibes-col">BEEF <span class="sort-arrow"></span><span class="formula-tip">(SLG &times; 1000) &times; (weight / 180)^1.5</span></th>
+                    <th data-sort="yolo" class="vibes-col">YOLO <span class="sort-arrow"></span><span class="formula-tip">totalBases &times; SLG &times; (HR / AB)</span></th>
+                    <th data-sort="dawg" class="vibes-col">DAWG <span class="sort-arrow"></span><span class="formula-tip">RBI &times; OPS &times; (weight / height)</span></th>
+                    <th data-sort="sauce" class="vibes-col">SAUCE <span class="sort-arrow"></span><span class="formula-tip">AVG &times; HR &times; OPS &times; 100</span></th>
+                </tr>
+            </thead>
+            <tbody id="battersBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pitchers Table -->
+<div class="tab-panel" id="panel-pitchers">
+    <div class="table-wrap">
+        <table class="leader-table" id="pitchersTable">
+            <thead>
+                <tr>
+                    <th class="col-rank">#</th>
+                    <th class="col-player">Player</th>
+                    <th data-sort="w">W <span class="sort-arrow"></span></th>
+                    <th data-sort="era">ERA <span class="sort-arrow"></span></th>
+                    <th data-sort="so">SO <span class="sort-arrow"></span></th>
+                    <th data-sort="whip" class="hide-mobile">WHIP <span class="sort-arrow"></span></th>
+                    <th data-sort="ip" class="hide-mobile">IP <span class="sort-arrow"></span></th>
+                    <th data-sort="filth" class="vibes-col sort-active">FILTH <span class="sort-arrow">&#9660;</span><span class="formula-tip">(K9 &times; 100) / max(ERA, 0.5)</span></th>
+                    <th data-sort="menace" class="vibes-col">MENACE <span class="sort-arrow"></span><span class="formula-tip">(SO - BB) &times; IP &times; (1 / max(WHIP, 0.5))</span></th>
+                    <th data-sort="chill" class="vibes-col">CHILL <span class="sort-arrow"></span><span class="formula-tip">(IP &times; W) / max(ER + BB, 1)</span></th>
+                    <th data-sort="ice" class="vibes-col">ICE <span class="sort-arrow"></span><span class="formula-tip">(SO / max(BB,1)) &times; (1 / max(ERA,0.5)) &times; IP</span></th>
+                </tr>
+            </thead>
+            <tbody id="pitchersBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- BYRD Index Table -->
+<div class="tab-panel" id="panel-byrd">
+    <div style="text-align:center; padding:0 1.5rem 1.5rem; position:relative; z-index:1;">
+        <p style="font-family:'Playfair Display',serif; font-style:italic; font-size:1.1rem; color:var(--neon-amber); max-width:700px; margin:0 auto 0.5rem;">
+            "Named for the great Paul Byrd, who threw 83 mph with a delivery that looked like he was checking his blind spot in traffic."
+        </p>
+        <p style="font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--muted); max-width:600px; margin:0 auto;">
+            The BYRD Index celebrates pitchers who get outs through craft, deception, and sheer audacity rather than raw stuff.
+            High strikeout rates are <strong style="color:var(--neon-pink);">penalized</strong>. If you throw 100 mph, this leaderboard is not for you.
+        </p>
+    </div>
+    <div class="table-wrap">
+        <table class="leader-table" id="byrdTable">
+            <thead>
+                <tr>
+                    <th class="col-rank">#</th>
+                    <th class="col-player">Player</th>
+                    <th data-sort="byrd_w">W <span class="sort-arrow"></span></th>
+                    <th data-sort="byrd_era">ERA <span class="sort-arrow"></span></th>
+                    <th data-sort="byrd_ip">IP <span class="sort-arrow"></span></th>
+                    <th data-sort="byrd_so" class="hide-mobile">SO <span class="sort-arrow"></span></th>
+                    <th data-sort="byrd_bb" class="hide-mobile">BB <span class="sort-arrow"></span></th>
+                    <th data-sort="byrd_k9" class="hide-mobile">K/9 <span class="sort-arrow"></span><span class="formula-tip" style="border-color:var(--neon-amber);">Lower = more BYRD energy</span></th>
+                    <th data-sort="byrd_kbb">K/BB <span class="sort-arrow"></span></th>
+                    <th data-sort="byrd" class="vibes-col sort-active" style="color:var(--neon-amber);">BYRD <span class="sort-arrow">&#9660;</span><span class="formula-tip" style="border-color:var(--neon-amber);">(IP &times; K/BB &times; 9/ERA) / K9</span></th>
+                </tr>
+            </thead>
+            <tbody id="byrdBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Methodology Chalkboard -->
+<section class="chalkboard">
+    <h2>Methodology</h2>
+    <div class="chalkboard-tabs">
+        <button class="chalk-tab active" data-chalk="batters-meth">Batters</button>
+        <button class="chalk-tab" data-chalk="pitchers-meth">Pitchers</button>
+        <button class="chalk-tab" data-chalk="byrd-meth">The BYRD Index</button>
+    </div>
+
+    <div class="methodology-section active" id="batters-meth">
+        <div class="metric-explain">
+            <h3><span class="abbr">VAR</span> <span class="full-name">— Vibes Above Replacement</span></h3>
+            <p>The foundational metric of modern Brofessor Analytics. VAR quantifies the electromagnetic aura a player emits when they step to the plate. Originally theorized by Dr. Chad Thunderbat in his seminal 2019 paper "Mass, Velocity, and the Human Condition," VAR incorporates a player's home run output, on-base-plus-slugging efficiency, and raw mass to calculate their overall contribution to the vibes economy. A VAR of 0 indicates the player is, statistically speaking, a hologram.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr">BEEF</span> <span class="full-name">— Bicep-Enhanced Exit Force</span></h3>
+            <p>Measures the theoretical force a player could generate if their biceps were directly connected to the barrel. Uses slugging percentage as a proxy for batted-ball authority, amplified by a mass coefficient. Players below 180 lbs receive a BEEF penalty because physics doesn't care about your feelings.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr">YOLO</span> <span class="full-name">— Yards Of Legendary Output</span></h3>
+            <p>A reckless aggression index that rewards players who swing for the fences with no regard for personal safety or batting average. Total bases, slugging, and home run rate combine to measure how much a player has chosen violence at the plate.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr">DAWG</span> <span class="full-name">— Dominance-Adjusted Win Greatness</span></h3>
+            <p>The "dog in him" metric. Quantifies clutch production relative to body density. A high DAWG score means the player drives in runs, gets on base, and looks like they could deadlift a Buick. The weight-to-height ratio serves as a proxy for intimidation factor.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr">SAUCE</span> <span class="full-name">— Swag-Adjusted Uncontested Clutch Excellence</span></h3>
+            <p>The drip-to-production ratio. Batting average ensures consistency, home runs ensure spectacle, and OPS ensures the player isn't just lucky. SAUCE is the metric that separates the "cool" from the "merely productive."</p>
+        </div>
+    </div>
+
+    <div class="methodology-section" id="pitchers-meth">
+        <div class="metric-explain">
+            <h3><span class="abbr">FILTH</span> <span class="full-name">— Fastball Intimidation Level Through Hype</span></h3>
+            <p>How nasty is this pitcher? FILTH divides strikeout rate by ERA to isolate dominance from damage. A high FILTH score means batters are swinging at air while the pitcher casually dismantles their confidence. Values above 200 indicate the pitcher may be breaking the Geneva Convention.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr">MENACE</span> <span class="full-name">— Mound Energy Negating All Contact Efficiency</span></h3>
+            <p>The mound dominance coefficient. Combines net strikeouts (K minus BB), workload (IP), and control (inverse WHIP) to measure how thoroughly a pitcher terrorizes the opposing lineup. Named after the emotion visible in their eyes.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr">CHILL</span> <span class="full-name">— Complete Hurler Index of Low-key Lethality</span></h3>
+            <p>For the quiet assassins. CHILL rewards pitchers who accumulate wins and innings while surrendering minimal damage. It's the "barely breaking a sweat" metric. High CHILL pitchers look bored while throwing a shutout.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr">ICE</span> <span class="full-name">— Intimidation Coefficient of Excellence</span></h3>
+            <p>Cold-blooded efficiency distilled to a single number. The strikeout-to-walk ratio amplified by ERA suppression and workload. ICE identifies pitchers who don't just get outs — they make hitters question their career choices.</p>
+        </div>
+    </div>
+
+    <div class="methodology-section" id="byrd-meth">
+        <div class="metric-explain">
+            <h3><span class="abbr" style="color:var(--neon-amber); text-shadow:0 0 8px rgba(255,140,42,0.3);">BYRD</span> <span class="full-name">— Bewildering Yield from Ridiculous Delivery</span></h3>
+            <p>Named for the great Paul Byrd, who threw 83 miles per hour with a delivery that looked like he was checking his blind spot in traffic. The BYRD score identifies pitchers whose effectiveness cannot be explained by conventional scouting metrics. A high BYRD indicates the pitcher is likely operating on frequencies only they can hear. Strikeout rates are deliberately penalized because anyone can strike someone out with a 99 mph fastball. Getting a ground ball to short with an 81 mph cutter that looks like it was thrown from a La-Z-Boy? That's a BYRD.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr" style="color:var(--neon-amber);">The Formula</span></h3>
+            <p style="font-family:'JetBrains Mono',monospace; font-style:normal; color:var(--neon-amber);">BYRD = (IP &times; (K/BB) &times; (9 / ERA)) / K/9</p>
+            <p style="margin-top:0.5rem;">This rewards: (1) lots of innings — the journeyman grind, eating innings your ace is too precious to throw; (2) good command — K/BB ratio rewards control artists over power arms; (3) run prevention — low ERA means it's working, somehow; (4) low strikeout rate — the less you strike guys out while still being effective, the higher your BYRD score. Getting outs through witchcraft is worth more than getting outs through 100 mph.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr" style="color:var(--neon-amber);">Historical BYRD Laureates</span></h3>
+            <p><strong style="color:var(--chalk);">Paul Byrd</strong> — 83 mph, pump fake delivery, somehow pitched 14 years in the majors. The namesake. The north star.<br>
+            <strong style="color:var(--chalk);">Jamie Moyer</strong> — Threw 78 mph changeups until age 49. Physics couldn't explain it.<br>
+            <strong style="color:var(--chalk);">Mark Buehrle</strong> — Sub-2-hour complete games. Worked faster than a fast food drive-thru.<br>
+            <strong style="color:var(--chalk);">Chad Bradford</strong> — Released the ball from his shoelaces. Sidearm doesn't begin to describe it.<br>
+            <strong style="color:var(--chalk);">Hideo Nomo</strong> — The Tornado. Turned his entire back to the hitter mid-windup.<br>
+            <strong style="color:var(--chalk);">Kent Tekulve</strong> — Looked like a praying mantis throwing sidearm from the bullpen.<br>
+            <strong style="color:var(--chalk);">Who ranks LOW:</strong> Nolan Ryan, Randy Johnson, anyone whose strategy was "throw it really hard." That's not BYRD energy. That's just being tall.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <a href="/">&#8592; Back to the Data Dive Bar</a>
+    <div class="copy">&copy; The Brofessor's Lab &middot; A Data Dive Bar Research Facility &middot; All vibes are peer-reviewed &middot; BYRD Index est. 2026</div>
+</footer>
+
+<script>
+(function() {
+    'use strict';
+
+    // ── Config ──
+    const API_BASE = 'https://statsapi.mlb.com/api/v1';
+    const CORS_PROXY = 'https://corsproxy.io/?url=';
+    const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+    const DEFAULT_WEIGHT = 200;
+    const DEFAULT_HEIGHT_IN = 73;
+
+    const currentYear = new Date().getFullYear();
+    let selectedSeason = currentYear;
+    let useCorsProxy = false;
+
+    let battersData = [];
+    let pitchersData = [];
+    let byrdData = [];
+
+    // ── Team colors (abbreviated) ──
+    const TEAM_COLORS = {
+        'ARI': '#A71930', 'ATL': '#CE1141', 'BAL': '#DF4601', 'BOS': '#BD3039',
+        'CHC': '#0E3386', 'CWS': '#27251F', 'CIN': '#C6011F', 'CLE': '#00385D',
+        'COL': '#333366', 'DET': '#0C2340', 'HOU': '#EB6E1F', 'KC': '#004687',
+        'LAA': '#BA0021', 'LAD': '#005A9C', 'MIA': '#00A3E0', 'MIL': '#FFC52F',
+        'MIN': '#002B5C', 'NYM': '#002D72', 'NYY': '#003087', 'OAK': '#003831',
+        'PHI': '#E81828', 'PIT': '#FDB827', 'SD': '#2F241D', 'SF': '#FD5A1E',
+        'SEA': '#0C2C56', 'STL': '#C41E3A', 'TB': '#092C5C', 'TEX': '#003278',
+        'TOR': '#134A8E', 'WSH': '#AB0003', 'ATH': '#003831'
+    };
+
+    // ── Season selector setup ──
+    const seasonSelect = document.getElementById('seasonSelect');
+    for (let y = currentYear; y >= 2015; y--) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y + ' Season';
+        seasonSelect.appendChild(opt);
+    }
+    seasonSelect.addEventListener('change', function() {
+        selectedSeason = parseInt(this.value);
+        clearCache();
+        loadData();
+    });
+
+    // ── Tab switching ──
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('panel-' + this.dataset.tab).classList.add('active');
+        });
+    });
+
+    // ── Chalkboard tab switching ──
+    document.querySelectorAll('.chalk-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.chalk-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.methodology-section').forEach(s => s.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(this.dataset.chalk).classList.add('active');
+        });
+    });
+
+    // ── Fetch helper with CORS fallback ──
+    async function apiFetch(path) {
+        const url = API_BASE + path;
+        // Check cache
+        const cacheKey = 'broflab_' + selectedSeason + '_' + path;
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Date.now() - parsed.ts < CACHE_TTL) return parsed.data;
+        }
+
+        let data;
+        if (!useCorsProxy) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(res.status);
+                data = await res.json();
+            } catch (e) {
+                // Try CORS proxy
+                useCorsProxy = true;
+                const res = await fetch(CORS_PROXY + encodeURIComponent(url));
+                if (!res.ok) throw new Error('Proxy also failed: ' + res.status);
+                data = await res.json();
+            }
+        } else {
+            const res = await fetch(CORS_PROXY + encodeURIComponent(url));
+            if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+            data = await res.json();
+        }
+
+        try {
+            sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }));
+        } catch(e) { /* storage full, ignore */ }
+
+        return data;
+    }
+
+    function clearCache() {
+        const keys = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const k = sessionStorage.key(i);
+            if (k.startsWith('broflab_')) keys.push(k);
+        }
+        keys.forEach(k => sessionStorage.removeItem(k));
+    }
+
+    // ── Parse height string to inches ──
+    function parseHeight(str) {
+        if (!str) return DEFAULT_HEIGHT_IN;
+        // Formats: "6' 2\"", "6'2\"", etc
+        const m = str.match(/(\d+)\s*['\']\s*(\d+)/);
+        if (m) return parseInt(m[1]) * 12 + parseInt(m[2]);
+        return DEFAULT_HEIGHT_IN;
+    }
+
+    // ── Fetch player bio (height/weight) ──
+    async function fetchPlayerBio(playerId) {
+        try {
+            const data = await apiFetch('/people/' + playerId);
+            const person = data.people && data.people[0];
+            if (!person) return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN };
+            return {
+                weight: person.weight || DEFAULT_WEIGHT,
+                heightIn: parseHeight(person.height)
+            };
+        } catch(e) {
+            return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN };
+        }
+    }
+
+    // ── Main data loading ──
+    async function loadData() {
+        showState('loading');
+
+        try {
+            // Fetch leaders
+            const [battingLeaders, pitchingLeaders] = await Promise.all([
+                apiFetch('/stats/leaders?leaderCategories=homeRuns,battingAverage,runsBattedIn,onBasePlusSlugging,stolenBases,hits&season=' + selectedSeason + '&sportId=1&limit=25'),
+                apiFetch('/stats/leaders?leaderCategories=earnedRunAverage,strikeouts,walksAndHitsPerInningPitched,wins,saves&season=' + selectedSeason + '&sportId=1&limit=25')
+            ]);
+
+            // Aggregate batter data by player
+            const batterMap = {};
+            if (battingLeaders.leagueLeaders) {
+                battingLeaders.leagueLeaders.forEach(cat => {
+                    const catName = cat.leaderCategory;
+                    (cat.leaders || []).forEach(leader => {
+                        const id = leader.person.id;
+                        if (!batterMap[id]) {
+                            batterMap[id] = {
+                                id,
+                                name: leader.person.fullName,
+                                team: leader.team ? leader.team.abbreviation || '' : '',
+                                teamId: leader.team ? leader.team.id : 0,
+                                hr: 0, avg: 0, ops: 0, rbi: 0, sb: 0, hits: 0,
+                                slg: 0, ab: 0, tb: 0,
+                                weight: DEFAULT_WEIGHT,
+                                heightIn: DEFAULT_HEIGHT_IN
+                            };
+                        }
+                        const val = parseFloat(leader.value) || 0;
+                        if (catName === 'homeRuns') batterMap[id].hr = val;
+                        else if (catName === 'battingAverage') batterMap[id].avg = val;
+                        else if (catName === 'runsBattedIn') batterMap[id].rbi = val;
+                        else if (catName === 'onBasePlusSlugging') batterMap[id].ops = val;
+                        else if (catName === 'stolenBases') batterMap[id].sb = val;
+                        else if (catName === 'hits') batterMap[id].hits = val;
+                    });
+                });
+            }
+
+            // Aggregate pitcher data by player
+            const pitcherMap = {};
+            if (pitchingLeaders.leagueLeaders) {
+                pitchingLeaders.leagueLeaders.forEach(cat => {
+                    const catName = cat.leaderCategory;
+                    (cat.leaders || []).forEach(leader => {
+                        const id = leader.person.id;
+                        if (!pitcherMap[id]) {
+                            pitcherMap[id] = {
+                                id,
+                                name: leader.person.fullName,
+                                team: leader.team ? leader.team.abbreviation || '' : '',
+                                teamId: leader.team ? leader.team.id : 0,
+                                w: 0, era: 0, so: 0, whip: 0, ip: 0,
+                                bb: 0, er: 0, saves: 0,
+                                weight: DEFAULT_WEIGHT,
+                                heightIn: DEFAULT_HEIGHT_IN
+                            };
+                        }
+                        const val = parseFloat(leader.value) || 0;
+                        if (catName === 'earnedRunAverage') pitcherMap[id].era = val;
+                        else if (catName === 'strikeouts') pitcherMap[id].so = val;
+                        else if (catName === 'walksAndHitsPerInningPitched') pitcherMap[id].whip = val;
+                        else if (catName === 'wins') pitcherMap[id].w = val;
+                        else if (catName === 'saves') pitcherMap[id].saves = val;
+                    });
+                });
+            }
+
+            const batterIds = Object.keys(batterMap);
+            const pitcherIds = Object.keys(pitcherMap);
+
+            // Check if we got data
+            if (batterIds.length === 0 && pitcherIds.length === 0) {
+                // Off-season: try previous year
+                if (selectedSeason === currentYear) {
+                    selectedSeason = currentYear - 1;
+                    seasonSelect.value = selectedSeason;
+                    document.getElementById('offseasonBanner').style.display = 'block';
+                    return loadData();
+                }
+                throw new Error('No data available');
+            }
+
+            // Fetch full stats + bios for batters (limited concurrency)
+            await fetchDetailsBatched(batterIds, batterMap, 'hitting');
+            await fetchDetailsBatched(pitcherIds, pitcherMap, 'pitching');
+
+            // Calculate vibes for batters
+            battersData = Object.values(batterMap).map(p => {
+                const w = p.weight;
+                const h = p.heightIn;
+                p.var = (p.hr * p.ops * (w * w)) / 1000;
+                p.beef = (p.slg * 1000) * Math.pow(w / 180, 1.5);
+                p.yolo = p.tb * p.slg * (p.hr / Math.max(p.ab, 1));
+                p.dawg = p.rbi * p.ops * (w / h);
+                p.sauce = p.avg * p.hr * p.ops * 100;
+                return p;
+            });
+
+            // Calculate vibes for pitchers
+            pitchersData = Object.values(pitcherMap).map(p => {
+                const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
+                p.filth = (k9 * 100) / Math.max(p.era, 0.5);
+                p.menace = (p.so - p.bb) * p.ip * (1 / Math.max(p.whip, 0.5));
+                p.chill = (p.ip * p.w) / Math.max(p.er + p.bb, 1);
+                p.ice = (p.so / Math.max(p.bb, 1)) * (1 / Math.max(p.era, 0.5)) * p.ip;
+                return p;
+            });
+
+            // Calculate BYRD for all pitchers
+            byrdData = Object.values(pitcherMap).map(p => {
+                const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
+                const kbb = p.bb > 0 ? p.so / p.bb : p.so;
+                p.byrd = (p.ip * kbb * (9 / Math.max(p.era, 1))) / Math.max(k9, 3);
+                p.byrd_k9 = k9;
+                p.byrd_kbb = kbb;
+                p.byrd_w = p.w;
+                p.byrd_era = p.era;
+                p.byrd_ip = p.ip;
+                p.byrd_so = p.so;
+                p.byrd_bb = p.bb;
+                return Object.assign({}, p);
+            });
+
+            // Sort defaults
+            battersData.sort((a, b) => b.var - a.var);
+            pitchersData.sort((a, b) => b.filth - a.filth);
+            byrdData.sort((a, b) => b.byrd - a.byrd);
+
+            renderBatters();
+            renderPitchers();
+            renderByrd();
+            showState('ready');
+
+            document.getElementById('lastUpdated').textContent =
+                'Last updated: ' + new Date().toLocaleString();
+
+        } catch(e) {
+            console.error('Load failed:', e);
+            showState('error');
+        }
+    }
+
+    // ── Fetch full stats + bio in batches ──
+    async function fetchDetailsBatched(ids, map, group) {
+        const BATCH = 8;
+        for (let i = 0; i < ids.length; i += BATCH) {
+            const batch = ids.slice(i, i + BATCH);
+            await Promise.all(batch.map(async id => {
+                try {
+                    const [bioData, statsData] = await Promise.all([
+                        fetchPlayerBio(id),
+                        apiFetch('/people/' + id + '/stats?stats=season&group=' + group + '&season=' + selectedSeason)
+                    ]);
+
+                    map[id].weight = bioData.weight;
+                    map[id].heightIn = bioData.heightIn;
+
+                    // Extract full stats
+                    if (statsData.stats && statsData.stats[0] && statsData.stats[0].splits) {
+                        const s = statsData.stats[0].splits;
+                        // Use last split (most recent / total)
+                        const stat = s.length > 0 ? s[s.length - 1].stat : null;
+                        if (stat && group === 'hitting') {
+                            map[id].hr = parseInt(stat.homeRuns) || map[id].hr;
+                            map[id].avg = parseFloat(stat.avg) || map[id].avg;
+                            map[id].ops = parseFloat(stat.ops) || map[id].ops;
+                            map[id].rbi = parseInt(stat.rbi) || map[id].rbi;
+                            map[id].sb = parseInt(stat.stolenBases) || map[id].sb;
+                            map[id].slg = parseFloat(stat.slg) || 0;
+                            map[id].ab = parseInt(stat.atBats) || 0;
+                            map[id].tb = parseInt(stat.totalBases) || 0;
+                            map[id].hits = parseInt(stat.hits) || map[id].hits;
+                        } else if (stat && group === 'pitching') {
+                            map[id].w = parseInt(stat.wins) || map[id].w;
+                            map[id].era = parseFloat(stat.era) || map[id].era;
+                            map[id].so = parseInt(stat.strikeOuts) || map[id].so;
+                            map[id].whip = parseFloat(stat.whip) || map[id].whip;
+                            map[id].ip = parseFloat(stat.inningsPitched) || 0;
+                            map[id].bb = parseInt(stat.baseOnBalls) || 0;
+                            map[id].er = parseInt(stat.earnedRuns) || 0;
+                        }
+                    }
+                } catch(e) {
+                    // Silently use defaults
+                }
+            }));
+        }
+    }
+
+    // ── Render batters table ──
+    function renderBatters() {
+        const tbody = document.getElementById('battersBody');
+        tbody.innerHTML = '';
+        battersData.forEach((p, i) => {
+            const tr = document.createElement('tr');
+            tr.style.animationDelay = (i * 30) + 'ms';
+            const teamColor = TEAM_COLORS[p.team] || '#666';
+            tr.innerHTML =
+                '<td class="col-rank">' + (i + 1) + '</td>' +
+                '<td class="col-player">' +
+                    '<img class="player-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/' + p.id + '/headshot/67/current" alt="" loading="lazy" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%230D1520%22 width=%2240%22 height=%2240%22/><text x=%2220%22 y=%2226%22 text-anchor=%22middle%22 fill=%22%237a7265%22 font-size=%2214%22>?</text></svg>\'">' +
+                    '<span class="player-info">' +
+                        '<span class="player-name">' + escHtml(p.name) + '</span>' +
+                        '<span class="player-team"><span class="team-dot" style="background:' + teamColor + '"></span>' + escHtml(p.team) + '</span>' +
+                    '</span>' +
+                '</td>' +
+                '<td>' + p.hr + '</td>' +
+                '<td>' + fmtAvg(p.avg) + '</td>' +
+                '<td class="hide-mobile">' + fmtAvg(p.ops) + '</td>' +
+                '<td class="hide-mobile">' + p.rbi + '</td>' +
+                '<td class="hide-mobile">' + p.sb + '</td>' +
+                '<td class="vibes-val">' + fmtVibe(p.var) + '</td>' +
+                '<td class="vibes-val">' + fmtVibe(p.beef) + '</td>' +
+                '<td class="vibes-val">' + fmtVibe(p.yolo) + '</td>' +
+                '<td class="vibes-val">' + fmtVibe(p.dawg) + '</td>' +
+                '<td class="vibes-val">' + fmtVibe(p.sauce) + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ── Render pitchers table ──
+    function renderPitchers() {
+        const tbody = document.getElementById('pitchersBody');
+        tbody.innerHTML = '';
+        pitchersData.forEach((p, i) => {
+            const tr = document.createElement('tr');
+            tr.style.animationDelay = (i * 30) + 'ms';
+            const teamColor = TEAM_COLORS[p.team] || '#666';
+            tr.innerHTML =
+                '<td class="col-rank">' + (i + 1) + '</td>' +
+                '<td class="col-player">' +
+                    '<img class="player-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/' + p.id + '/headshot/67/current" alt="" loading="lazy" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%230D1520%22 width=%2240%22 height=%2240%22/><text x=%2220%22 y=%2226%22 text-anchor=%22middle%22 fill=%22%237a7265%22 font-size=%2214%22>?</text></svg>\'">' +
+                    '<span class="player-info">' +
+                        '<span class="player-name">' + escHtml(p.name) + '</span>' +
+                        '<span class="player-team"><span class="team-dot" style="background:' + teamColor + '"></span>' + escHtml(p.team) + '</span>' +
+                    '</span>' +
+                '</td>' +
+                '<td>' + p.w + '</td>' +
+                '<td>' + fmtEra(p.era) + '</td>' +
+                '<td>' + p.so + '</td>' +
+                '<td class="hide-mobile">' + fmtEra(p.whip) + '</td>' +
+                '<td class="hide-mobile">' + fmtIp(p.ip) + '</td>' +
+                '<td class="vibes-val">' + fmtVibe(p.filth) + '</td>' +
+                '<td class="vibes-val">' + fmtVibe(p.menace) + '</td>' +
+                '<td class="vibes-val">' + fmtVibe(p.chill) + '</td>' +
+                '<td class="vibes-val">' + fmtVibe(p.ice) + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ── Render BYRD table ──
+    function renderByrd() {
+        const tbody = document.getElementById('byrdBody');
+        tbody.innerHTML = '';
+        byrdData.forEach((p, i) => {
+            const tr = document.createElement('tr');
+            tr.style.animationDelay = (i * 30) + 'ms';
+            const teamColor = TEAM_COLORS[p.team] || '#666';
+            tr.innerHTML =
+                '<td class="col-rank">' + (i + 1) + '</td>' +
+                '<td class="col-player">' +
+                    '<img class="player-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/' + p.id + '/headshot/67/current" alt="" loading="lazy" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%230D1520%22 width=%2240%22 height=%2240%22/><text x=%2220%22 y=%2226%22 text-anchor=%22middle%22 fill=%22%237a7265%22 font-size=%2214%22>?</text></svg>\'">' +
+                    '<span class="player-info">' +
+                        '<span class="player-name">' + escHtml(p.name) + '</span>' +
+                        '<span class="player-team"><span class="team-dot" style="background:' + teamColor + '"></span>' + escHtml(p.team) + '</span>' +
+                    '</span>' +
+                '</td>' +
+                '<td>' + p.byrd_w + '</td>' +
+                '<td>' + fmtEra(p.byrd_era) + '</td>' +
+                '<td>' + fmtIp(p.byrd_ip) + '</td>' +
+                '<td class="hide-mobile">' + p.byrd_so + '</td>' +
+                '<td class="hide-mobile">' + p.byrd_bb + '</td>' +
+                '<td class="hide-mobile">' + fmtEra(p.byrd_k9) + '</td>' +
+                '<td>' + fmtEra(p.byrd_kbb) + '</td>' +
+                '<td class="byrd-val">' + fmtVibe(p.byrd) + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ── Formatting helpers ──
+    function fmtAvg(v) {
+        if (v === 0) return '.000';
+        const s = v.toFixed(3);
+        return s.startsWith('0') ? s.substring(1) : s;
+    }
+    function fmtEra(v) { return v.toFixed(2); }
+    function fmtIp(v) { return v.toFixed(1); }
+    function fmtVibe(v) {
+        if (v >= 1000) return v.toFixed(0);
+        if (v >= 100) return v.toFixed(1);
+        if (v >= 10) return v.toFixed(2);
+        return v.toFixed(2);
+    }
+    function escHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── State display ──
+    function showState(state) {
+        document.getElementById('loadingState').style.display = state === 'loading' ? '' : 'none';
+        document.getElementById('errorState').style.display = state === 'error' ? '' : 'none';
+        document.querySelectorAll('.tab-panel').forEach(p => {
+            if (state === 'ready') {
+                // Restore active panel
+                if (p.classList.contains('active')) p.style.display = '';
+            }
+        });
+        // Show/hide panels on ready
+        if (state === 'ready') {
+            document.querySelectorAll('.tab-panel').forEach(p => p.style.removeProperty('display'));
+        }
+    }
+
+    // ── Table sorting ──
+    document.querySelectorAll('.leader-table thead th[data-sort]').forEach(th => {
+        th.addEventListener('click', function() {
+            const key = this.dataset.sort;
+            const table = this.closest('.leader-table');
+            const isBatters = table.id === 'battersTable';
+            const isByrd = table.id === 'byrdTable';
+            const data = isBatters ? battersData : (isByrd ? byrdData : pitchersData);
+
+            // Determine sort direction
+            const wasActive = this.classList.contains('sort-active');
+            const wasDesc = this.querySelector('.sort-arrow').textContent.includes('\u25BC');
+            const desc = wasActive ? !wasDesc : true;
+
+            // Clear all sort indicators in this table
+            table.querySelectorAll('th').forEach(h => {
+                h.classList.remove('sort-active');
+                const arrow = h.querySelector('.sort-arrow');
+                if (arrow) arrow.textContent = '';
+            });
+
+            this.classList.add('sort-active');
+            this.querySelector('.sort-arrow').innerHTML = desc ? '&#9660;' : '&#9650;';
+
+            // Special: ERA, WHIP, and K/9 sort ascending by default (lower is better)
+            let sortDesc = desc;
+            if ((key === 'era' || key === 'whip' || key === 'byrd_era' || key === 'byrd_k9' || key === 'byrd_bb') && !wasActive) sortDesc = false;
+
+            data.sort((a, b) => sortDesc ? b[key] - a[key] : a[key] - b[key]);
+
+            if (isBatters) renderBatters();
+            else if (isByrd) renderByrd();
+            else renderPitchers();
+        });
+    });
+
+    // ── Expose loadData for retry button ──
+    window.loadData = loadData;
+
+    // ── Go ──
+    loadData();
+
+})();
+</script>
+</body>
+</html>
