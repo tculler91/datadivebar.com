@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Dive Bar</title>
-    <meta name="description" content="The watering hole for data weirdos">
+    <meta name="description" content="A watering hole for bad data and degeneracy">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -675,6 +675,32 @@
             text-transform: uppercase; color: var(--text-dim); opacity: 0.5;
         }
 
+        /* === HEADLINE FEATURED CARD (standout top story) === */
+        .featured-headline {
+            background: linear-gradient(135deg, rgba(255,60,40,0.10) 0%, rgba(255,140,42,0.06) 40%, rgba(0,212,255,0.04) 100%);
+            border: 1px solid rgba(255,107,10,0.25);
+            padding: 3rem;
+        }
+        .featured-headline::before {
+            height: 4px;
+            background: linear-gradient(90deg, #ff4444, var(--neon-orange), var(--neon-amber), var(--neon-orange), #ff4444);
+            background-size: 200% 100%;
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        .featured-headline:hover {
+            border-color: rgba(255,107,10,0.45);
+            box-shadow: 0 16px 50px rgba(255,60,40,0.10), 0 6px 24px rgba(0,0,0,0.4);
+        }
+        .featured-title-headline {
+            font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+            color: #fff;
+            text-shadow: 0 0 40px rgba(255,107,10,0.15);
+        }
+        .featured-title-headline em {
+            color: #ff4444;
+            text-shadow: 0 0 25px rgba(255,68,68,0.4);
+        }
+
     </style>
 </head>
 <body>
@@ -701,7 +727,7 @@
                 <div class="sign-wall-glow"></div>
                 <h1><span class="neon-tube-text">DATA DIVE BAR</span></h1>
             </div>
-            <p class="tagline fade-up">The watering hole for data weirdos</p>
+            <p class="tagline fade-up">A watering hole for bad data and degeneracy</p>
             <p class="hero-sub fade-up">
                 Unhinged investigations. Unnecessary charts. 
                 Questionable research conducted at questionable hours.
@@ -710,46 +736,9 @@
 
         <!-- ===== FEATURED INVESTIGATION ===== -->
         <section class="featured">
-            <a href="/Survival/" class="featured-card">
-                <div class="featured-kicker">Now Pouring</div>
-                <h2 class="featured-title">When Life Pisses in Your <em>Cheerios</em> — Get Yourself Some Water Goddammit!</h2>
-                <p class="featured-hook">Bobby "Pinkeye" Butts nearly died of dehydration in a Nebraska rest stop because of a cook named Darryl. He recovered, got mad, and now has 100+ gallons of water stashed in three locations. This is what he learned.</p>
-
-                <div class="featured-viz">
-                    <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
-                        <div style="flex:1; min-width:160px;">
-                            <div style="font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px;">America's water preparedness</div>
-                            <div style="height:20px; border-radius:3px; overflow:hidden; display:flex; background:rgba(255,255,255,0.03);">
-                                <div style="width:53%; background:#0B162A; opacity:0.85;"></div>
-                                <div style="width:27%; background:#1E3A6E; opacity:0.75;"></div>
-                                <div style="width:13%; background:#E85D04; opacity:0.7;"></div>
-                                <div style="width:5%;  background:#FF8C2A; opacity:0.8;"></div>
-                                <div style="width:2%;  background:#69f0ae; opacity:0.9;"></div>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; margin-top:4px;">
-                                <span style="font-size:0.5rem; color:#ff5252;">53% have nothing stored</span>
-                                <span style="font-size:0.5rem; color:#69f0ae;">2% = Bobby</span>
-                            </div>
-                        </div>
-                        <div style="text-align:center; padding:8px 16px; background:rgba(255,179,71,0.07); border:1px solid rgba(255,179,71,0.2); border-radius:4px;">
-                            <div style="font-size:1.6rem; font-family:'Special Elite',cursive; color:#FF8C2A; line-height:1;">1 gal</div>
-                            <div style="font-size:0.5rem; letter-spacing:1px; color:var(--text-dim); margin-top:2px;">PER PERSON / PER DAY</div>
-                            <div style="font-size:0.48rem; color:var(--text-dim); opacity:0.7; margin-top:1px;">THE number. Write it on your hand.</div>
-                        </div>
-                    </div>
-                    <div class="featured-source">Bobby "Pinkeye" Butts · Survival Series Vol. 1 · FEMA preparedness data</div>
-                </div>
-
-                <div class="featured-bottom">
-                    <div class="featured-cta">Read the Full Investigation <span class="arrow">→</span></div>
-                    <span class="featured-meta">Survival Series, Vol. 1</span>
-                </div>
-            </a>
-
-            <!-- HIDDEN: Brofessor PED article - uncomment when ready to publish
-            <a href="/brofessor/" class="featured-card" style="margin-top:1.5rem;">
-                <div class="featured-kicker"><span class="pulse-dot"></span> New Series</div>
-                <h2 class="featured-title">For Glory: A Data-Driven Plea for <em>PEDs</em> in Major League Baseball</h2>
+            <a href="/brofessor/" class="featured-card featured-headline">
+                <div class="featured-kicker"><span class="pulse-dot"></span> New Series — Now Live</div>
+                <h2 class="featured-title featured-title-headline">For Glory: A Data-Driven Plea for <em>PEDs</em> in Major League Baseball</h2>
                 <p class="featured-hook">The Brofessor has crunched the numbers, calculated the vibes, and drafted the literal contract language. The path to 550 ft home runs is just a few easy policy changes away.</p>
 
                 <div class="featured-viz">
@@ -788,7 +777,42 @@
                     <span class="featured-meta">The Brofessor Series, Vol. 1</span>
                 </div>
             </a>
-            END HIDDEN -->
+
+            <a href="/Survival/" class="featured-card" style="margin-top:1.5rem;">
+                <div class="featured-kicker">Also on Tap</div>
+                <h2 class="featured-title">When Life Pisses in Your <em>Cheerios</em> — Get Yourself Some Water Goddammit!</h2>
+                <p class="featured-hook">Bobby "Pinkeye" Butts nearly died of dehydration in a Nebraska rest stop because of a cook named Darryl. He recovered, got mad, and now has 100+ gallons of water stashed in three locations. This is what he learned.</p>
+
+                <div class="featured-viz">
+                    <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+                        <div style="flex:1; min-width:160px;">
+                            <div style="font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px;">America's water preparedness</div>
+                            <div style="height:20px; border-radius:3px; overflow:hidden; display:flex; background:rgba(255,255,255,0.03);">
+                                <div style="width:53%; background:#C83803; opacity:0.85;"></div>
+                                <div style="width:27%; background:#5C6BC0; opacity:0.75;"></div>
+                                <div style="width:13%; background:#E85D04; opacity:0.7;"></div>
+                                <div style="width:5%;  background:#FF8C2A; opacity:0.8;"></div>
+                                <div style="width:2%;  background:#69f0ae; opacity:0.9;"></div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                                <span style="font-size:0.5rem; color:#ff5252;">53% have nothing stored</span>
+                                <span style="font-size:0.5rem; color:#69f0ae;">2% = Bobby</span>
+                            </div>
+                        </div>
+                        <div style="text-align:center; padding:8px 16px; background:rgba(255,179,71,0.07); border:1px solid rgba(255,179,71,0.2); border-radius:4px;">
+                            <div style="font-size:1.6rem; font-family:'Special Elite',cursive; color:#FF8C2A; line-height:1;">1 gal</div>
+                            <div style="font-size:0.5rem; letter-spacing:1px; color:var(--text-dim); margin-top:2px;">PER PERSON / PER DAY</div>
+                            <div style="font-size:0.48rem; color:var(--text-dim); opacity:0.7; margin-top:1px;">THE number. Write it on your hand.</div>
+                        </div>
+                    </div>
+                    <div class="featured-source">Bobby "Pinkeye" Butts · Survival Series Vol. 1 · FEMA preparedness data</div>
+                </div>
+
+                <div class="featured-bottom">
+                    <div class="featured-cta">Read the Full Investigation <span class="arrow">→</span></div>
+                    <span class="featured-meta">Survival Series, Vol. 1</span>
+                </div>
+            </a>
 
             <a href="/americas-deadliest-animal/" class="featured-card" style="margin-top:1.5rem;">
                 <div class="featured-kicker">Also on Tap</div>
@@ -1115,10 +1139,18 @@
         <section class="menu-section">
             <div class="menu-header">The Menu</div>
             <div class="menu-grid">
+                    <a href="/brofessor/" style="text-decoration:none;color:inherit;">
+                    <div class="menu-item fade-up stagger-1">
+                        <span class="menu-item-icon">💉</span>
+                        <h3>Now Pouring</h3>
+                        <p>The Brofessor's data-driven plea for PEDs in Major League Baseball. Vol. 1: For Glory.</p>
+                        <span class="price" style="color:#ff4444;">→ Read Now</span>
+                    </div>
+                    </a>
                     <a href="/Survival/" style="text-decoration:none;color:inherit;">
                     <div class="menu-item fade-up stagger-1">
                         <span class="menu-item-icon">💧</span>
-                        <h3>Now Pouring</h3>
+                        <h3>Survival Series</h3>
                         <p>Bobby Pinkeye's guide to not dying when the pipes fail. Vol. 1: Water.</p>
                         <span class="price" style="color:#FF8C2A;">→ Read Now</span>
                     </div>
