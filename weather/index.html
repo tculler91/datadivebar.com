@@ -36,7 +36,7 @@
             --glow-blue:      0 0 8px rgba(48, 136, 200, 0.6), 0 0 20px rgba(48, 136, 200, 0.2);
             --glow-teal:      0 0 8px rgba(48, 200, 212, 0.7), 0 0 20px rgba(48, 200, 212, 0.25);
             --glow-amber:     0 0 8px rgba(232, 93, 4, 0.7), 0 0 24px rgba(232, 93, 4, 0.2);
-            --timeline-h:     36px;
+            --timeline-h:     0px;
             --forecast-w:     76px;
         }
 
@@ -673,108 +673,13 @@
             #clock { font-size: 1.4rem; }
             .controls { bottom: calc(var(--chyron-h) + var(--timeline-h) + 8px); left: 8px; }
             .radar-legend { display: none; }
-            .radar-timeline { padding: 0 8px; gap: 6px; }
-            .timeline-mode { display: none; }
+            /* radar-timeline removed */
             .forecast-bar-hour { padding: 4px 1px; }
             .fbh-time { font-size: 0.62rem; }
             .fbh-temp { font-size: 0.9rem; }
         }
 
-        /* ── RADAR TIMELINE ─────────────────────────────────── */
-        .radar-timeline {
-            position: fixed;
-            bottom: var(--chyron-h);
-            left: 0; right: 0;
-            height: var(--timeline-h);
-            background: linear-gradient(to bottom, rgba(3,6,34,0.96), rgba(4,8,42,0.98));
-            border-top: 1px solid rgba(48, 148, 220, 0.15);
-            border-bottom: 1px solid rgba(48, 148, 220, 0.08);
-            display: flex;
-            align-items: center;
-            padding: 0 14px;
-            z-index: 599;
-            gap: 10px;
-        }
-        .timeline-controls {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-        }
-        .timeline-btn {
-            background: transparent;
-            border: 1px solid rgba(48, 148, 220, 0.2);
-            border-radius: 2px;
-            color: var(--text-secondary);
-            font-family: 'VT323', monospace;
-            font-size: 1rem;
-            padding: 2px 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            line-height: 1;
-        }
-        .timeline-btn:hover { color: var(--teal); border-color: rgba(48, 200, 212, 0.3); }
-        .timeline-btn.active { color: var(--teal); text-shadow: var(--glow-teal); border-color: rgba(48, 200, 212, 0.35); }
-        .timeline-time {
-            font-family: 'VT323', monospace;
-            font-size: 0.9rem;
-            color: var(--amber-bright);
-            text-shadow: var(--glow-amber);
-            flex-shrink: 0;
-            min-width: 72px;
-            text-align: center;
-        }
-        .timeline-track {
-            flex: 1;
-            height: 6px;
-            background: rgba(48, 148, 220, 0.1);
-            border-radius: 3px;
-            position: relative;
-            cursor: pointer;
-            min-width: 80px;
-        }
-        .timeline-progress {
-            height: 100%;
-            border-radius: 3px;
-            background: linear-gradient(to right, var(--blue), var(--teal));
-            box-shadow: var(--glow-teal);
-            width: 0%;
-            transition: width 0.15s linear;
-            pointer-events: none;
-        }
-        .timeline-now {
-            position: absolute;
-            top: -5px;
-            width: 2px;
-            height: 16px;
-            background: var(--amber-bright);
-            box-shadow: var(--glow-amber);
-            z-index: 2;
-            pointer-events: none;
-        }
-        .timeline-forecast-zone {
-            position: absolute;
-            top: 0;
-            right: 0;
-            height: 100%;
-            background: rgba(232, 93, 4, 0.08);
-            border-left: 1px dashed rgba(232, 93, 4, 0.4);
-            pointer-events: none;
-            border-radius: 0 3px 3px 0;
-        }
-        .timeline-mode {
-            font-family: 'VT323', monospace;
-            font-size: 0.75rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            flex-shrink: 0;
-            min-width: 62px;
-            text-align: center;
-            transition: color 0.3s;
-        }
-        .timeline-mode.history { color: var(--blue); text-shadow: var(--glow-blue); }
-        .timeline-mode.live { color: var(--teal); text-shadow: var(--glow-teal); }
-        .timeline-mode.forecast { color: var(--amber); text-shadow: var(--glow-amber); }
+        /* ── RADAR TIMELINE (removed) ─────────────────────── */
 
         /* ── HOURLY FORECAST PANEL (removed — now in bottom bar) ── */
         .forecast-panel { display: none !important; }
@@ -922,19 +827,7 @@
     <!-- Jazz24 (KNKX Seattle): smooth jazz, free, no key required -->
     <audio id="jazz-audio" preload="none"></audio>
 
-    <!-- Radar Timeline -->
-    <div class="radar-timeline" id="radar-timeline">
-        <div class="timeline-controls">
-            <button class="timeline-btn" id="timeline-play" title="Play/Pause">&#9654;</button>
-        </div>
-        <span class="timeline-mode live" id="timeline-mode">LIVE</span>
-        <div class="timeline-track" id="timeline-track">
-            <div class="timeline-progress" id="timeline-progress"></div>
-            <div class="timeline-now" id="timeline-now" style="left:50%"></div>
-            <div class="timeline-forecast-zone" id="timeline-forecast" style="left:50%;width:50%"></div>
-        </div>
-        <span class="timeline-time" id="timeline-time">--:-- --</span>
-    </div>
+    <!-- Radar Timeline removed for stability -->
 
     <!-- Static forecast bar -->
     <div class="forecast-bar">
@@ -971,8 +864,14 @@
         zoom: 9,
         zoomControl: false,
         attributionControl: false,
-        zoomAnimation: true,
-        fadeAnimation: true,
+        zoomAnimation: false,
+        fadeAnimation: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        touchZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        dragging: false,
     });
 
     // Basemap pane — keep dark map atmospheric, just slightly brighter
@@ -991,232 +890,23 @@
         if (trafficHeatLayer) { trafficHeatLayer.redraw(); }
     });
 
-    // ── ANIMATED RADAR SYSTEM ──────────────────────────────────────
-    var radarFrames = [];      // {time: ms, url: string, layer: L.tileLayer, type: 'past'|'nowcast'}
-    var currentFrameIdx = 0;
-    var nowFrameIdx = 0;
-    var animTimer = null;
-    var isAnimating = false;
-    var animSpeed = 400;       // ms per frame
+    // ── STATIC LIVE RADAR ──────────────────────────────────────
     var radarOpacity = 0.72;
-
-    // Static "live" radar as initial display / fallback
     var radarLayer = L.tileLayer(
         'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
-        { opacity: 0.72, maxNativeZoom: 8, maxZoom: 19 }
+        { opacity: radarOpacity, maxNativeZoom: 8, maxZoom: 19 }
     ).addTo(map);
 
-    // ── INIT RADAR ANIMATION ──────────────────────────────────────
-    async function initRadarAnimation() {
-        try {
-            var allFrames = [];
-            var now = Date.now();
-
-            // 1. IEM extended history — past 6 hours at 20-min intervals
-            var sixHoursAgo = now - (6 * 60 * 60 * 1000);
-            var iemStep = 20 * 60 * 1000;
-            // Stop IEM frames ~2.5h ago to avoid overlap with RainViewer
-            var iemEnd = now - (2.5 * 60 * 60 * 1000);
-
-            for (var t = sixHoursAgo; t < iemEnd; t += iemStep) {
-                var d = new Date(t);
-                var mins = Math.round(d.getUTCMinutes() / 5) * 5;
-                if (mins === 60) { mins = 0; d = new Date(d.getTime() + 3600000); }
-                var ts = String(d.getUTCFullYear()) +
-                    String(d.getUTCMonth() + 1).padStart(2, '0') +
-                    String(d.getUTCDate()).padStart(2, '0') +
-                    String(d.getUTCHours()).padStart(2, '0') +
-                    String(mins).padStart(2, '0');
-
-                allFrames.push({
-                    time: t,
-                    url: 'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-' + ts + '-900913/{z}/{x}/{y}.png',
-                    layer: null,
-                    type: 'past'
-                });
-            }
-
-            // 2. RainViewer for recent past + nowcast
-            var rvRes = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-            var rvData = await rvRes.json();
-            var host = rvData.host;
-            var pastFrames = (rvData.radar && rvData.radar.past) || [];
-            var nowcastFrames = (rvData.radar && rvData.radar.nowcast) || [];
-
-            pastFrames.forEach(function(f) {
-                allFrames.push({
-                    time: f.time * 1000,
-                    url: host + f.path + '/256/{z}/{x}/{y}/2/1_1.png',
-                    layer: null,
-                    type: 'past'
-                });
-            });
-
-            nowcastFrames.forEach(function(f) {
-                allFrames.push({
-                    time: f.time * 1000,
-                    url: host + f.path + '/256/{z}/{x}/{y}/2/1_1.png',
-                    layer: null,
-                    type: 'nowcast'
-                });
-            });
-
-            if (allFrames.length < 3) return;
-
-            // Sort by time
-            allFrames.sort(function(a, b) { return a.time - b.time; });
-
-            // Find the "now" boundary (last past frame)
-            nowFrameIdx = 0;
-            for (var i = allFrames.length - 1; i >= 0; i--) {
-                if (allFrames[i].type === 'past') { nowFrameIdx = i; break; }
-            }
-
-            // Create tile layers (all hidden)
-            allFrames.forEach(function(f) {
-                f.layer = L.tileLayer(f.url, {
-                    opacity: 0,
-                    maxNativeZoom: 8,
-                    maxZoom: 19,
-                });
-                f.layer.addTo(map);
-            });
-
-            radarFrames = allFrames;
-
-            // Remove static fallback layer
-            if (radarLayer) { map.removeLayer(radarLayer); radarLayer = null; }
-
-            // Show the "now" frame
-            showRadarFrame(nowFrameIdx);
-            updateTimelineUI();
-            startRadarAnimation();
-
-        } catch(e) {
-            console.warn('Radar animation init failed, keeping static radar:', e);
-        }
-    }
-
-    function showRadarFrame(idx) {
-        if (idx < 0 || idx >= radarFrames.length) return;
-        // Hide current
-        if (radarFrames[currentFrameIdx] && radarFrames[currentFrameIdx].layer) {
-            radarFrames[currentFrameIdx].layer.setOpacity(0);
-        }
-        // Show new
-        currentFrameIdx = idx;
-        radarFrames[idx].layer.setOpacity(radarOpacity);
-        updateTimelineDisplay();
-    }
-
-    function updateTimelineDisplay() {
-        var frame = radarFrames[currentFrameIdx];
-        if (!frame) return;
-
-        var d = new Date(frame.time);
-        var h = d.getHours() % 12 || 12;
-        var m = String(d.getMinutes()).padStart(2, '0');
-        var ampm = d.getHours() >= 12 ? 'PM' : 'AM';
-
-        var timeEl = document.getElementById('timeline-time');
-        if (timeEl) timeEl.textContent = h + ':' + m + ' ' + ampm;
-
-        var modeEl = document.getElementById('timeline-mode');
-        if (modeEl) {
-            modeEl.className = 'timeline-mode';
-            if (frame.type === 'nowcast') {
-                modeEl.textContent = 'FORECAST';
-                modeEl.classList.add('forecast');
-            } else if (currentFrameIdx >= nowFrameIdx - 1) {
-                modeEl.textContent = 'LIVE';
-                modeEl.classList.add('live');
-            } else {
-                modeEl.textContent = 'HISTORY';
-                modeEl.classList.add('history');
-            }
-        }
-
-        // Progress bar
-        var pct = radarFrames.length > 1 ? (currentFrameIdx / (radarFrames.length - 1)) * 100 : 0;
-        var progressEl = document.getElementById('timeline-progress');
-        if (progressEl) progressEl.style.width = pct + '%';
-    }
-
-    function updateTimelineUI() {
-        if (radarFrames.length === 0) return;
-        var nowPct = radarFrames.length > 1 ? (nowFrameIdx / (radarFrames.length - 1)) * 100 : 50;
-        var nowMarker = document.getElementById('timeline-now');
-        if (nowMarker) nowMarker.style.left = nowPct + '%';
-        var forecastZone = document.getElementById('timeline-forecast');
-        if (forecastZone) {
-            forecastZone.style.left = nowPct + '%';
-            forecastZone.style.width = (100 - nowPct) + '%';
-        }
-    }
-
-    function startRadarAnimation() {
-        if (isAnimating) return;
-        isAnimating = true;
-        var playBtn = document.getElementById('timeline-play');
-        if (playBtn) { playBtn.innerHTML = '&#9646;&#9646;'; playBtn.classList.add('active'); }
-
-        showRadarFrame(0);
-
-        function nextFrame() {
-            if (!isAnimating) return;
-            var next = currentFrameIdx + 1;
-            if (next >= radarFrames.length) {
-                // Pause at end, then restart from beginning
-                setTimeout(function() {
-                    if (!isAnimating) return;
-                    showRadarFrame(0);
-                    animTimer = setTimeout(nextFrame, animSpeed);
-                }, 2000);
-                return;
-            }
-            // Pause longer at "now" boundary
-            var delay = animSpeed;
-            if (currentFrameIdx === nowFrameIdx) delay = 1500;
-
-            showRadarFrame(next);
-            animTimer = setTimeout(nextFrame, delay);
-        }
-        animTimer = setTimeout(nextFrame, animSpeed);
-    }
-
-    function stopRadarAnimation() {
-        isAnimating = false;
-        clearTimeout(animTimer);
-        var playBtn = document.getElementById('timeline-play');
-        if (playBtn) { playBtn.innerHTML = '&#9654;'; playBtn.classList.remove('active'); }
-    }
-
-    // Timeline play/pause
-    document.getElementById('timeline-play').addEventListener('click', function() {
-        if (isAnimating) { stopRadarAnimation(); } else { startRadarAnimation(); }
-    });
-
-    // Timeline track click — seek
-    document.getElementById('timeline-track').addEventListener('click', function(e) {
-        if (radarFrames.length === 0) return;
-        var rect = this.getBoundingClientRect();
-        var pct = (e.clientX - rect.left) / rect.width;
-        var idx = Math.round(pct * (radarFrames.length - 1));
-        idx = Math.max(0, Math.min(radarFrames.length - 1, idx));
-        stopRadarAnimation();
-        showRadarFrame(idx);
-    });
-
-    // Re-init radar every 10 minutes
+    // Refresh radar tiles every 2.5 minutes
     setInterval(function() {
-        if (radarFrames.length > 0) {
-            var wasAnimating = isAnimating;
-            stopRadarAnimation();
-            radarFrames.forEach(function(f) { if (f.layer) map.removeLayer(f.layer); });
-            radarFrames = [];
-            initRadarAnimation();
+        if (radarLayer) {
+            map.removeLayer(radarLayer);
+            radarLayer = L.tileLayer(
+                'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
+                { opacity: radarOpacity, maxNativeZoom: 8, maxZoom: 19 }
+            ).addTo(map);
         }
-    }, 10 * 60 * 1000);
+    }, RADAR_REFRESH_MS);
 
     // ── RADAR OPACITY CONTROLS ────────────────────────────────────
     document.querySelectorAll('#radar-seg .seg-btn').forEach(function(btn) {
@@ -1224,12 +914,7 @@
             document.querySelectorAll('#radar-seg .seg-btn').forEach(function(b) { b.classList.remove('active'); });
             btn.classList.add('active');
             radarOpacity = parseFloat(btn.dataset.opacity);
-            // Update static layer if active
             if (radarLayer) radarLayer.setOpacity(radarOpacity);
-            // Update animated frame if active
-            if (radarFrames.length > 0 && radarFrames[currentFrameIdx] && radarFrames[currentFrameIdx].layer) {
-                radarFrames[currentFrameIdx].layer.setOpacity(radarOpacity);
-            }
         });
     });
 
@@ -1706,8 +1391,7 @@
         }, { once: true });
         tryPlay(0);
 
-        // Init radar animation and hourly forecast
-        initRadarAnimation();
+        // Init hourly forecast
         fetchHourlyForecast();
     }
     splash.addEventListener('click', startExperience, { once: true });
