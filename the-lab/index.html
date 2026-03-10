@@ -146,6 +146,22 @@
             0%, 100% { text-shadow: 0 0 8px rgba(255, 140, 42, 0.2); }
             50% { text-shadow: 0 0 14px rgba(255, 140, 42, 0.5); }
         }
+        .tab-btn.moyer-tab.active {
+            background: rgba(100, 200, 220, 0.12);
+            color: #64c8dc;
+            border-color: rgba(100, 200, 220, 0.4);
+            text-shadow: 0 0 12px rgba(100, 200, 220, 0.3);
+        }
+        .moyer-val {
+            color: #64c8dc;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(100, 200, 220, 0.3);
+            animation: moyerPulse 3s ease-in-out infinite;
+        }
+        @keyframes moyerPulse {
+            0%, 100% { text-shadow: 0 0 8px rgba(100, 200, 220, 0.2); }
+            50% { text-shadow: 0 0 14px rgba(100, 200, 220, 0.5); }
+        }
         .byrd-badge {
             display: inline-block;
             font-size: 0.6rem;
@@ -566,6 +582,7 @@
     <button class="tab-btn active" data-tab="batters">Batters</button>
     <button class="tab-btn" data-tab="pitchers">Pitchers</button>
     <button class="tab-btn byrd-tab" data-tab="byrd">The BYRD Index</button>
+    <button class="tab-btn moyer-tab" data-tab="moyer">MOYER Score</button>
 </nav>
 
 <!-- Loading -->
@@ -638,12 +655,13 @@
 <!-- BYRD Index Table -->
 <div class="tab-panel" id="panel-byrd">
     <div style="text-align:center; padding:0 1.5rem 1.5rem; position:relative; z-index:1;">
+        <img src="../images/paul_byrd.png" alt="Paul Byrd baseball card" style="width:140px; border-radius:6px; border:2px solid var(--neon-amber); box-shadow:0 0 16px rgba(255,140,42,0.3); margin-bottom:0.75rem;">
         <p style="font-family:'Playfair Display',serif; font-style:italic; font-size:1.1rem; color:var(--neon-amber); max-width:700px; margin:0 auto 0.5rem;">
             "Named for the great Paul Byrd, who threw 83 mph with a delivery that looked like he was checking his blind spot in traffic."
         </p>
         <p style="font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--muted); max-width:600px; margin:0 auto;">
-            The BYRD Index celebrates pitchers who get outs through craft, deception, and sheer audacity rather than raw stuff.
-            High strikeout rates are <strong style="color:var(--neon-pink);">penalized</strong>. If you throw 100 mph, this leaderboard is not for you.
+            The BYRD Index celebrates pitchers who eat innings through craft, command, and sheer audacity rather than raw stuff.
+            Pitchers with K/9 &ge; 7.0 are <strong style="color:var(--neon-pink);">excluded</strong>. If you throw 100 mph, this leaderboard is not for you.
         </p>
     </div>
     <div class="table-wrap">
@@ -656,13 +674,49 @@
                     <th data-sort="byrd_era">ERA <span class="sort-arrow"></span></th>
                     <th data-sort="byrd_ip">IP <span class="sort-arrow"></span></th>
                     <th data-sort="byrd_so" class="hide-mobile">SO <span class="sort-arrow"></span></th>
-                    <th data-sort="byrd_bb" class="hide-mobile">BB <span class="sort-arrow"></span></th>
+                    <th data-sort="byrd_bb9" class="hide-mobile">BB/9 <span class="sort-arrow"></span><span class="formula-tip" style="border-color:var(--neon-amber);">Lower = elite command</span></th>
                     <th data-sort="byrd_k9" class="hide-mobile">K/9 <span class="sort-arrow"></span><span class="formula-tip" style="border-color:var(--neon-amber);">Lower = more BYRD energy</span></th>
                     <th data-sort="byrd_kbb">K/BB <span class="sort-arrow"></span></th>
-                    <th data-sort="byrd" class="vibes-col sort-active" style="color:var(--neon-amber);">BYRD <span class="sort-arrow">&#9660;</span><span class="formula-tip" style="border-color:var(--neon-amber);">(IP &times; K/BB &times; 9/ERA) / K9</span></th>
+                    <th data-sort="byrd" class="vibes-col sort-active" style="color:var(--neon-amber);">BYRD <span class="sort-arrow">&#9660;</span><span class="formula-tip" style="border-color:var(--neon-amber);">(IP &times; K/BB) / K/9</span></th>
                 </tr>
             </thead>
             <tbody id="byrdBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MOYER Score Table -->
+<div class="tab-panel" id="panel-moyer">
+    <div style="text-align:center; padding:0 1.5rem 1.5rem; position:relative; z-index:1;">
+        <p style="font-family:'Playfair Display',serif; font-style:italic; font-size:1.1rem; color:#64c8dc; max-width:700px; margin:0 auto 0.5rem;">
+            "Jamie Moyer threw 78 mph changeups until age 49. Physics couldn't explain it. Neither can we."
+        </p>
+        <p style="font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--muted); max-width:600px; margin:0 auto;">
+            The MOYER Score honors elder craftsmen — pitchers 35 and older who keep hitters off balance with nothing but guile, command, and the audacity to still be pitching.
+            K/9 &le; 6.0 and ERA &lt; 4.00 required. <strong style="color:#64c8dc;">These guys defy father time.</strong>
+        </p>
+        <p id="moyerEmpty" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted); padding:2rem 0; display:none;">
+            No active pitchers currently qualify for the MOYER Score this season.<br>
+            <span style="color:#64c8dc;">The old man's throne sits empty... for now.</span>
+        </p>
+    </div>
+    <div class="table-wrap">
+        <table class="leader-table" id="moyerTable">
+            <thead>
+                <tr>
+                    <th class="col-rank">#</th>
+                    <th class="col-player">Player</th>
+                    <th data-sort="moyer_age">Age <span class="sort-arrow"></span></th>
+                    <th data-sort="moyer_w">W <span class="sort-arrow"></span></th>
+                    <th data-sort="moyer_era">ERA <span class="sort-arrow"></span></th>
+                    <th data-sort="moyer_ip">IP <span class="sort-arrow"></span></th>
+                    <th data-sort="moyer_k9" class="hide-mobile">K/9 <span class="sort-arrow"></span></th>
+                    <th data-sort="moyer_bb9" class="hide-mobile">BB/9 <span class="sort-arrow"></span></th>
+                    <th data-sort="moyer_whip" class="hide-mobile">WHIP <span class="sort-arrow"></span></th>
+                    <th data-sort="moyer" class="vibes-col sort-active" style="color:#64c8dc;">MOYER <span class="sort-arrow">&#9660;</span><span class="formula-tip" style="border-color:#64c8dc;">(IP &times; Age &times; (9/ERA)) / K/9</span></th>
+                </tr>
+            </thead>
+            <tbody id="moyerBody"></tbody>
         </table>
     </div>
 </div>
@@ -674,6 +728,7 @@
         <button class="chalk-tab active" data-chalk="batters-meth">Batters</button>
         <button class="chalk-tab" data-chalk="pitchers-meth">Pitchers</button>
         <button class="chalk-tab" data-chalk="byrd-meth">The BYRD Index</button>
+        <button class="chalk-tab" data-chalk="moyer-meth">MOYER Score</button>
     </div>
 
     <div class="methodology-section active" id="batters-meth">
@@ -725,8 +780,9 @@
         </div>
         <div class="metric-explain">
             <h3><span class="abbr" style="color:var(--neon-amber);">The Formula</span></h3>
-            <p style="font-family:'JetBrains Mono',monospace; font-style:normal; color:var(--neon-amber);">BYRD = (IP &times; (K/BB) &times; (9 / ERA)) / K/9</p>
-            <p style="margin-top:0.5rem;">This rewards: (1) lots of innings — the journeyman grind, eating innings your ace is too precious to throw; (2) good command — K/BB ratio rewards control artists over power arms; (3) run prevention — low ERA means it's working, somehow; (4) low strikeout rate — the less you strike guys out while still being effective, the higher your BYRD score. Getting outs through witchcraft is worth more than getting outs through 100 mph.</p>
+            <p style="font-family:'JetBrains Mono',monospace; font-style:normal; color:var(--neon-amber);">BYRD = (IP &times; K/BB) / K/9</p>
+            <p style="font-family:'JetBrains Mono',monospace; font-style:normal; color:var(--muted); font-size:0.75rem; margin-top:0.25rem;">Cutoff: K/9 &lt; 7.0 required to qualify</p>
+            <p style="margin-top:0.5rem;">The ideal BYRD pitcher: 200+ innings, terrific BB/9, K/9 under 7.0, and an ERA of 4.00 or higher. They eat innings, don't walk anyone, don't strike anyone out, and somehow keep getting the ball every fifth day. This rewards: (1) lots of innings — the journeyman grind, eating innings your ace is too precious to throw; (2) elite command — K/BB ratio rewards control artists who never walk anyone; (3) low strikeout rate — the less you strike guys out, the more BYRD energy. ERA is deliberately excluded from the formula because Paul Byrd never had a great ERA and neither should you.</p>
         </div>
         <div class="metric-explain">
             <h3><span class="abbr" style="color:var(--neon-amber);">Historical BYRD Laureates</span></h3>
@@ -739,12 +795,33 @@
             <strong style="color:var(--chalk);">Who ranks LOW:</strong> Nolan Ryan, Randy Johnson, anyone whose strategy was "throw it really hard." That's not BYRD energy. That's just being tall.</p>
         </div>
     </div>
+
+    <div class="methodology-section" id="moyer-meth">
+        <div class="metric-explain">
+            <h3><span class="abbr" style="color:#64c8dc; text-shadow:0 0 8px rgba(100,200,220,0.3);">MOYER</span> <span class="full-name">— Masterful Old Yielder of Earned Runs (But Not Many)</span></h3>
+            <p>Named for Jamie Moyer, who threw 78 mph changeups until age 49 and somehow maintained a career ERA under 4.25 across 4,074 innings. The MOYER Score identifies the rarest breed of pitcher: the old man who can still get outs without any stuff whatsoever. These are not flamethrowers aging gracefully — they never threw hard to begin with. They're just still out there, defying father time with location, guile, and an AARP card in their back pocket.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr" style="color:#64c8dc;">The Formula</span></h3>
+            <p style="font-family:'JetBrains Mono',monospace; font-style:normal; color:#64c8dc;">MOYER = (IP &times; Age &times; (9 / ERA)) / K/9</p>
+            <p style="font-family:'JetBrains Mono',monospace; font-style:normal; color:var(--muted); font-size:0.75rem; margin-top:0.25rem;">Must be 35+, K/9 &le; 6.0, ERA &lt; 4.00</p>
+            <p style="margin-top:0.5rem;">The qualifying criteria are brutally specific: (1) age 35 or older — you have to have been around; (2) K/9 of 6.0 or below — no sneaky good stuff allowed; (3) ERA under 4.00 — you're actually effective, which is the miracle. Age is multiplied in because a 42-year-old with a 3.50 ERA and 5.0 K/9 is significantly more absurd than a 35-year-old doing the same thing. The older you are, the higher your MOYER.</p>
+        </div>
+        <div class="metric-explain">
+            <h3><span class="abbr" style="color:#64c8dc;">The Pantheon</span></h3>
+            <p><strong style="color:var(--chalk);">Jamie Moyer</strong> — The namesake. Pitched until 49. His fastball was slower than some changeups. Won 269 games on pure deception and the audacity to keep showing up.<br>
+            <strong style="color:var(--chalk);">Greg Maddux (post-35)</strong> — Stopped throwing hard at 30, kept winning until 42. Painted corners like Rembrandt.<br>
+            <strong style="color:var(--chalk);">Phil Niekro</strong> — Threw knuckleballs until age 48. Nobody could hit it. Nobody could catch it either.<br>
+            <strong style="color:var(--chalk);">Tommy John</strong> — Pitched until 46. They named a surgery after him and he kept pitching after getting it.<br>
+            <strong style="color:var(--chalk);">Who ranks LOW:</strong> Anyone under 35. Come back when your arm has some mileage on it.</p>
+        </div>
+    </div>
 </section>
 
 <!-- Footer -->
 <footer class="footer">
     <a href="/">&#8592; Back to the Data Dive Bar</a>
-    <div class="copy">&copy; The Brofessor's Lab &middot; A Data Dive Bar Research Facility &middot; All vibes are peer-reviewed &middot; BYRD Index est. 2026</div>
+    <div class="copy">&copy; The Brofessor's Lab &middot; A Data Dive Bar Research Facility &middot; All vibes are peer-reviewed &middot; BYRD Index &amp; MOYER Score est. 2026</div>
 </footer>
 
 <script>
@@ -765,6 +842,7 @@
     let battersData = [];
     let pitchersData = [];
     let byrdData = [];
+    let moyerData = [];
 
     // ── Team colors (abbreviated) ──
     const TEAM_COLORS = {
@@ -867,18 +945,20 @@
         return DEFAULT_HEIGHT_IN;
     }
 
-    // ── Fetch player bio (height/weight) ──
+    // ── Fetch player bio (height/weight/position/age) ──
     async function fetchPlayerBio(playerId) {
         try {
             const data = await apiFetch('/people/' + playerId);
             const person = data.people && data.people[0];
-            if (!person) return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN };
+            if (!person) return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN, position: '', age: 0 };
             return {
                 weight: person.weight || DEFAULT_WEIGHT,
-                heightIn: parseHeight(person.height)
+                heightIn: parseHeight(person.height),
+                position: person.primaryPosition ? person.primaryPosition.abbreviation || '' : '',
+                age: person.currentAge || 0
             };
         } catch(e) {
-            return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN };
+            return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN, position: '', age: 0 };
         }
     }
 
@@ -909,7 +989,9 @@
                                 hr: 0, avg: 0, ops: 0, rbi: 0, sb: 0, hits: 0,
                                 slg: 0, ab: 0, tb: 0,
                                 weight: DEFAULT_WEIGHT,
-                                heightIn: DEFAULT_HEIGHT_IN
+                                heightIn: DEFAULT_HEIGHT_IN,
+                                position: '',
+                                age: 0
                             };
                         }
                         const val = parseFloat(leader.value) || 0;
@@ -939,7 +1021,9 @@
                                 w: 0, era: 0, so: 0, whip: 0, ip: 0,
                                 bb: 0, er: 0, saves: 0,
                                 weight: DEFAULT_WEIGHT,
-                                heightIn: DEFAULT_HEIGHT_IN
+                                heightIn: DEFAULT_HEIGHT_IN,
+                                position: '',
+                                age: 0
                             };
                         }
                         const val = parseFloat(leader.value) || 0;
@@ -971,8 +1055,8 @@
             await fetchDetailsBatched(batterIds, batterMap, 'hitting');
             await fetchDetailsBatched(pitcherIds, pitcherMap, 'pitching');
 
-            // Calculate vibes for batters
-            battersData = Object.values(batterMap).map(p => {
+            // Calculate vibes for batters (exclude pitchers)
+            battersData = Object.values(batterMap).filter(p => p.position !== 'P').map(p => {
                 const w = p.weight;
                 const h = p.heightIn;
                 p.var = (p.hr * p.ops * (w * w)) / 1000;
@@ -983,8 +1067,8 @@
                 return p;
             });
 
-            // Calculate vibes for pitchers
-            pitchersData = Object.values(pitcherMap).map(p => {
+            // Calculate vibes for pitchers (exclude non-pitchers)
+            pitchersData = Object.values(pitcherMap).filter(p => p.position === 'P' || p.position === '').map(p => {
                 const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
                 p.filth = (k9 * 100) / Math.max(p.era, 0.5);
                 p.menace = (p.so - p.bb) * p.ip * (1 / Math.max(p.whip, 0.5));
@@ -993,18 +1077,43 @@
                 return p;
             });
 
-            // Calculate BYRD for all pitchers
-            byrdData = Object.values(pitcherMap).map(p => {
+            // Calculate BYRD for pitchers with K/9 < 7.0 (the craft-over-stuff threshold)
+            byrdData = Object.values(pitcherMap).filter(p => {
+                if (p.position !== 'P' && p.position !== '') return false; // pitchers only
+                const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
+                return k9 < 7.0 && k9 > 0; // exclude gas-throwers and zero-IP guys
+            }).map(p => {
                 const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
                 const kbb = p.bb > 0 ? p.so / p.bb : p.so;
-                p.byrd = (p.ip * kbb * (9 / Math.max(p.era, 1))) / Math.max(k9, 3);
+                const bb9 = p.ip > 0 ? (p.bb / p.ip) * 9 : 0;
+                p.byrd = (p.ip * kbb) / Math.max(k9, 1);
                 p.byrd_k9 = k9;
                 p.byrd_kbb = kbb;
+                p.byrd_bb9 = bb9;
                 p.byrd_w = p.w;
                 p.byrd_era = p.era;
                 p.byrd_ip = p.ip;
                 p.byrd_so = p.so;
-                p.byrd_bb = p.bb;
+                return Object.assign({}, p);
+            });
+
+            // Calculate MOYER for pitchers 35+ with K/9 <= 6.0 and ERA < 4.00
+            moyerData = Object.values(pitcherMap).filter(p => {
+                if (p.position !== 'P' && p.position !== '') return false;
+                if (p.age < 35) return false;
+                const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
+                return k9 <= 6.0 && k9 > 0 && p.era > 0 && p.era < 4.00;
+            }).map(p => {
+                const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
+                const bb9 = p.ip > 0 ? (p.bb / p.ip) * 9 : 0;
+                p.moyer = (p.ip * p.age * (9 / Math.max(p.era, 1))) / Math.max(k9, 1);
+                p.moyer_age = p.age;
+                p.moyer_k9 = k9;
+                p.moyer_bb9 = bb9;
+                p.moyer_w = p.w;
+                p.moyer_era = p.era;
+                p.moyer_ip = p.ip;
+                p.moyer_whip = p.whip;
                 return Object.assign({}, p);
             });
 
@@ -1012,10 +1121,12 @@
             battersData.sort((a, b) => b.var - a.var);
             pitchersData.sort((a, b) => b.filth - a.filth);
             byrdData.sort((a, b) => b.byrd - a.byrd);
+            moyerData.sort((a, b) => b.moyer - a.moyer);
 
             renderBatters();
             renderPitchers();
             renderByrd();
+            renderMoyer();
             showState('ready');
 
             document.getElementById('lastUpdated').textContent =
@@ -1041,6 +1152,8 @@
 
                     map[id].weight = bioData.weight;
                     map[id].heightIn = bioData.heightIn;
+                    map[id].position = bioData.position;
+                    map[id].age = bioData.age;
 
                     // Extract full stats
                     if (statsData.stats && statsData.stats[0] && statsData.stats[0].splits) {
@@ -1156,10 +1269,48 @@
                 '<td>' + fmtEra(p.byrd_era) + '</td>' +
                 '<td>' + fmtIp(p.byrd_ip) + '</td>' +
                 '<td class="hide-mobile">' + p.byrd_so + '</td>' +
-                '<td class="hide-mobile">' + p.byrd_bb + '</td>' +
+                '<td class="hide-mobile">' + fmtEra(p.byrd_bb9) + '</td>' +
                 '<td class="hide-mobile">' + fmtEra(p.byrd_k9) + '</td>' +
                 '<td>' + fmtEra(p.byrd_kbb) + '</td>' +
                 '<td class="byrd-val">' + fmtVibe(p.byrd) + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ── Render MOYER table ──
+    function renderMoyer() {
+        const tbody = document.getElementById('moyerBody');
+        const emptyMsg = document.getElementById('moyerEmpty');
+        const tableWrap = document.getElementById('moyerTable').parentElement;
+        tbody.innerHTML = '';
+        if (moyerData.length === 0) {
+            emptyMsg.style.display = '';
+            tableWrap.style.display = 'none';
+            return;
+        }
+        emptyMsg.style.display = 'none';
+        tableWrap.style.display = '';
+        moyerData.forEach((p, i) => {
+            const tr = document.createElement('tr');
+            tr.style.animationDelay = (i * 30) + 'ms';
+            const teamColor = TEAM_COLORS[p.team] || '#666';
+            tr.innerHTML =
+                '<td class="col-rank">' + (i + 1) + '</td>' +
+                '<td class="col-player">' +
+                    '<img class="player-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/' + p.id + '/headshot/67/current" alt="" loading="lazy" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%230D1520%22 width=%2240%22 height=%2240%22/><text x=%2220%22 y=%2226%22 text-anchor=%22middle%22 fill=%22%237a7265%22 font-size=%2214%22>?</text></svg>\'">' +
+                    '<span class="player-info">' +
+                        '<span class="player-name">' + escHtml(p.name) + '</span>' +
+                        '<span class="player-team"><span class="team-dot" style="background:' + teamColor + '"></span>' + escHtml(p.team) + '</span>' +
+                    '</span>' +
+                '</td>' +
+                '<td>' + p.moyer_age + '</td>' +
+                '<td>' + p.moyer_w + '</td>' +
+                '<td>' + fmtEra(p.moyer_era) + '</td>' +
+                '<td>' + fmtIp(p.moyer_ip) + '</td>' +
+                '<td class="hide-mobile">' + fmtEra(p.moyer_k9) + '</td>' +
+                '<td class="hide-mobile">' + fmtEra(p.moyer_bb9) + '</td>' +
+                '<td class="hide-mobile">' + fmtEra(p.moyer_whip) + '</td>' +
+                '<td class="moyer-val">' + fmtVibe(p.moyer) + '</td>';
             tbody.appendChild(tr);
         });
     }
@@ -1205,7 +1356,8 @@
             const table = this.closest('.leader-table');
             const isBatters = table.id === 'battersTable';
             const isByrd = table.id === 'byrdTable';
-            const data = isBatters ? battersData : (isByrd ? byrdData : pitchersData);
+            const isMoyer = table.id === 'moyerTable';
+            const data = isBatters ? battersData : (isByrd ? byrdData : (isMoyer ? moyerData : pitchersData));
 
             // Determine sort direction
             const wasActive = this.classList.contains('sort-active');
@@ -1224,12 +1376,13 @@
 
             // Special: ERA, WHIP, and K/9 sort ascending by default (lower is better)
             let sortDesc = desc;
-            if ((key === 'era' || key === 'whip' || key === 'byrd_era' || key === 'byrd_k9' || key === 'byrd_bb') && !wasActive) sortDesc = false;
+            if ((key === 'era' || key === 'whip' || key === 'byrd_era' || key === 'byrd_k9' || key === 'byrd_bb9' || key === 'moyer_era' || key === 'moyer_k9' || key === 'moyer_bb9' || key === 'moyer_whip') && !wasActive) sortDesc = false;
 
             data.sort((a, b) => sortDesc ? b[key] - a[key] : a[key] - b[key]);
 
             if (isBatters) renderBatters();
             else if (isByrd) renderByrd();
+            else if (isMoyer) renderMoyer();
             else renderPitchers();
         });
     });
