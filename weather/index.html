@@ -36,6 +36,8 @@
             --glow-blue:      0 0 8px rgba(48, 136, 200, 0.6), 0 0 20px rgba(48, 136, 200, 0.2);
             --glow-teal:      0 0 8px rgba(48, 200, 212, 0.7), 0 0 20px rgba(48, 200, 212, 0.25);
             --glow-amber:     0 0 8px rgba(232, 93, 4, 0.7), 0 0 24px rgba(232, 93, 4, 0.2);
+            --timeline-h:     36px;
+            --forecast-w:     76px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -290,7 +292,7 @@
         /* ── CONTROLS (bottom-left) ──────────────────────────── */
         .controls {
             position: fixed;
-            bottom: calc(var(--chyron-h) + 14px);
+            bottom: calc(var(--chyron-h) + var(--timeline-h) + 14px);
             left: 14px;
             display: flex;
             flex-direction: column;
@@ -363,8 +365,8 @@
         /* ── RADAR LEGEND (bottom-right) ─────────────────────── */
         .radar-legend {
             position: fixed;
-            bottom: calc(var(--chyron-h) + 14px);
-            right: 14px;
+            bottom: calc(var(--chyron-h) + var(--timeline-h) + 14px);
+            right: calc(var(--forecast-w) + 14px);
             z-index: 600;
             background: rgba(4, 8, 42, 0.88);
             border: 1px solid rgba(48, 148, 220, 0.2);
@@ -668,8 +670,8 @@
         /* ── TRAFFIC LEGEND ──────────────────────────────────── */
         .traffic-legend {
             position: fixed;
-            bottom: calc(var(--chyron-h) + 92px);
-            right: 14px;
+            bottom: calc(var(--chyron-h) + var(--timeline-h) + 92px);
+            right: calc(var(--forecast-w) + 14px);
             z-index: 600;
             background: rgba(4, 8, 42, 0.88);
             border: 1px solid rgba(48, 148, 220, 0.2);
@@ -723,10 +725,223 @@
             .top-bar { padding: 0 12px; }
             .top-center { display: none; }
             #clock { font-size: 1.4rem; }
-            .controls { bottom: calc(var(--chyron-h) + 8px); left: 8px; }
+            .controls { bottom: calc(var(--chyron-h) + var(--timeline-h) + 8px); left: 8px; }
             .radar-legend { display: none; }
             .now-viewing { display: none; }
+            .forecast-panel { display: none; }
+            .radar-timeline { padding: 0 8px; gap: 6px; }
+            .timeline-mode { display: none; }
         }
+
+        /* ── RADAR TIMELINE ─────────────────────────────────── */
+        .radar-timeline {
+            position: fixed;
+            bottom: var(--chyron-h);
+            left: 0; right: 0;
+            height: var(--timeline-h);
+            background: linear-gradient(to bottom, rgba(3,6,34,0.96), rgba(4,8,42,0.98));
+            border-top: 1px solid rgba(48, 148, 220, 0.15);
+            border-bottom: 1px solid rgba(48, 148, 220, 0.08);
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            z-index: 599;
+            gap: 10px;
+        }
+        .timeline-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .timeline-btn {
+            background: transparent;
+            border: 1px solid rgba(48, 148, 220, 0.2);
+            border-radius: 2px;
+            color: var(--text-secondary);
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            padding: 2px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+        .timeline-btn:hover { color: var(--teal); border-color: rgba(48, 200, 212, 0.3); }
+        .timeline-btn.active { color: var(--teal); text-shadow: var(--glow-teal); border-color: rgba(48, 200, 212, 0.35); }
+        .timeline-time {
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            color: var(--amber-bright);
+            text-shadow: var(--glow-amber);
+            flex-shrink: 0;
+            min-width: 72px;
+            text-align: center;
+        }
+        .timeline-track {
+            flex: 1;
+            height: 6px;
+            background: rgba(48, 148, 220, 0.1);
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+            min-width: 80px;
+        }
+        .timeline-progress {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(to right, var(--blue), var(--teal));
+            box-shadow: var(--glow-teal);
+            width: 0%;
+            transition: width 0.15s linear;
+            pointer-events: none;
+        }
+        .timeline-now {
+            position: absolute;
+            top: -5px;
+            width: 2px;
+            height: 16px;
+            background: var(--amber-bright);
+            box-shadow: var(--glow-amber);
+            z-index: 2;
+            pointer-events: none;
+        }
+        .timeline-forecast-zone {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            background: rgba(232, 93, 4, 0.08);
+            border-left: 1px dashed rgba(232, 93, 4, 0.4);
+            pointer-events: none;
+            border-radius: 0 3px 3px 0;
+        }
+        .timeline-mode {
+            font-family: 'VT323', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            min-width: 62px;
+            text-align: center;
+            transition: color 0.3s;
+        }
+        .timeline-mode.history { color: var(--blue); text-shadow: var(--glow-blue); }
+        .timeline-mode.live { color: var(--teal); text-shadow: var(--glow-teal); }
+        .timeline-mode.forecast { color: var(--amber); text-shadow: var(--glow-amber); }
+
+        /* ── HOURLY FORECAST PANEL ──────────────────────────── */
+        .forecast-panel {
+            position: fixed;
+            right: 0;
+            top: var(--bar-h);
+            bottom: calc(var(--chyron-h) + var(--timeline-h));
+            width: var(--forecast-w);
+            background: linear-gradient(to right, rgba(4,8,42,0.85), rgba(4,8,42,0.94));
+            border-left: 1px solid rgba(48, 148, 220, 0.15);
+            z-index: 598;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .forecast-title {
+            font-family: 'VT323', monospace;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            text-align: center;
+            padding: 8px 4px 4px;
+            border-bottom: 1px solid rgba(48, 148, 220, 0.1);
+            flex-shrink: 0;
+        }
+        .forecast-city {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 0.7rem;
+            color: var(--amber);
+            text-shadow: var(--glow-amber);
+            text-align: center;
+            padding: 4px 4px 6px;
+            border-bottom: 1px solid rgba(48, 148, 220, 0.1);
+            flex-shrink: 0;
+            letter-spacing: 0.04em;
+        }
+        .forecast-scroll {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .forecast-scroll::-webkit-scrollbar { display: none; }
+        .forecast-hour {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 7px 4px;
+            border-bottom: 1px solid rgba(48, 148, 220, 0.06);
+            gap: 2px;
+        }
+        .forecast-hour:first-child {
+            background: rgba(48, 200, 212, 0.04);
+        }
+        .fh-time {
+            font-family: 'VT323', monospace;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            letter-spacing: 0.06em;
+        }
+        .fh-icon { font-size: 1rem; line-height: 1.1; }
+        .fh-temp {
+            font-family: 'VT323', monospace;
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+        .fh-desc {
+            font-family: 'VT323', monospace;
+            font-size: 0.52rem;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.15;
+            max-width: 100%;
+            word-break: break-word;
+        }
+        .fh-precip {
+            font-family: 'VT323', monospace;
+            font-size: 0.65rem;
+            color: var(--blue);
+            line-height: 1;
+        }
+        .fh-wind {
+            font-family: 'VT323', monospace;
+            font-size: 0.52rem;
+            color: var(--text-dim);
+            line-height: 1.1;
+        }
+        .forecast-loading {
+            font-family: 'VT323', monospace;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 20px 8px;
+            letter-spacing: 0.1em;
+            animation: chyron-blink 1.4s ease-in-out infinite;
+        }
+
+        /* ── MUSIC CREDIT ───────────────────────────────────── */
+        .music-credit {
+            font-family: 'VT323', monospace;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 0.06em;
+            margin-top: 4px;
+            opacity: 0.7;
+            line-height: 1.3;
+        }
+        .music-credit a {
+            color: var(--text-dim);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(46, 72, 104, 0.4);
+            transition: color 0.2s;
+        }
+        .music-credit a:hover { color: var(--teal); }
     </style>
 </head>
 <body>
@@ -802,6 +1017,7 @@
             </div>
         </div>
         <button class="audio-btn" id="audio-btn">&#9834; Play Sax</button>
+        <div class="music-credit">Jazz24 &middot; <a href="https://www.knkx.org" target="_blank" rel="noopener">KNKX Public Radio</a></div>
     </div>
 
     <!-- Radar legend -->
@@ -839,9 +1055,32 @@
         <div id="traffic-status">&#x2014; Inactive &#x2014;</div>
     </div>
 
+    <!-- Hourly Forecast Panel -->
+    <div class="forecast-panel" id="forecast-panel">
+        <div class="forecast-title">12-Hr Forecast</div>
+        <div class="forecast-city" id="forecast-city">Columbus</div>
+        <div class="forecast-scroll" id="forecast-scroll">
+            <div class="forecast-loading">Fetching forecast&hellip;</div>
+        </div>
+    </div>
+
     <!-- Audio -->
     <!-- Jazz24 (KNKX Seattle): smooth jazz, free, no key required -->
     <audio id="jazz-audio" preload="none"></audio>
+
+    <!-- Radar Timeline -->
+    <div class="radar-timeline" id="radar-timeline">
+        <div class="timeline-controls">
+            <button class="timeline-btn" id="timeline-play" title="Play/Pause">&#9654;</button>
+        </div>
+        <span class="timeline-mode live" id="timeline-mode">LIVE</span>
+        <div class="timeline-track" id="timeline-track">
+            <div class="timeline-progress" id="timeline-progress"></div>
+            <div class="timeline-now" id="timeline-now" style="left:50%"></div>
+            <div class="timeline-forecast-zone" id="timeline-forecast" style="left:50%;width:50%"></div>
+        </div>
+        <span class="timeline-time" id="timeline-time">--:-- --</span>
+    </div>
 
     <!-- Scrolling chyron -->
     <div class="chyron-bar">
@@ -937,25 +1176,245 @@
         if (trafficHeatLayer) { trafficHeatLayer.redraw(); }
     });
 
-    // ── RADAR LAYER ──────────────────────────────────────────────
+    // ── ANIMATED RADAR SYSTEM ──────────────────────────────────────
+    var radarFrames = [];      // {time: ms, url: string, layer: L.tileLayer, type: 'past'|'nowcast'}
+    var currentFrameIdx = 0;
+    var nowFrameIdx = 0;
+    var animTimer = null;
+    var isAnimating = false;
+    var animSpeed = 400;       // ms per frame
+    var radarOpacity = 0.72;
+
+    // Static "live" radar as initial display / fallback
     var radarLayer = L.tileLayer(
         'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
         { opacity: 0.72, maxNativeZoom: 8, maxZoom: 19 }
     ).addTo(map);
 
-    function refreshRadar() {
-        radarLayer.setUrl(
-            'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now()
-        );
-    }
-    setInterval(refreshRadar, RADAR_REFRESH_MS);
+    // ── INIT RADAR ANIMATION ──────────────────────────────────────
+    async function initRadarAnimation() {
+        try {
+            var allFrames = [];
+            var now = Date.now();
 
-    // ── RADAR CONTROLS ───────────────────────────────────────────
+            // 1. IEM extended history — past 6 hours at 20-min intervals
+            var sixHoursAgo = now - (6 * 60 * 60 * 1000);
+            var iemStep = 20 * 60 * 1000;
+            // Stop IEM frames ~2.5h ago to avoid overlap with RainViewer
+            var iemEnd = now - (2.5 * 60 * 60 * 1000);
+
+            for (var t = sixHoursAgo; t < iemEnd; t += iemStep) {
+                var d = new Date(t);
+                var mins = Math.round(d.getUTCMinutes() / 5) * 5;
+                if (mins === 60) { mins = 0; d = new Date(d.getTime() + 3600000); }
+                var ts = String(d.getUTCFullYear()) +
+                    String(d.getUTCMonth() + 1).padStart(2, '0') +
+                    String(d.getUTCDate()).padStart(2, '0') +
+                    String(d.getUTCHours()).padStart(2, '0') +
+                    String(mins).padStart(2, '0');
+
+                allFrames.push({
+                    time: t,
+                    url: 'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-' + ts + '-900913/{z}/{x}/{y}.png',
+                    layer: null,
+                    type: 'past'
+                });
+            }
+
+            // 2. RainViewer for recent past + nowcast
+            var rvRes = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+            var rvData = await rvRes.json();
+            var host = rvData.host;
+            var pastFrames = (rvData.radar && rvData.radar.past) || [];
+            var nowcastFrames = (rvData.radar && rvData.radar.nowcast) || [];
+
+            pastFrames.forEach(function(f) {
+                allFrames.push({
+                    time: f.time * 1000,
+                    url: host + f.path + '/256/{z}/{x}/{y}/2/1_1.png',
+                    layer: null,
+                    type: 'past'
+                });
+            });
+
+            nowcastFrames.forEach(function(f) {
+                allFrames.push({
+                    time: f.time * 1000,
+                    url: host + f.path + '/256/{z}/{x}/{y}/2/1_1.png',
+                    layer: null,
+                    type: 'nowcast'
+                });
+            });
+
+            if (allFrames.length < 3) return;
+
+            // Sort by time
+            allFrames.sort(function(a, b) { return a.time - b.time; });
+
+            // Find the "now" boundary (last past frame)
+            nowFrameIdx = 0;
+            for (var i = allFrames.length - 1; i >= 0; i--) {
+                if (allFrames[i].type === 'past') { nowFrameIdx = i; break; }
+            }
+
+            // Create tile layers (all hidden)
+            allFrames.forEach(function(f) {
+                f.layer = L.tileLayer(f.url, {
+                    opacity: 0,
+                    maxNativeZoom: 8,
+                    maxZoom: 19,
+                });
+                f.layer.addTo(map);
+            });
+
+            radarFrames = allFrames;
+
+            // Remove static fallback layer
+            if (radarLayer) { map.removeLayer(radarLayer); radarLayer = null; }
+
+            // Show the "now" frame
+            showRadarFrame(nowFrameIdx);
+            updateTimelineUI();
+            startRadarAnimation();
+
+        } catch(e) {
+            console.warn('Radar animation init failed, keeping static radar:', e);
+        }
+    }
+
+    function showRadarFrame(idx) {
+        if (idx < 0 || idx >= radarFrames.length) return;
+        // Hide current
+        if (radarFrames[currentFrameIdx] && radarFrames[currentFrameIdx].layer) {
+            radarFrames[currentFrameIdx].layer.setOpacity(0);
+        }
+        // Show new
+        currentFrameIdx = idx;
+        radarFrames[idx].layer.setOpacity(radarOpacity);
+        updateTimelineDisplay();
+    }
+
+    function updateTimelineDisplay() {
+        var frame = radarFrames[currentFrameIdx];
+        if (!frame) return;
+
+        var d = new Date(frame.time);
+        var h = d.getHours() % 12 || 12;
+        var m = String(d.getMinutes()).padStart(2, '0');
+        var ampm = d.getHours() >= 12 ? 'PM' : 'AM';
+
+        var timeEl = document.getElementById('timeline-time');
+        if (timeEl) timeEl.textContent = h + ':' + m + ' ' + ampm;
+
+        var modeEl = document.getElementById('timeline-mode');
+        if (modeEl) {
+            modeEl.className = 'timeline-mode';
+            if (frame.type === 'nowcast') {
+                modeEl.textContent = 'FORECAST';
+                modeEl.classList.add('forecast');
+            } else if (currentFrameIdx >= nowFrameIdx - 1) {
+                modeEl.textContent = 'LIVE';
+                modeEl.classList.add('live');
+            } else {
+                modeEl.textContent = 'HISTORY';
+                modeEl.classList.add('history');
+            }
+        }
+
+        // Progress bar
+        var pct = radarFrames.length > 1 ? (currentFrameIdx / (radarFrames.length - 1)) * 100 : 0;
+        var progressEl = document.getElementById('timeline-progress');
+        if (progressEl) progressEl.style.width = pct + '%';
+    }
+
+    function updateTimelineUI() {
+        if (radarFrames.length === 0) return;
+        var nowPct = radarFrames.length > 1 ? (nowFrameIdx / (radarFrames.length - 1)) * 100 : 50;
+        var nowMarker = document.getElementById('timeline-now');
+        if (nowMarker) nowMarker.style.left = nowPct + '%';
+        var forecastZone = document.getElementById('timeline-forecast');
+        if (forecastZone) {
+            forecastZone.style.left = nowPct + '%';
+            forecastZone.style.width = (100 - nowPct) + '%';
+        }
+    }
+
+    function startRadarAnimation() {
+        if (isAnimating) return;
+        isAnimating = true;
+        var playBtn = document.getElementById('timeline-play');
+        if (playBtn) { playBtn.innerHTML = '&#9646;&#9646;'; playBtn.classList.add('active'); }
+
+        showRadarFrame(0);
+
+        function nextFrame() {
+            if (!isAnimating) return;
+            var next = currentFrameIdx + 1;
+            if (next >= radarFrames.length) {
+                // Pause at end, then restart from beginning
+                setTimeout(function() {
+                    if (!isAnimating) return;
+                    showRadarFrame(0);
+                    animTimer = setTimeout(nextFrame, animSpeed);
+                }, 2000);
+                return;
+            }
+            // Pause longer at "now" boundary
+            var delay = animSpeed;
+            if (currentFrameIdx === nowFrameIdx) delay = 1500;
+
+            showRadarFrame(next);
+            animTimer = setTimeout(nextFrame, delay);
+        }
+        animTimer = setTimeout(nextFrame, animSpeed);
+    }
+
+    function stopRadarAnimation() {
+        isAnimating = false;
+        clearTimeout(animTimer);
+        var playBtn = document.getElementById('timeline-play');
+        if (playBtn) { playBtn.innerHTML = '&#9654;'; playBtn.classList.remove('active'); }
+    }
+
+    // Timeline play/pause
+    document.getElementById('timeline-play').addEventListener('click', function() {
+        if (isAnimating) { stopRadarAnimation(); } else { startRadarAnimation(); }
+    });
+
+    // Timeline track click — seek
+    document.getElementById('timeline-track').addEventListener('click', function(e) {
+        if (radarFrames.length === 0) return;
+        var rect = this.getBoundingClientRect();
+        var pct = (e.clientX - rect.left) / rect.width;
+        var idx = Math.round(pct * (radarFrames.length - 1));
+        idx = Math.max(0, Math.min(radarFrames.length - 1, idx));
+        stopRadarAnimation();
+        showRadarFrame(idx);
+    });
+
+    // Re-init radar every 10 minutes
+    setInterval(function() {
+        if (radarFrames.length > 0) {
+            var wasAnimating = isAnimating;
+            stopRadarAnimation();
+            radarFrames.forEach(function(f) { if (f.layer) map.removeLayer(f.layer); });
+            radarFrames = [];
+            initRadarAnimation();
+        }
+    }, 10 * 60 * 1000);
+
+    // ── RADAR OPACITY CONTROLS ────────────────────────────────────
     document.querySelectorAll('#radar-seg .seg-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             document.querySelectorAll('#radar-seg .seg-btn').forEach(function(b) { b.classList.remove('active'); });
             btn.classList.add('active');
-            radarLayer.setOpacity(parseFloat(btn.dataset.opacity));
+            radarOpacity = parseFloat(btn.dataset.opacity);
+            // Update static layer if active
+            if (radarLayer) radarLayer.setOpacity(radarOpacity);
+            // Update animated frame if active
+            if (radarFrames.length > 0 && radarFrames[currentFrameIdx] && radarFrames[currentFrameIdx].layer) {
+                radarFrames[currentFrameIdx].layer.setOpacity(radarOpacity);
+            }
         });
     });
 
@@ -1445,6 +1904,119 @@
         });
     });
 
+    // ── HOURLY FORECAST (Columbus, OH — 12 hours) ─────────────────
+    var FORECAST_CITY = { name: 'Columbus', lat: 39.9612, lon: -82.9988 };
+    var forecastPeriods = [];
+
+    async function fetchHourlyForecast() {
+        try {
+            // Step 1: Get gridpoint
+            var ptRes = await fetch(
+                'https://api.weather.gov/points/' + FORECAST_CITY.lat + ',' + FORECAST_CITY.lon,
+                { headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' } }
+            );
+            if (!ptRes.ok) throw new Error('Points API ' + ptRes.status);
+            var ptData = await ptRes.json();
+            var hourlyUrl = ptData.properties.forecastHourly;
+
+            // Step 2: Fetch hourly forecast
+            var fcRes = await fetch(hourlyUrl, {
+                headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' }
+            });
+            if (!fcRes.ok) throw new Error('Forecast API ' + fcRes.status);
+            var fcData = await fcRes.json();
+
+            forecastPeriods = (fcData.properties.periods || []).slice(0, 12);
+
+            // Render in the right panel
+            renderForecastPanel(forecastPeriods);
+            // Render in the chyron (replaces city conditions)
+            renderForecastChyron(forecastPeriods);
+
+        } catch(e) {
+            console.warn('Hourly forecast failed:', e);
+            var scroll = document.getElementById('forecast-scroll');
+            if (scroll) scroll.innerHTML = '<div class="forecast-loading">Signal lost</div>';
+        }
+    }
+
+    function renderForecastPanel(periods) {
+        var scroll = document.getElementById('forecast-scroll');
+        if (!scroll || !periods.length) return;
+
+        var html = '';
+        periods.forEach(function(p, i) {
+            var dt = new Date(p.startTime);
+            var h = dt.getHours();
+            var ampm = h >= 12 ? 'P' : 'A';
+            var h12 = h % 12 || 12;
+            var timeStr = i === 0 ? 'NOW' : h12 + ampm;
+
+            var tempF = p.temperature;
+            var color = getTempColor(tempF);
+            var icon = getConditionIcon(p.shortForecast);
+            var precip = p.probabilityOfPrecipitation && p.probabilityOfPrecipitation.value;
+            var precipStr = precip != null && precip > 0 ? precip + '%' : '';
+            var wind = p.windSpeed || '';
+
+            html += '<div class="forecast-hour">' +
+                '<span class="fh-time">' + timeStr + '</span>' +
+                '<span class="fh-icon">' + icon + '</span>' +
+                '<span class="fh-temp" style="color:' + color + '">' + tempF + '\u00B0</span>' +
+                (precipStr ? '<span class="fh-precip">\uD83D\uDCA7' + precipStr + '</span>' : '') +
+                '<span class="fh-wind">' + wind + '</span>' +
+                '</div>';
+        });
+
+        scroll.innerHTML = html;
+    }
+
+    function renderForecastChyron(periods) {
+        var scroll = document.getElementById('chyron-scroll');
+        var label = document.querySelector('.chyron-label');
+        if (!scroll || !periods.length) return;
+
+        // Update label
+        if (label) label.textContent = '12-Hr Forecast';
+
+        // Build two copies for seamless loop
+        var html = '';
+        for (var pass = 0; pass < 2; pass++) {
+            periods.forEach(function(p, i) {
+                var dt = new Date(p.startTime);
+                var h = dt.getHours();
+                var ampm = h >= 12 ? 'PM' : 'AM';
+                var h12 = h % 12 || 12;
+                var timeStr = i === 0 ? 'NOW' : h12 + ':00 ' + ampm;
+
+                var tempF = p.temperature;
+                var color = getTempColor(tempF);
+                var icon = getConditionIcon(p.shortForecast);
+                var desc = p.shortForecast || '';
+                var precip = p.probabilityOfPrecipitation && p.probabilityOfPrecipitation.value;
+                var precipStr = precip != null && precip > 0 ? precip + '% precip' : '';
+                var wind = p.windSpeed ? 'Wind ' + (p.windDirection || '') + ' ' + p.windSpeed : '';
+
+                html +=
+                    '<span class="chyron-city">' +
+                    '<span class="chyron-city-name">' + timeStr + '</span>' +
+                    '<span class="chyron-city-data">' + icon + ' ' +
+                    '<span style="color:' + color + '">' + tempF + '\u00B0F</span>' +
+                    '<span class="chyron-sep"> \u00B7 </span>' + desc +
+                    (precipStr ? '<span class="chyron-sep"> \u00B7 </span>' + precipStr : '') +
+                    (wind ? '<span class="chyron-sep"> \u00B7 </span>' + wind : '') +
+                    '</span>' +
+                    '</span>' +
+                    '<span class="chyron-divider">&#9475;</span>';
+            });
+        }
+        scroll.innerHTML = html;
+        startChyronAnimation(scroll);
+    }
+
+    // Re-fetch hourly forecast every 30 minutes
+    setInterval(fetchHourlyForecast, 30 * 60 * 1000);
+
     // ── SPLASH DISMISS ───────────────────────────────────────────
     // The splash screen acts as the user-gesture gate required by browsers
     // before audio can autoplay. Dismissing it starts both audio and camera.
@@ -1456,6 +2028,10 @@
         }, { once: true });
         flyToShot(0);
         tryPlay(0);
+
+        // Init radar animation and hourly forecast
+        initRadarAnimation();
+        fetchHourlyForecast();
     }
     splash.addEventListener('click', startExperience, { once: true });
     splash.addEventListener('touchend', startExperience, { once: true });
