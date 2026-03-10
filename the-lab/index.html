@@ -692,8 +692,8 @@
             "Jamie Moyer threw 78 mph changeups until age 49. Physics couldn't explain it. Neither can we."
         </p>
         <p style="font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--muted); max-width:600px; margin:0 auto;">
-            The MOYER Score honors elder craftsmen — pitchers 35 and older who keep hitters off balance with nothing but guile, command, and the audacity to still be pitching.
-            K/9 &le; 6.0 and ERA &lt; 4.00 required. <strong style="color:#64c8dc;">These guys defy father time.</strong>
+            The MOYER Score honors elder craftsmen — pitchers 33 and older who keep hitters off balance with nothing but guile, command, and the audacity to still be pitching.
+            K/9 &le; 7.5 and ERA &lt; 4.50 required. <strong style="color:#64c8dc;">These guys defy father time.</strong>
         </p>
         <p id="moyerEmpty" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted); padding:2rem 0; display:none;">
             No active pitchers currently qualify for the MOYER Score this season.<br>
@@ -804,8 +804,8 @@
         <div class="metric-explain">
             <h3><span class="abbr" style="color:#64c8dc;">The Formula</span></h3>
             <p style="font-family:'JetBrains Mono',monospace; font-style:normal; color:#64c8dc;">MOYER = (IP &times; Age &times; (9 / ERA)) / K/9</p>
-            <p style="font-family:'JetBrains Mono',monospace; font-style:normal; color:var(--muted); font-size:0.75rem; margin-top:0.25rem;">Must be 35+, K/9 &le; 6.0, ERA &lt; 4.00</p>
-            <p style="margin-top:0.5rem;">The qualifying criteria are brutally specific: (1) age 35 or older — you have to have been around; (2) K/9 of 6.0 or below — no sneaky good stuff allowed; (3) ERA under 4.00 — you're actually effective, which is the miracle. Age is multiplied in because a 42-year-old with a 3.50 ERA and 5.0 K/9 is significantly more absurd than a 35-year-old doing the same thing. The older you are, the higher your MOYER.</p>
+            <p style="font-family:'JetBrains Mono',monospace; font-style:normal; color:var(--muted); font-size:0.75rem; margin-top:0.25rem;">Must be 33+, K/9 &le; 7.5, ERA &lt; 4.50</p>
+            <p style="margin-top:0.5rem;">The qualifying criteria are brutally specific: (1) age 33 or older — you have to have been around; (2) K/9 of 7.5 or below — no sneaky good stuff allowed; (3) ERA under 4.50 — you're actually effective, which is the miracle. Age is multiplied in because a 42-year-old with a 3.50 ERA and 5.0 K/9 is significantly more absurd than a 35-year-old doing the same thing. The older you are, the higher your MOYER.</p>
         </div>
         <div class="metric-explain">
             <h3><span class="abbr" style="color:#64c8dc;">The Pantheon</span></h3>
@@ -1097,12 +1097,12 @@
                 return Object.assign({}, p);
             });
 
-            // Calculate MOYER for pitchers 35+ with K/9 <= 6.0 and ERA < 4.00
+            // Calculate MOYER for pitchers 33+ with K/9 <= 7.5 and ERA < 4.50
             moyerData = Object.values(pitcherMap).filter(p => {
                 if (p.position !== 'P' && p.position !== '') return false;
-                if (p.age < 35) return false;
+                if (p.age < 33) return false;
                 const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
-                return k9 <= 6.0 && k9 > 0 && p.era > 0 && p.era < 4.00;
+                return k9 <= 7.5 && k9 > 0 && p.era > 0 && p.era < 4.50;
             }).map(p => {
                 const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
                 const bb9 = p.ip > 0 ? (p.bb / p.ip) * 9 : 0;
