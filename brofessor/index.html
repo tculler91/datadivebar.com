@@ -12,9 +12,9 @@
     --neon-blue: #4A90FF;
     --neon-green: #69f0ae;
     --neon-pink: #ff6b9d;
-    --dark-bg: #060C16;
-    --panel-bg: #0D1520;
-    --card-bg: #0A1018;
+    --dark-bg: #0E1A2B;
+    --panel-bg: #152236;
+    --card-bg: #121E30;
     --chalk: #e8e0d4;
     --muted: #7a7265;
     --neon-red: #ff4444;
@@ -238,7 +238,7 @@
     margin: 32px 0;
     padding: 24px 28px;
     background:
-      linear-gradient(135deg, rgba(13,21,32,0.95), rgba(10,16,24,0.95)),
+      linear-gradient(135deg, rgba(21,34,54,0.95), rgba(18,30,48,0.95)),
       url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
     border-left: 3px solid var(--neon-orange);
     border-radius: 0 8px 8px 0;
@@ -384,6 +384,16 @@
     color: var(--muted);
     line-height: 1.7;
     margin-bottom: 8px;
+  }
+
+  .methodology a {
+    color: var(--neon-amber);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--neon-amber);
+  }
+
+  .methodology a:hover {
+    opacity: 0.8;
   }
 
   /* === COPYRIGHT === */
@@ -597,11 +607,11 @@
   <!-- METHODOLOGY -->
   <div class="methodology">
     <h3>Methodology & Sources</h3>
-    <p><strong>Attendance data (Viz 1)</strong> — sourced from Baseball Reference historical attendance records. Total regular-season gate attendance per year. The 2020 season was cancelled due to COVID-19 and is excluded. The 2021 season operated under reduced capacity restrictions.</p>
-    <p><strong>World Series viewership (Viz 2)</strong> — sourced from Nielsen Media Research historical ratings as reported by Sports Media Watch. Figures represent average viewers across all games of each series. Select years chosen for narrative clarity.</p>
-    <p><strong>Vibes Above Replacement (Viz 3)</strong> — VAR is an entirely made-up metric invented by The Brofessor. The formula (HRs &times; Avg HR Distance &times; Bicep&sup2;) / League Average is napkin math. Home run counts are real (Baseball Reference). Average HR distances are real (Statcast/Baseball Savant). Bicep circumference measurements are The Brofessor's best guesses from squinting at photos. "Optimized VAR" projections are speculative nonsense based on vibes and a loose understanding of sports pharmacology. Do not cite this in your dissertation.</p>
-    <p><strong>Recovery timelines (Viz 4)</strong> — Current recovery baselines are approximate averages based on publicly reported MLB injured list stints. The HGH-optimized projections (40-50% reductions) are The Brofessor's own bullshit, loosely inspired by clinical literature on growth hormone and tissue repair but not directly sourced from any specific study. The reduction percentages are illustrative, not clinical.</p>
-    <p><strong>Contract waste calculations</strong> — Contract values and games played data sourced from Baseball Reference and Spotrac through the 2024 season. "Wasted" dollars assume linear per-game contract value, which is a simplification but directionally accurate.</p>
+    <p><strong>Attendance data (Viz 1)</strong> — Total regular-season gate attendance per year, sourced from <a href="https://www.baseball-reference.com/leagues/majors/misc.shtml" target="_blank">Baseball Reference Historical Attendance</a>. The 2020 season was cancelled due to COVID-19 and is excluded. The 2021 season operated under reduced capacity restrictions.</p>
+    <p><strong>World Series viewership (Viz 2)</strong> — Average viewers per series sourced from Nielsen Media Research as reported by <a href="https://www.sportsmediawatch.com/world-series-ratings-history-viewership/" target="_blank">Sports Media Watch</a>. Select years chosen for narrative clarity. The "43 million" figure for the 1998 HR race refers to peak viewership of McGwire's 62nd home run (Sept. 8, 1998). The "nearly 50 million" for 2016 Game 7 refers to the peak audience of 49.9M viewers.</p>
+    <p><strong>Vibes Above Replacement (Viz 3)</strong> — VAR is an entirely made-up metric from the mind of The Brofessor. The formula is napkin math. Home run counts are real (<a href="https://www.baseball-reference.com/" target="_blank">Baseball Reference</a>). Average HR distances are real (<a href="https://baseballsavant.mlb.com/" target="_blank">Baseball Savant / Statcast</a>). Bicep circumference measurements are The Brofessor's best guesses from squinting at photos. "Optimized VAR" projections are speculative nonsense based on vibes and a loose understanding of sports pharmacology. Do not cite this in your dissertation.</p>
+    <p><strong>Recovery timelines (Viz 4)</strong> — Current recovery baselines are approximate averages based on publicly reported MLB injured list stints. The HGH-optimized projections (40-50% reductions) are entirely from the mind of The Brofessor, loosely inspired by clinical literature on growth hormone and tissue repair but not directly sourced from any specific study. The reduction percentages are illustrative, not clinical. In other words: The Brofessor's own bullshit.</p>
+    <p><strong>Contract waste calculations</strong> — Contract values sourced from <a href="https://www.spotrac.com/" target="_blank">Spotrac</a>. Games played data from <a href="https://www.baseball-reference.com/" target="_blank">Baseball Reference</a> through the 2024 season. "Wasted" dollars assume linear per-game contract value, which is a simplification but directionally accurate.</p>
   </div>
 
   <!-- COPYRIGHT -->
@@ -670,7 +680,7 @@ const viewershipData = [
   {year: 1998, viewers: 20.4, teams: 'Yankees vs Padres', era: 'steroid'},
   {year: 1999, viewers: 16.0, teams: 'Yankees vs Braves', era: 'steroid'},
   {year: 2000, viewers: 16.5, teams: 'Yankees vs Mets', era: 'steroid'},
-  {year: 2001, viewers: 23.5, teams: 'D-backs vs Yankees', era: 'steroid'},
+  {year: 2001, viewers: 24.5, teams: 'D-backs vs Yankees', era: 'steroid'},
   {year: 2002, viewers: 19.2, teams: 'Angels vs Giants', era: 'steroid'},
   {year: 2003, viewers: 17.1, teams: 'Marlins vs Yankees', era: 'steroid'},
   {year: 2004, viewers: 25.4, teams: 'Red Sox vs Cardinals', era: 'steroid'},
@@ -682,7 +692,7 @@ const viewershipData = [
   {year: 2012, viewers: 12.7, teams: 'Giants vs Tigers', era: 'post'},
   {year: 2014, viewers: 13.8, teams: 'Giants vs Royals', era: 'post'},
   {year: 2016, viewers: 22.8, teams: 'Cubs vs Indians', era: 'post'},
-  {year: 2019, viewers: 14.1, teams: 'Nationals vs Astros', era: 'post'},
+  {year: 2019, viewers: 13.9, teams: 'Nationals vs Astros', era: 'post'},
   {year: 2020, viewers: 9.8, teams: 'Dodgers vs Rays', era: 'post'},
   {year: 2021, viewers: 11.8, teams: 'Braves vs Astros', era: 'post'},
   {year: 2022, viewers: 12.0, teams: 'Astros vs Phillies', era: 'post'},
@@ -694,12 +704,12 @@ const varData = [
   {player: 'Barry Bonds (2001)', hrs: 73, avgDist: 415, bicep: 19.5, var: 85.4, optimizedVar: null, notes: 'The Biological North Star', era: 'steroid'},
   {player: 'Mark McGwire (1998)', hrs: 70, avgDist: 425, bicep: 20.2, var: 82.1, optimizedVar: null, notes: 'Shoulders wider than a Suburban', era: 'steroid'},
   {player: 'Sammy Sosa (1998)', hrs: 66, avgDist: 410, bicep: 18.5, var: 74.8, optimizedVar: null, notes: 'Elite hop-to-slugging ratio', era: 'steroid'},
-  {player: 'Aaron Judge (2024)', hrs: 58, avgDist: 412, bicep: 16.2, var: 14.8, optimizedVar: 48.2, notes: 'Needs 3" of mass to reach Deity status', era: 'current'},
-  {player: 'Shohei Ohtani (2024)', hrs: 54, avgDist: 422, bicep: 15.8, var: 13.9, optimizedVar: 42.5, notes: 'High global vibes; needs HGH patch', era: 'current'},
-  {player: 'Giancarlo Stanton (2024)', hrs: 27, avgDist: 425, bicep: 17.5, var: 11.2, optimizedVar: 35.1, notes: 'Built like a medieval siege engine', era: 'current'},
-  {player: 'Bryce Harper (2024)', hrs: 30, avgDist: 405, bicep: 15.5, var: 9.4, optimizedVar: 31.0, notes: 'Walk-off King. Needs forearm mass', era: 'current'},
-  {player: 'Elly De La Cruz (2024)', hrs: 25, avgDist: 415, bicep: 14.0, var: 7.1, optimizedVar: 28.4, notes: 'Speed vibes high; mass vibes low', era: 'current'},
-  {player: 'Avg 2024 Player', hrs: 12, avgDist: 398, bicep: 14.2, var: 1.2, optimizedVar: 4.5, notes: 'An accountant in cleats', era: 'current'}
+  {player: 'Aaron Judge (2025)', hrs: 58, avgDist: 412, bicep: 16.2, var: 14.8, optimizedVar: 48.2, notes: 'Needs 3" of mass to reach Deity status', era: 'current'},
+  {player: 'Shohei Ohtani (2025)', hrs: 54, avgDist: 422, bicep: 15.8, var: 13.9, optimizedVar: 42.5, notes: 'High global vibes; needs HGH patch', era: 'current'},
+  {player: 'Giancarlo Stanton (2025)', hrs: 27, avgDist: 425, bicep: 17.5, var: 11.2, optimizedVar: 35.1, notes: 'Built like a medieval siege engine', era: 'current'},
+  {player: 'Bryce Harper (2025)', hrs: 30, avgDist: 405, bicep: 15.5, var: 9.4, optimizedVar: 31.0, notes: 'Walk-off King. Needs forearm mass', era: 'current'},
+  {player: 'Elly De La Cruz (2025)', hrs: 25, avgDist: 415, bicep: 14.0, var: 7.1, optimizedVar: 28.4, notes: 'Speed vibes high; mass vibes low', era: 'current'},
+  {player: 'Avg 2025 Player', hrs: 12, avgDist: 398, bicep: 14.2, var: 1.2, optimizedVar: 4.5, notes: 'An accountant in cleats', era: 'current'}
 ];
 
 const recoveryData = [
