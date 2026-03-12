@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Vibes League | The Brofessor's Lab | Data Dive Bar</title>
+    <meta name="description" content="Fantasy baseball scored entirely on vibes. Draft real MLB players, score them on VAR, BEEF, FILTH, and SAUCE. No boring stats allowed.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-orange: #FF6B0A;
+            --neon-amber: #FF8C2A;
+            --neon-blue: #4A90FF;
+            --neon-green: #69f0ae;
+            --neon-pink: #ff6b9d;
+            --neon-purple: #b388ff;
+            --dark-bg: #0E1A2B;
+            --panel-bg: #0D1520;
+            --card-bg: #0A1018;
+            --chalk: #e8e0d4;
+            --muted: #7a7265;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { overflow-x: hidden; }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--chalk);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            padding: 2.5rem 1.5rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .back-link {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-decoration: none;
+            margin-bottom: 1rem;
+            transition: color 0.2s;
+        }
+        .header .back-link:hover { color: var(--neon-orange); }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            color: var(--neon-green);
+            text-shadow:
+                0 0 20px rgba(105, 240, 174, 0.4),
+                0 0 60px rgba(105, 240, 174, 0.15);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .header .subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .header .tagline {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            color: var(--neon-amber);
+            margin-top: 0.75rem;
+            opacity: 0.85;
+        }
+
+        /* ── Main Layout ── */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Phase Screens ── */
+        .phase { display: none; }
+        .phase.active { display: block; }
+
+        /* ── Setup Phase ── */
+        .setup-card {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 107, 10, 0.15);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+
+        .setup-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--neon-orange);
+            margin-bottom: 1rem;
+        }
+
+        .setup-card label {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .setup-card input, .setup-card select {
+            width: 100%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            background: var(--card-bg);
+            color: var(--chalk);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 1.25rem;
+            outline: none;
+        }
+
+        .setup-card input:focus, .setup-card select:focus {
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 8px rgba(255, 107, 10, 0.2);
+        }
+
+        .team-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .team-preview h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-preview .cpu-team {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .team-preview .cpu-team:last-child { border-bottom: none; }
+
+        .team-preview .cpu-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary {
+            background: var(--neon-green);
+            color: #0A1018;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(105, 240, 174, 0.4);
+            transform: translateY(-1px);
+        }
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 107, 10, 0.15);
+            color: var(--neon-orange);
+            border: 1px solid rgba(255, 107, 10, 0.3);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 107, 10, 0.25);
+        }
+
+        /* ── Loading ── */
+        .loading-state {
+            text-align: center;
+            padding: 4rem 1rem;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(105, 240, 174, 0.15);
+            border-top-color: var(--neon-green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-state p {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 1rem;
+        }
+
+        /* ── Draft Phase ── */
+        .draft-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 1.5rem;
+        }
+
+        .draft-info {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .draft-round {
+            color: var(--neon-green);
+            font-weight: 700;
+        }
+
+        .draft-turn {
+            color: var(--neon-amber);
+            margin-left: 1rem;
+        }
+
+        .draft-picks-left {
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .roster-needs {
+            display: flex;
+            gap: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+        }
+
+        .roster-need {
+            padding: 0.3rem 0.6rem;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .roster-need.filled {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        .roster-need .need-count {
+            color: var(--neon-green);
+            font-weight: 700;
+        }
+
+        .draft-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .draft-layout { grid-template-columns: 1fr; }
+        }
+
+        /* ── Player Pool ── */
+        .pool-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .pool-filter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            background: var(--card-bg);
+            color: var(--muted);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pool-filter.active {
+            background: rgba(105, 240, 174, 0.1);
+            color: var(--neon-green);
+            border-color: rgba(105, 240, 174, 0.3);
+        }
+
+        .pool-filter:hover:not(.active) {
+            color: var(--chalk);
+        }
+
+        .player-pool {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .player-pool::-webkit-scrollbar { width: 6px; }
+        .player-pool::-webkit-scrollbar-track { background: var(--card-bg); }
+        .player-pool::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+
+        .pool-row {
+            display: grid;
+            grid-template-columns: 44px 1fr auto auto;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .pool-row:hover {
+            background: rgba(105, 240, 174, 0.06);
+        }
+
+        .pool-row.drafted {
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        .pool-row.just-drafted {
+            background: rgba(255, 107, 10, 0.1);
+            opacity: 0.4;
+            pointer-events: none;
+            animation: draftFlash 0.6s ease;
+        }
+
+        @keyframes draftFlash {
+            0% { background: rgba(255, 107, 10, 0.4); }
+            100% { background: rgba(255, 107, 10, 0.1); }
+        }
+
+        .pool-photo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--card-bg);
+        }
+
+        .pool-player-info {
+            min-width: 0;
+        }
+
+        .pool-player-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pool-player-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--muted);
+        }
+
+        .pool-vibe-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 8px rgba(105, 240, 174, 0.3);
+            text-align: right;
+        }
+
+        .pool-vibe-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--muted);
+            text-align: right;
+        }
+
+        .pool-header {
+            display: grid;
+            grid-template-columns: 44px 1fr auto auto;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        /* ── Draft Sidebar ── */
+        .draft-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .my-roster {
+            background: var(--panel-bg);
+            border: 1px solid rgba(105, 240, 174, 0.15);
+            border-radius: 6px;
+            padding: 1rem;
+        }
+
+        .my-roster h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--neon-green);
+            margin-bottom: 0.75rem;
+        }
+
+        .roster-slot {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0;
+            font-size: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .roster-slot:last-child { border-bottom: none; }
+
+        .slot-pos {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--neon-orange);
+            width: 28px;
+            text-align: center;
+        }
+
+        .slot-empty {
+            color: var(--muted);
+            font-style: italic;
+            font-size: 0.75rem;
+        }
+
+        .slot-player {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .slot-player-name {
+            font-weight: 600;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .slot-team {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--muted);
+        }
+
+        .slot-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: var(--neon-green);
+        }
+
+        .draft-log {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .draft-log h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .log-entry {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            color: var(--muted);
+        }
+
+        .log-entry .log-team { font-weight: 700; }
+        .log-entry .log-player { color: var(--chalk); }
+        .log-entry.my-pick .log-team { color: var(--neon-green); }
+        .log-entry.cpu-pick .log-team { color: var(--neon-orange); }
+
+        /* ── Results Phase ── */
+        .results-header {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .results-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            color: var(--neon-green);
+            text-shadow: 0 0 20px rgba(105, 240, 174, 0.3);
+        }
+
+        .results-header .results-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+        }
+
+        .standings {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+
+        .standings h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: var(--neon-orange);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .standing-row {
+            display: grid;
+            grid-template-columns: 40px 1fr auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .standing-row.first-place {
+            border-color: rgba(105, 240, 174, 0.3);
+            background: rgba(105, 240, 174, 0.05);
+        }
+
+        .standing-rank {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .standing-row.first-place .standing-rank { color: var(--neon-green); }
+        .standing-row:nth-child(2) .standing-rank { color: var(--neon-amber); }
+        .standing-row:nth-child(3) .standing-rank { color: var(--neon-blue); }
+        .standing-row:nth-child(4) .standing-rank { color: var(--muted); }
+
+        .standing-team-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .standing-team-owner {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .standing-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px rgba(105, 240, 174, 0.3);
+        }
+
+        .standing-score-label {
+            font-size: 0.6rem;
+            color: var(--muted);
+            text-align: right;
+        }
+
+        .trash-talk {
+            text-align: center;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 600px;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 140, 42, 0.2);
+            border-radius: 6px;
+        }
+
+        .trash-talk p {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: var(--neon-amber);
+            line-height: 1.5;
+        }
+
+        .trash-talk .attribution {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+            font-style: normal;
+        }
+
+        /* ── Team Detail Cards ── */
+        .team-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .team-card {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            padding: 1.25rem;
+        }
+
+        .team-card.my-team {
+            border-color: rgba(105, 240, 174, 0.2);
+        }
+
+        .team-card h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .team-card.my-team h4 { color: var(--neon-green); }
+
+        .team-card-player {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.35rem 0;
+            font-size: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .team-card-player:last-child { border-bottom: none; }
+
+        .tcp-pos {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--neon-orange);
+            width: 24px;
+        }
+
+        .tcp-name {
+            flex: 1;
+            margin: 0 0.5rem;
+        }
+
+        .tcp-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: var(--neon-green);
+        }
+
+        .team-card-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .team-card-total .total-score { color: var(--neon-green); }
+
+        /* ── Scoring Breakdown ── */
+        .scoring-explainer {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+        }
+
+        .scoring-explainer h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--neon-orange);
+            margin-bottom: 1rem;
+        }
+
+        .scoring-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .scoring-grid { grid-template-columns: 1fr; }
+        }
+
+        .scoring-cat h4 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--neon-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .scoring-cat .formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .scoring-cat .formula span {
+            color: var(--neon-amber);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer a {
+            color: var(--neon-orange);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover { color: var(--neon-amber); text-decoration: underline; }
+
+        .footer .copy {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        /* ── CPU Drafting Overlay ── */
+        .cpu-drafting-banner {
+            display: none;
+            text-align: center;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            background: rgba(255, 107, 10, 0.1);
+            border: 1px solid rgba(255, 107, 10, 0.25);
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--neon-amber);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* ── Season Select ── */
+        .season-row {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .season-select {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            background: var(--panel-bg);
+            color: var(--chalk);
+            border: 1px solid rgba(255, 107, 10, 0.3);
+            border-radius: 4px;
+            padding: 0.35rem 0.6rem;
+            cursor: pointer;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <a href="/" class="back-link">&larr; Back to the Data Dive Bar</a>
+    <h1>Fantasy Vibes League</h1>
+    <div class="subtitle">A Brofessor's Lab Production</div>
+    <div class="tagline">"Where your team's value is measured in BEEF, not batting average."</div>
+</div>
+
+<div class="container">
+
+    <!-- ═══ PHASE 1: SETUP ═══ -->
+    <div id="phaseSetup" class="phase active">
+        <div class="setup-card animate-in">
+            <h2>Create Your League</h2>
+
+            <label for="teamName">Your Team Name</label>
+            <input type="text" id="teamName" placeholder="e.g. The Steroid Stallions" maxlength="30" value="">
+
+            <label for="seasonSelect">Season</label>
+            <select id="seasonSelect" class="season-select"></select>
+
+            <div class="team-preview">
+                <h3>Your League Opponents</h3>
+                <div class="cpu-team"><span class="cpu-dot" style="background: var(--neon-orange);"></span> The Craft Daddies <span style="color:var(--muted); font-size:0.7rem; margin-left:auto;">managed by Paul Byrd's Ghost</span></div>
+                <div class="cpu-team"><span class="cpu-dot" style="background: var(--neon-pink);"></span> Roid Rage & Chill <span style="color:var(--muted); font-size:0.7rem; margin-left:auto;">managed by BALCO Labs AI</span></div>
+                <div class="cpu-team"><span class="cpu-dot" style="background: var(--neon-purple);"></span> The Old Moyers Club <span style="color:var(--muted); font-size:0.7rem; margin-left:auto;">managed by Jamie's Changeup</span></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button id="btnStartDraft" class="btn btn-primary" onclick="startDraft()">Start the Draft</button>
+            </div>
+        </div>
+
+        <div class="scoring-explainer animate-in" style="animation-delay: 0.2s;">
+            <h3>How Scoring Works</h3>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem;">
+                Forget RBIs. Forget ERA. In the Fantasy Vibes League, your players score on the Brofessor's proprietary metrics.
+                Draft 5 batters and 3 pitchers. Highest combined VIBE SCORE wins.
+            </p>
+            <div class="scoring-grid">
+                <div class="scoring-cat">
+                    <h4>Batter Scoring</h4>
+                    <div class="formula">
+                        <span>VAR</span> = (HR &times; OPS &times; weight&sup2;) / 1000<br>
+                        <span>BEEF</span> = (SLG &times; 1000) &times; (weight/180)^1.5<br>
+                        <span>SAUCE</span> = AVG &times; HR &times; OPS &times; 100<br>
+                        <br>
+                        Batter Score = VAR + BEEF + SAUCE
+                    </div>
+                </div>
+                <div class="scoring-cat">
+                    <h4>Pitcher Scoring</h4>
+                    <div class="formula">
+                        <span>FILTH</span> = (K/9 &times; 100) / max(ERA, 0.5)<br>
+                        <span>MENACE</span> = (SO-BB) &times; IP &times; (1/max(WHIP,0.5))<br>
+                        <span>ICE</span> = (SO/max(BB,1)) &times; (1/max(ERA,0.5)) &times; IP<br>
+                        <br>
+                        Pitcher Score = (FILTH + ICE) &times; 2 + MENACE/50
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ PHASE 2: LOADING ═══ -->
+    <div id="phaseLoading" class="phase">
+        <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <p id="loadingMsg">Fetching MLB data from the Brofessor's servers...</p>
+        </div>
+    </div>
+
+    <!-- ═══ PHASE 3: DRAFT ═══ -->
+    <div id="phaseDraft" class="phase">
+        <div class="draft-header">
+            <div class="draft-info">
+                <span class="draft-round" id="draftRound">Round 1 of 8</span>
+                <span class="draft-turn" id="draftTurn">Your Pick</span>
+            </div>
+            <div class="roster-needs" id="rosterNeeds"></div>
+        </div>
+
+        <div id="cpuDraftingBanner" class="cpu-drafting-banner">
+            CPU is drafting...
+        </div>
+
+        <div class="draft-layout">
+            <div>
+                <div class="pool-controls" id="poolControls">
+                    <button class="pool-filter active" data-filter="all" onclick="filterPool('all')">All</button>
+                    <button class="pool-filter" data-filter="batter" onclick="filterPool('batter')">Batters</button>
+                    <button class="pool-filter" data-filter="pitcher" onclick="filterPool('pitcher')">Pitchers</button>
+                </div>
+                <div class="player-pool" id="playerPool">
+                    <div class="pool-header">
+                        <span></span>
+                        <span>Player</span>
+                        <span>Score</span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="draft-sidebar">
+                <div class="my-roster" id="myRoster">
+                    <h3 id="myTeamLabel">Your Team</h3>
+                </div>
+                <div class="draft-log" id="draftLog">
+                    <h3>Draft Log</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ PHASE 4: RESULTS ═══ -->
+    <div id="phaseResults" class="phase">
+        <div class="results-header">
+            <h2 id="resultsTitle">League Standings</h2>
+            <div class="results-subtitle" id="resultsSeason"></div>
+        </div>
+
+        <div id="trashTalk" class="trash-talk"></div>
+
+        <div class="standings" id="standings"></div>
+
+        <div class="team-cards" id="teamCards"></div>
+
+        <div style="text-align: center; margin: 2rem 0;">
+            <button class="btn btn-primary" onclick="resetDraft()">Draft Again</button>
+            <a href="/the-lab/" class="btn btn-secondary" style="display:inline-block; text-decoration:none; margin-left:0.5rem;">Visit The Lab</a>
+        </div>
+    </div>
+
+</div>
+
+<footer class="footer">
+    <a href="/">&larr; Back to the Data Dive Bar</a>
+    <div class="copy">&copy; The Brofessor's Fantasy Vibes League &middot; A Data Dive Bar Research Facility Production &middot; No real athletes were harmed in the scoring of these vibes</div>
+</footer>
+
+<script>
+(function() {
+    'use strict';
+
+    // ── Config ──
+    const API_BASE = 'https://statsapi.mlb.com/api/v1';
+    const CORS_PROXY = 'https://corsproxy.io/?url=';
+    const CACHE_TTL = 10 * 60 * 1000;
+    const DEFAULT_WEIGHT = 200;
+    const DEFAULT_HEIGHT_IN = 73;
+
+    const ROSTER_SIZE = { batters: 5, pitchers: 3 };
+    const TOTAL_PICKS = (ROSTER_SIZE.batters + ROSTER_SIZE.pitchers);
+    const NUM_TEAMS = 4;
+    const TOTAL_ROUNDS = TOTAL_PICKS; // 8 rounds
+
+    const currentYear = new Date().getFullYear();
+    let selectedSeason = currentYear;
+    let useCorsProxy = false;
+
+    // CPU team definitions
+    const CPU_TEAMS = [
+        { name: 'The Craft Daddies', owner: "Paul Byrd's Ghost", color: '#FF6B0A', strategy: 'balanced' },
+        { name: 'Roid Rage & Chill', owner: 'BALCO Labs AI', color: '#ff6b9d', strategy: 'power' },
+        { name: 'The Old Moyers Club', owner: "Jamie's Changeup", color: '#b388ff', strategy: 'pitching' }
+    ];
+
+    // State
+    let allBatters = [];
+    let allPitchers = [];
+    let playerPool = []; // combined, with vibes calculated
+    let teams = []; // [0] = human, [1-3] = CPU
+    let draftOrder = [];
+    let currentPick = 0;
+    let draftComplete = false;
+    let poolFilter = 'all';
+
+    const TEAM_COLORS = {
+        'ARI': '#A71930', 'ATL': '#CE1141', 'BAL': '#DF4601', 'BOS': '#BD3039',
+        'CHC': '#0E3386', 'CWS': '#27251F', 'CIN': '#C6011F', 'CLE': '#00385D',
+        'COL': '#333366', 'DET': '#0C2340', 'HOU': '#EB6E1F', 'KC': '#004687',
+        'LAA': '#BA0021', 'LAD': '#005A9C', 'MIA': '#00A3E0', 'MIL': '#FFC52F',
+        'MIN': '#002B5C', 'NYM': '#002D72', 'NYY': '#003087', 'OAK': '#003831',
+        'PHI': '#E81828', 'PIT': '#FDB827', 'SD': '#2F241D', 'SF': '#FD5A1E',
+        'SEA': '#0C2C56', 'STL': '#C41E3A', 'TB': '#092C5C', 'TEX': '#003278',
+        'TOR': '#134A8E', 'WSH': '#AB0003', 'ATH': '#003831'
+    };
+
+    // ── Season selector ──
+    const seasonSelect = document.getElementById('seasonSelect');
+    for (let y = currentYear; y >= 2015; y--) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y + ' Season';
+        seasonSelect.appendChild(opt);
+    }
+    // Default to previous year if early in season (before May)
+    const currentMonth = new Date().getMonth();
+    if (currentMonth < 4) {
+        selectedSeason = currentYear - 1;
+        seasonSelect.value = selectedSeason;
+    }
+    seasonSelect.addEventListener('change', function() {
+        selectedSeason = parseInt(this.value);
+    });
+
+    // ── Phase management ──
+    function showPhase(id) {
+        document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // ── API fetch with CORS fallback ──
+    async function apiFetch(path) {
+        const url = API_BASE + path;
+        const cacheKey = 'fvl_' + selectedSeason + '_' + path;
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Date.now() - parsed.ts < CACHE_TTL) return parsed.data;
+        }
+
+        let data;
+        if (!useCorsProxy) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(res.status);
+                data = await res.json();
+            } catch (e) {
+                useCorsProxy = true;
+                const res = await fetch(CORS_PROXY + encodeURIComponent(url));
+                if (!res.ok) throw new Error('Proxy also failed: ' + res.status);
+                data = await res.json();
+            }
+        } else {
+            const res = await fetch(CORS_PROXY + encodeURIComponent(url));
+            if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+            data = await res.json();
+        }
+
+        try {
+            sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }));
+        } catch(e) {}
+
+        return data;
+    }
+
+    function parseHeight(str) {
+        if (!str) return DEFAULT_HEIGHT_IN;
+        const m = str.match(/(\d+)\s*['\']\s*(\d+)/);
+        if (m) return parseInt(m[1]) * 12 + parseInt(m[2]);
+        return DEFAULT_HEIGHT_IN;
+    }
+
+    async function fetchPlayerBio(playerId) {
+        try {
+            const data = await apiFetch('/people/' + playerId);
+            const person = data.people && data.people[0];
+            if (!person) return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN, position: '', age: 0 };
+            return {
+                weight: person.weight || DEFAULT_WEIGHT,
+                heightIn: parseHeight(person.height),
+                position: person.primaryPosition ? person.primaryPosition.abbreviation || '' : '',
+                age: person.currentAge || 0
+            };
+        } catch(e) {
+            return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN, position: '', age: 0 };
+        }
+    }
+
+    // ── Load all player data ──
+    async function loadPlayerData() {
+        showPhase('phaseLoading');
+        document.getElementById('loadingMsg').textContent = 'Fetching ' + selectedSeason + ' MLB data from the Brofessor\'s servers...';
+
+        try {
+            const [battingLeaders, pitchingLeaders] = await Promise.all([
+                apiFetch('/stats/leaders?leaderCategories=homeRuns,battingAverage,runsBattedIn,onBasePlusSlugging,stolenBases,hits&season=' + selectedSeason + '&sportId=1&limit=30'),
+                apiFetch('/stats/leaders?leaderCategories=earnedRunAverage,strikeouts,walksAndHitsPerInningPitched,wins,saves&season=' + selectedSeason + '&sportId=1&limit=30')
+            ]);
+
+            // Build batter map
+            const batterMap = {};
+            if (battingLeaders.leagueLeaders) {
+                battingLeaders.leagueLeaders.forEach(cat => {
+                    const catName = cat.leaderCategory;
+                    (cat.leaders || []).forEach(leader => {
+                        const id = leader.person.id;
+                        if (!batterMap[id]) {
+                            batterMap[id] = {
+                                id, name: leader.person.fullName,
+                                team: leader.team ? leader.team.abbreviation || '' : '',
+                                hr: 0, avg: 0, ops: 0, rbi: 0, sb: 0, hits: 0,
+                                slg: 0, ab: 0, tb: 0,
+                                weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN,
+                                position: '', age: 0, type: 'batter'
+                            };
+                        }
+                        const val = parseFloat(leader.value) || 0;
+                        if (catName === 'homeRuns') batterMap[id].hr = val;
+                        else if (catName === 'battingAverage') batterMap[id].avg = val;
+                        else if (catName === 'runsBattedIn') batterMap[id].rbi = val;
+                        else if (catName === 'onBasePlusSlugging') batterMap[id].ops = val;
+                        else if (catName === 'stolenBases') batterMap[id].sb = val;
+                        else if (catName === 'hits') batterMap[id].hits = val;
+                    });
+                });
+            }
+
+            // Build pitcher map
+            const pitcherMap = {};
+            if (pitchingLeaders.leagueLeaders) {
+                pitchingLeaders.leagueLeaders.forEach(cat => {
+                    const catName = cat.leaderCategory;
+                    (cat.leaders || []).forEach(leader => {
+                        const id = leader.person.id;
+                        if (!pitcherMap[id]) {
+                            pitcherMap[id] = {
+                                id, name: leader.person.fullName,
+                                team: leader.team ? leader.team.abbreviation || '' : '',
+                                w: 0, era: 0, so: 0, whip: 0, ip: 0,
+                                bb: 0, er: 0, saves: 0,
+                                weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN,
+                                position: '', age: 0, type: 'pitcher'
+                            };
+                        }
+                        const val = parseFloat(leader.value) || 0;
+                        if (catName === 'earnedRunAverage') pitcherMap[id].era = val;
+                        else if (catName === 'strikeouts') pitcherMap[id].so = val;
+                        else if (catName === 'walksAndHitsPerInningPitched') pitcherMap[id].whip = val;
+                        else if (catName === 'wins') pitcherMap[id].w = val;
+                        else if (catName === 'saves') pitcherMap[id].saves = val;
+                    });
+                });
+            }
+
+            const batterIds = Object.keys(batterMap);
+            const pitcherIds = Object.keys(pitcherMap);
+
+            if (batterIds.length === 0 && pitcherIds.length === 0) {
+                if (selectedSeason === currentYear) {
+                    selectedSeason = currentYear - 1;
+                    seasonSelect.value = selectedSeason;
+                    return loadPlayerData();
+                }
+                throw new Error('No data available for ' + selectedSeason);
+            }
+
+            document.getElementById('loadingMsg').textContent = 'Computing vibes for ' + batterIds.length + ' batters and ' + pitcherIds.length + ' pitchers...';
+
+            // Fetch detailed stats + bios
+            await fetchDetailsBatched(batterIds, batterMap, 'hitting');
+            await fetchDetailsBatched(pitcherIds, pitcherMap, 'pitching');
+
+            // Calculate batter vibes
+            allBatters = Object.values(batterMap).filter(p => p.position !== 'P').map(p => {
+                const w = p.weight;
+                p.var_score = (p.hr * p.ops * (w * w)) / 1000;
+                p.beef = (p.slg * 1000) * Math.pow(w / 180, 1.5);
+                p.sauce = p.avg * p.hr * p.ops * 100;
+                p.vibeTotal = p.var_score + p.beef + p.sauce;
+                p.type = 'batter';
+                return p;
+            });
+
+            // Calculate pitcher vibes
+            allPitchers = Object.values(pitcherMap).filter(p => p.position === 'P' || p.position === '').map(p => {
+                const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
+                p.filth = (k9 * 100) / Math.max(p.era, 0.5);
+                p.menace = (p.so - p.bb) * p.ip * (1 / Math.max(p.whip, 0.5));
+                p.ice = (p.so / Math.max(p.bb, 1)) * (1 / Math.max(p.era, 0.5)) * p.ip;
+                p.vibeTotal = (p.filth + p.ice) * 2 + p.menace / 50;
+                p.type = 'pitcher';
+                return p;
+            });
+
+            // Sort by vibe total
+            allBatters.sort((a, b) => b.vibeTotal - a.vibeTotal);
+            allPitchers.sort((a, b) => b.vibeTotal - a.vibeTotal);
+
+            // Combined pool
+            playerPool = [...allBatters, ...allPitchers].map(p => ({ ...p, drafted: false, draftedBy: -1 }));
+            playerPool.sort((a, b) => b.vibeTotal - a.vibeTotal);
+
+            initDraft();
+
+        } catch(e) {
+            console.error('Load failed:', e);
+            document.getElementById('loadingMsg').textContent = 'Failed to load data. ' + e.message;
+        }
+    }
+
+    async function fetchDetailsBatched(ids, map, group) {
+        const BATCH = 8;
+        for (let i = 0; i < ids.length; i += BATCH) {
+            const batch = ids.slice(i, i + BATCH);
+            await Promise.all(batch.map(async id => {
+                try {
+                    const [bioData, statsData] = await Promise.all([
+                        fetchPlayerBio(id),
+                        apiFetch('/people/' + id + '/stats?stats=season&group=' + group + '&season=' + selectedSeason)
+                    ]);
+                    map[id].weight = bioData.weight;
+                    map[id].heightIn = bioData.heightIn;
+                    map[id].position = bioData.position;
+                    map[id].age = bioData.age;
+
+                    if (statsData.stats && statsData.stats[0] && statsData.stats[0].splits) {
+                        const s = statsData.stats[0].splits;
+                        const stat = s.length > 0 ? s[s.length - 1].stat : null;
+                        if (stat && group === 'hitting') {
+                            map[id].hr = parseInt(stat.homeRuns) || map[id].hr;
+                            map[id].avg = parseFloat(stat.avg) || map[id].avg;
+                            map[id].ops = parseFloat(stat.ops) || map[id].ops;
+                            map[id].rbi = parseInt(stat.rbi) || map[id].rbi;
+                            map[id].sb = parseInt(stat.stolenBases) || map[id].sb;
+                            map[id].slg = parseFloat(stat.slg) || 0;
+                            map[id].ab = parseInt(stat.atBats) || 0;
+                            map[id].tb = parseInt(stat.totalBases) || 0;
+                            map[id].hits = parseInt(stat.hits) || map[id].hits;
+                        } else if (stat && group === 'pitching') {
+                            map[id].w = parseInt(stat.wins) || map[id].w;
+                            map[id].era = parseFloat(stat.era) || map[id].era;
+                            map[id].so = parseInt(stat.strikeOuts) || map[id].so;
+                            map[id].whip = parseFloat(stat.whip) || map[id].whip;
+                            map[id].ip = parseFloat(stat.inningsPitched) || 0;
+                            map[id].bb = parseInt(stat.baseOnBalls) || 0;
+                            map[id].er = parseInt(stat.earnedRuns) || 0;
+                        }
+                    }
+                } catch(e) {}
+            }));
+            // Update loading message with progress
+            const progress = Math.min(100, Math.round(((i + batch.length) / ids.length) * 100));
+            document.getElementById('loadingMsg').textContent =
+                'Computing vibes... (' + group + ' ' + progress + '%)';
+        }
+    }
+
+    // ── Draft Logic ──
+    function initDraft() {
+        const teamName = document.getElementById('teamName').value.trim() || 'My Team';
+
+        // Initialize teams
+        teams = [
+            { name: teamName, owner: 'You', color: '#69f0ae', roster: [], isHuman: true },
+            ...CPU_TEAMS.map(t => ({ ...t, roster: [], isHuman: false }))
+        ];
+
+        // Snake draft order: 0,1,2,3,3,2,1,0,0,1,2,3,...
+        draftOrder = [];
+        for (let round = 0; round < TOTAL_ROUNDS; round++) {
+            if (round % 2 === 0) {
+                for (let t = 0; t < NUM_TEAMS; t++) draftOrder.push(t);
+            } else {
+                for (let t = NUM_TEAMS - 1; t >= 0; t--) draftOrder.push(t);
+            }
+        }
+
+        currentPick = 0;
+        draftComplete = false;
+
+        showPhase('phaseDraft');
+        document.getElementById('myTeamLabel').textContent = teamName;
+        renderPool();
+        renderMyRoster();
+        updateDraftHeader();
+        document.getElementById('draftLog').innerHTML = '<h3>Draft Log</h3>';
+
+        // If first pick is CPU, do it
+        processNextCpuPicks();
+    }
+
+    function updateDraftHeader() {
+        if (draftComplete) return;
+        const round = Math.floor(currentPick / NUM_TEAMS) + 1;
+        const teamIdx = draftOrder[currentPick];
+        const team = teams[teamIdx];
+
+        document.getElementById('draftRound').textContent = 'Round ' + round + ' of ' + TOTAL_ROUNDS;
+        document.getElementById('draftTurn').textContent = team.isHuman ? 'Your Pick' : team.name + ' picking...';
+        document.getElementById('draftTurn').style.color = team.isHuman ? '#69f0ae' : '#FF8C2A';
+
+        // Roster needs
+        const needsEl = document.getElementById('rosterNeeds');
+        const myTeam = teams[0];
+        const myBatters = myTeam.roster.filter(p => p.type === 'batter').length;
+        const myPitchers = myTeam.roster.filter(p => p.type === 'pitcher').length;
+        needsEl.innerHTML =
+            '<span class="roster-need ' + (myBatters >= ROSTER_SIZE.batters ? 'filled' : '') + '">BAT <span class="need-count">' + myBatters + '/' + ROSTER_SIZE.batters + '</span></span>' +
+            '<span class="roster-need ' + (myPitchers >= ROSTER_SIZE.pitchers ? 'filled' : '') + '">PIT <span class="need-count">' + myPitchers + '/' + ROSTER_SIZE.pitchers + '</span></span>';
+    }
+
+    function renderPool() {
+        const pool = document.getElementById('playerPool');
+        // Keep header
+        let html = '<div class="pool-header"><span></span><span>Player</span><span style="text-align:right">Vibe Score</span><span></span></div>';
+
+        const filtered = playerPool.filter(p => {
+            if (poolFilter === 'batter') return p.type === 'batter';
+            if (poolFilter === 'pitcher') return p.type === 'pitcher';
+            return true;
+        });
+
+        filtered.forEach(p => {
+            const teamColor = TEAM_COLORS[p.team] || '#666';
+            const topMetric = p.type === 'batter'
+                ? 'VAR ' + fmtVibe(p.var_score) + ' / BEEF ' + fmtVibe(p.beef)
+                : 'FILTH ' + fmtVibe(p.filth) + ' / ICE ' + fmtVibe(p.ice);
+
+            const draftedClass = p.drafted ? (p.draftedBy === 0 ? 'drafted' : 'drafted') : '';
+            const justDrafted = p.justDrafted ? ' just-drafted' : '';
+
+            html += '<div class="pool-row ' + draftedClass + justDrafted + '" data-id="' + p.id + '" onclick="draftPlayer(' + p.id + ')">' +
+                '<img class="pool-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_80,q_auto:best/v1/people/' + p.id + '/headshot/67/current" alt="" loading="lazy" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%230D1520%22 width=%2240%22 height=%2240%22/><text x=%2220%22 y=%2226%22 text-anchor=%22middle%22 fill=%22%237a7265%22 font-size=%2214%22>?</text></svg>\'">' +
+                '<div class="pool-player-info">' +
+                    '<div class="pool-player-name">' + escHtml(p.name) + '</div>' +
+                    '<div class="pool-player-meta"><span style="color:' + teamColor + '">' + escHtml(p.team) + '</span> &middot; ' + (p.type === 'batter' ? (p.position || 'BAT') : 'P') + ' &middot; ' + topMetric + '</div>' +
+                '</div>' +
+                '<div><div class="pool-vibe-score">' + fmtVibe(p.vibeTotal) + '</div><div class="pool-vibe-label">VIBES</div></div>' +
+                '<div></div>' +
+            '</div>';
+        });
+
+        pool.innerHTML = html;
+    }
+
+    function renderMyRoster() {
+        const el = document.getElementById('myRoster');
+        const myTeam = teams[0];
+        let html = '<h3>' + escHtml(myTeam.name) + '</h3>';
+
+        // Batter slots
+        for (let i = 0; i < ROSTER_SIZE.batters; i++) {
+            const batter = myTeam.roster.filter(p => p.type === 'batter')[i];
+            if (batter) {
+                html += '<div class="roster-slot">' +
+                    '<span class="slot-pos">' + (batter.position || 'BAT') + '</span>' +
+                    '<span class="slot-player"><span class="slot-player-name">' + escHtml(batter.name) + '</span><span class="slot-team"> ' + escHtml(batter.team) + '</span></span>' +
+                    '<span class="slot-score">' + fmtVibe(batter.vibeTotal) + '</span>' +
+                '</div>';
+            } else {
+                html += '<div class="roster-slot"><span class="slot-pos">BAT</span><span class="slot-empty">Empty slot</span></div>';
+            }
+        }
+
+        // Pitcher slots
+        for (let i = 0; i < ROSTER_SIZE.pitchers; i++) {
+            const pitcher = myTeam.roster.filter(p => p.type === 'pitcher')[i];
+            if (pitcher) {
+                html += '<div class="roster-slot">' +
+                    '<span class="slot-pos">P</span>' +
+                    '<span class="slot-player"><span class="slot-player-name">' + escHtml(pitcher.name) + '</span><span class="slot-team"> ' + escHtml(pitcher.team) + '</span></span>' +
+                    '<span class="slot-score">' + fmtVibe(pitcher.vibeTotal) + '</span>' +
+                '</div>';
+            } else {
+                html += '<div class="roster-slot"><span class="slot-pos">P</span><span class="slot-empty">Empty slot</span></div>';
+            }
+        }
+
+        el.innerHTML = html;
+    }
+
+    function addDraftLogEntry(teamIdx, player) {
+        const log = document.getElementById('draftLog');
+        const team = teams[teamIdx];
+        const entry = document.createElement('div');
+        entry.className = 'log-entry ' + (teamIdx === 0 ? 'my-pick' : 'cpu-pick');
+        const pickNum = currentPick;
+        entry.innerHTML = '<span class="log-team" style="color:' + team.color + '">' + escHtml(team.name) + '</span> drafted <span class="log-player">' + escHtml(player.name) + '</span> <span style="color:var(--muted)">(' + (player.type === 'batter' ? player.position || 'BAT' : 'P') + ', ' + fmtVibe(player.vibeTotal) + ' vibes)</span>';
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    // ── Human draft pick ──
+    window.draftPlayer = function(playerId) {
+        if (draftComplete) return;
+        const teamIdx = draftOrder[currentPick];
+        if (teamIdx !== 0) return; // not human's turn
+
+        const player = playerPool.find(p => p.id === playerId);
+        if (!player || player.drafted) return;
+
+        // Check roster limits
+        const myTeam = teams[0];
+        const myBatters = myTeam.roster.filter(p => p.type === 'batter').length;
+        const myPitchers = myTeam.roster.filter(p => p.type === 'pitcher').length;
+
+        if (player.type === 'batter' && myBatters >= ROSTER_SIZE.batters) {
+            // Can't draft more batters
+            return;
+        }
+        if (player.type === 'pitcher' && myPitchers >= ROSTER_SIZE.pitchers) {
+            return;
+        }
+
+        // Draft the player
+        player.drafted = true;
+        player.draftedBy = 0;
+        myTeam.roster.push(player);
+        addDraftLogEntry(0, player);
+        currentPick++;
+
+        renderPool();
+        renderMyRoster();
+
+        if (currentPick >= draftOrder.length) {
+            finishDraft();
+            return;
+        }
+
+        updateDraftHeader();
+        processNextCpuPicks();
+    };
+
+    // ── CPU draft picks ──
+    function processNextCpuPicks() {
+        if (draftComplete || currentPick >= draftOrder.length) return;
+
+        const teamIdx = draftOrder[currentPick];
+        if (teamIdx === 0) {
+            // Human's turn
+            document.getElementById('cpuDraftingBanner').style.display = 'none';
+            updateDraftHeader();
+            return;
+        }
+
+        document.getElementById('cpuDraftingBanner').style.display = 'block';
+        document.getElementById('cpuDraftingBanner').textContent = teams[teamIdx].name + ' is picking...';
+
+        setTimeout(() => {
+            cpuDraft(teamIdx);
+            currentPick++;
+
+            renderPool();
+            updateDraftHeader();
+
+            if (currentPick >= draftOrder.length) {
+                finishDraft();
+                return;
+            }
+
+            // Continue if next pick is also CPU
+            processNextCpuPicks();
+        }, 600 + Math.random() * 400);
+    }
+
+    function cpuDraft(teamIdx) {
+        const team = teams[teamIdx];
+        const batters = team.roster.filter(p => p.type === 'batter').length;
+        const pitchers = team.roster.filter(p => p.type === 'pitcher').length;
+        const needsBatter = batters < ROSTER_SIZE.batters;
+        const needsPitcher = pitchers < ROSTER_SIZE.pitchers;
+
+        let available = playerPool.filter(p => !p.drafted);
+
+        // Must-pick logic: if out of slots for one type, force the other
+        if (!needsBatter) {
+            available = available.filter(p => p.type === 'pitcher');
+        } else if (!needsPitcher) {
+            available = available.filter(p => p.type === 'batter');
+        } else {
+            // Strategy-based preference
+            const cpu = CPU_TEAMS[teamIdx - 1];
+            if (cpu.strategy === 'power') {
+                // Prefer batters 70% of the time
+                const batAvail = available.filter(p => p.type === 'batter');
+                if (batAvail.length > 0 && Math.random() < 0.7) available = batAvail;
+            } else if (cpu.strategy === 'pitching') {
+                const pitAvail = available.filter(p => p.type === 'pitcher');
+                if (pitAvail.length > 0 && Math.random() < 0.7) available = pitAvail;
+            }
+            // 'balanced' just picks BPA
+        }
+
+        if (available.length === 0) return;
+
+        // Add some randomness: pick from top 3 with weighting
+        available.sort((a, b) => b.vibeTotal - a.vibeTotal);
+        const topN = available.slice(0, Math.min(3, available.length));
+        const weights = [0.6, 0.25, 0.15];
+        let r = Math.random();
+        let pick = topN[0];
+        for (let i = 0; i < topN.length; i++) {
+            r -= weights[i] || 0.1;
+            if (r <= 0) { pick = topN[i]; break; }
+        }
+
+        pick.drafted = true;
+        pick.draftedBy = teamIdx;
+        pick.justDrafted = true;
+        team.roster.push(pick);
+        addDraftLogEntry(teamIdx, pick);
+
+        // Clear justDrafted after animation
+        setTimeout(() => {
+            pick.justDrafted = false;
+        }, 1500);
+    }
+
+    function finishDraft() {
+        draftComplete = true;
+        document.getElementById('cpuDraftingBanner').style.display = 'none';
+
+        setTimeout(() => {
+            showResults();
+        }, 500);
+    }
+
+    // ── Results ──
+    function showResults() {
+        showPhase('phaseResults');
+
+        document.getElementById('resultsSeason').textContent = selectedSeason + ' Season Stats';
+
+        // Calculate total vibes per team
+        const standings = teams.map((t, i) => {
+            const totalVibes = t.roster.reduce((sum, p) => sum + p.vibeTotal, 0);
+            return { ...t, idx: i, totalVibes };
+        });
+
+        standings.sort((a, b) => b.totalVibes - a.totalVibes);
+
+        // Render standings
+        const standingsEl = document.getElementById('standings');
+        standingsEl.innerHTML = '<h3>Final Standings</h3>';
+
+        standings.forEach((t, rank) => {
+            const row = document.createElement('div');
+            row.className = 'standing-row' + (rank === 0 ? ' first-place' : '');
+            row.style.animationDelay = (rank * 100) + 'ms';
+            row.classList.add('animate-in');
+            row.innerHTML =
+                '<div class="standing-rank">' + (rank + 1) + '</div>' +
+                '<div><div class="standing-team-name" style="color:' + t.color + '">' + escHtml(t.name) + '</div>' +
+                '<div class="standing-team-owner">' + escHtml(t.owner) + '</div></div>' +
+                '<div><div class="standing-score">' + fmtVibe(t.totalVibes) + '</div>' +
+                '<div class="standing-score-label">TOTAL VIBES</div></div>';
+            standingsEl.appendChild(row);
+        });
+
+        // Trash talk
+        const myRank = standings.findIndex(t => t.idx === 0);
+        const trashEl = document.getElementById('trashTalk');
+        const trashLines = {
+            0: [
+                "Congratulations. You've won a trophy that doesn't exist, in a league scored on metrics nobody respects. Your mother would be confused but proud.",
+                "First place in the Fantasy Vibes League. Put it on your resume. Employers love candidates with high BEEF.",
+                "You are the champion of absolutely nothing. The Brofessor salutes your commitment to nonsense."
+            ],
+            1: [
+                "Second place. Close enough to taste victory, far enough to know you'll never have it.",
+                "You finished runner-up in a league where SAUCE is a real statistic. Process that.",
+                "Silver medal energy. Your team had vibes, just not enough of them."
+            ],
+            2: [
+                "Third place. The 'I participated' of competitive finishes.",
+                "Bronze. Your draft strategy was... interesting. The Brofessor is reviewing the tape.",
+                "You beat one CPU team. Barely. The one managed by a changeup."
+            ],
+            3: [
+                "Dead last. You got out-vibed by three robots with names like 'Roid Rage & Chill.' Reflect on this.",
+                "Fourth place in a four-team league. You are statistically the worst thing that's happened to fantasy baseball.",
+                "Congratulations on your last-place finish. The Brofessor recommends more BEEF in your next draft."
+            ]
+        };
+
+        const lines = trashLines[myRank] || trashLines[3];
+        const line = lines[Math.floor(Math.random() * lines.length)];
+        trashEl.innerHTML = '<p>"' + line + '"</p><div class="attribution">— The Brofessor</div>';
+
+        // Results title
+        const titles = {
+            0: 'You Won the Vibes Championship!',
+            1: 'Almost Had It',
+            2: 'Middle of the Pack',
+            3: 'Better Luck Next Draft'
+        };
+        document.getElementById('resultsTitle').textContent = titles[myRank] || 'League Standings';
+
+        // Team cards
+        const cardsEl = document.getElementById('teamCards');
+        cardsEl.innerHTML = '';
+
+        standings.forEach(t => {
+            const card = document.createElement('div');
+            card.className = 'team-card' + (t.idx === 0 ? ' my-team' : '');
+            let html = '<h4 style="color:' + t.color + '">' + escHtml(t.name) + '</h4>';
+
+            t.roster.forEach(p => {
+                const pos = p.type === 'batter' ? (p.position || 'BAT') : 'P';
+                html += '<div class="team-card-player">' +
+                    '<span class="tcp-pos">' + pos + '</span>' +
+                    '<span class="tcp-name">' + escHtml(p.name) + ' <span style="color:var(--muted);font-size:0.7rem">' + escHtml(p.team) + '</span></span>' +
+                    '<span class="tcp-score">' + fmtVibe(p.vibeTotal) + '</span>' +
+                '</div>';
+            });
+
+            html += '<div class="team-card-total"><span>Total Vibes</span><span class="total-score">' + fmtVibe(t.totalVibes) + '</span></div>';
+            card.innerHTML = html;
+            cardsEl.appendChild(card);
+        });
+    }
+
+    // ── Pool filter ──
+    window.filterPool = function(filter) {
+        poolFilter = filter;
+        document.querySelectorAll('.pool-filter').forEach(b => b.classList.remove('active'));
+        document.querySelector('.pool-filter[data-filter="' + filter + '"]').classList.add('active');
+        renderPool();
+    };
+
+    // ── Start draft ──
+    window.startDraft = function() {
+        loadPlayerData();
+    };
+
+    // ── Reset ──
+    window.resetDraft = function() {
+        playerPool.forEach(p => { p.drafted = false; p.draftedBy = -1; p.justDrafted = false; });
+        showPhase('phaseSetup');
+    };
+
+    // ── Formatters ──
+    function fmtVibe(v) {
+        if (!v || isNaN(v)) return '0';
+        if (v >= 1000) return v.toFixed(0);
+        if (v >= 100) return v.toFixed(1);
+        if (v >= 10) return v.toFixed(1);
+        return v.toFixed(2);
+    }
+
+    function escHtml(s) {
+        if (!s) return '';
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+})();
+</script>
+
+</body>
+</html>
