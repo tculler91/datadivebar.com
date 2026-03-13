@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantasy Vibes League | The Brofessor's Lab | Data Dive Bar</title>
-    <meta name="description" content="Fantasy baseball scored entirely on vibes. Draft real MLB players, score them on VAR, BEEF, FILTH, and SAUCE. No boring stats allowed.">
+    <title>Fantasy Vibes League | H2H | Data Dive Bar</title>
+    <meta name="description" content="Head-to-head fantasy baseball scored on vibes. 10 proprietary categories including BYRD Index and MOYER Score. Up to 12 teams. No boring stats allowed.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -16,16 +16,18 @@
             --neon-green: #69f0ae;
             --neon-pink: #ff6b9d;
             --neon-purple: #b388ff;
+            --neon-red: #ff5252;
             --dark-bg: #0E1A2B;
             --panel-bg: #0D1520;
             --card-bg: #0A1018;
             --chalk: #e8e0d4;
             --muted: #7a7265;
+            --win-green: #69f0ae;
+            --loss-red: #ff5252;
+            --tie-amber: #FF8C2A;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { overflow-x: hidden; }
-
         body {
             background: var(--dark-bg);
             color: var(--chalk);
@@ -33,192 +35,162 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            background: radial-gradient(ellipse at 20% 50%, rgba(255, 107, 10, 0.03) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(74, 144, 255, 0.02) 0%, transparent 50%);
             pointer-events: none;
-            z-index: 1000;
+            z-index: 0;
         }
-
-        /* ── Header ── */
         .header {
             text-align: center;
-            padding: 2.5rem 1.5rem 1.5rem;
+            padding: 2rem 1rem 1rem;
             position: relative;
             z-index: 1;
         }
-
-        .header .back-link {
-            display: inline-block;
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-orange), var(--neon-amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header .subtitle {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.75rem;
             color: var(--muted);
-            text-decoration: none;
-            margin-bottom: 1rem;
-            transition: color 0.2s;
-        }
-        .header .back-link:hover { color: var(--neon-orange); }
-
-        .header h1 {
-            font-family: 'Playfair Display', serif;
-            font-weight: 900;
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            color: var(--neon-green);
-            text-shadow:
-                0 0 20px rgba(105, 240, 174, 0.4),
-                0 0 60px rgba(105, 240, 174, 0.15);
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-        }
-
-        .header .subtitle {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            color: var(--muted);
-            margin-top: 0.5rem;
-            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+            letter-spacing: 2px;
             text-transform: uppercase;
         }
-
         .header .tagline {
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             color: var(--neon-amber);
-            margin-top: 0.75rem;
-            opacity: 0.85;
+            margin-top: 0.5rem;
+            opacity: 0.8;
         }
-
-        /* ── Main Layout ── */
+        .back-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--neon-orange);
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--neon-amber); text-decoration: underline; }
         .container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 0 1rem 3rem;
+            padding: 0 1rem 2rem;
             position: relative;
             z-index: 1;
         }
-
-        /* ── Phase Screens ── */
         .phase { display: none; }
         .phase.active { display: block; }
 
-        /* ── Setup Phase ── */
-        .setup-card {
-            background: var(--panel-bg);
-            border: 1px solid rgba(255, 107, 10, 0.15);
-            border-radius: 8px;
-            padding: 2rem;
-            max-width: 600px;
-            margin: 2rem auto;
-        }
-
-        .setup-card h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            color: var(--neon-orange);
-            margin-bottom: 1rem;
-        }
-
-        .setup-card label {
-            display: block;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            color: var(--muted);
-            margin-bottom: 0.3rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .setup-card input, .setup-card select {
-            width: 100%;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            background: var(--card-bg);
-            color: var(--chalk);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            padding: 0.6rem 0.8rem;
-            margin-bottom: 1.25rem;
-            outline: none;
-        }
-
-        .setup-card input:focus, .setup-card select:focus {
-            border-color: var(--neon-orange);
-            box-shadow: 0 0 8px rgba(255, 107, 10, 0.2);
-        }
-
-        .team-preview {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: var(--card-bg);
-            border-radius: 6px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .team-preview h3 {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-        }
-
-        .team-preview .cpu-team {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 0;
-            font-size: 0.85rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .team-preview .cpu-team:last-child { border-bottom: none; }
-
-        .team-preview .cpu-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
+        /* ── Buttons ── */
         .btn {
             font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
             font-size: 0.85rem;
-            padding: 0.75rem 2rem;
+            padding: 0.65rem 1.5rem;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
         }
-
         .btn-primary {
-            background: var(--neon-green);
-            color: #0A1018;
+            background: var(--neon-orange);
+            color: #fff;
         }
-        .btn-primary:hover {
-            box-shadow: 0 0 20px rgba(105, 240, 174, 0.4);
-            transform: translateY(-1px);
-        }
-        .btn-primary:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
+        .btn-primary:hover { background: var(--neon-amber); transform: translateY(-1px); }
         .btn-secondary {
-            background: rgba(255, 107, 10, 0.15);
+            background: transparent;
+            border: 1px solid var(--neon-orange);
             color: var(--neon-orange);
-            border: 1px solid rgba(255, 107, 10, 0.3);
         }
-        .btn-secondary:hover {
-            background: rgba(255, 107, 10, 0.25);
+        .btn-secondary:hover { background: rgba(255, 107, 10, 0.1); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ── Setup Phase ── */
+        .setup-card {
+            max-width: 600px;
+            margin: 1rem auto;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 107, 10, 0.15);
+            border-radius: 8px;
+            padding: 2rem;
+        }
+        .setup-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--neon-orange);
+            margin-bottom: 1.25rem;
+        }
+        .setup-card label {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 0.35rem;
+            margin-top: 1rem;
+        }
+        .setup-card input, .setup-card select {
+            width: 100%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: var(--card-bg);
+            color: var(--chalk);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 0.6rem 0.75rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .setup-card input:focus, .setup-card select:focus {
+            border-color: var(--neon-orange);
+        }
+        .setup-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 500px) { .setup-row { grid-template-columns: 1fr; } }
+        .team-preview {
+            margin-top: 1.25rem;
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .team-preview h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .cpu-team {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .cpu-team:last-child { border-bottom: none; }
+        .cpu-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
         }
 
         /* ── Loading ── */
@@ -226,24 +198,20 @@
             text-align: center;
             padding: 4rem 1rem;
         }
-
         .loading-spinner {
-            display: inline-block;
             width: 40px;
             height: 40px;
-            border: 3px solid rgba(105, 240, 174, 0.15);
-            border-top-color: var(--neon-green);
+            border: 3px solid rgba(255, 107, 10, 0.2);
+            border-top-color: var(--neon-orange);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.5rem;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
-
         .loading-state p {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.85rem;
             color: var(--muted);
-            margin-top: 1rem;
         }
 
         /* ── Draft Phase ── */
@@ -251,409 +219,419 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            margin-bottom: 1.5rem;
-        }
-
-        .draft-info {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-        }
-
-        .draft-round {
-            color: var(--neon-green);
-            font-weight: 700;
-        }
-
-        .draft-turn {
-            color: var(--neon-amber);
-            margin-left: 1rem;
-        }
-
-        .draft-picks-left {
-            color: var(--muted);
-            font-size: 0.75rem;
-        }
-
-        .roster-needs {
-            display: flex;
-            gap: 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-        }
-
-        .roster-need {
-            padding: 0.3rem 0.6rem;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .roster-need.filled {
-            opacity: 0.4;
-            text-decoration: line-through;
-        }
-
-        .roster-need .need-count {
-            color: var(--neon-green);
-            font-weight: 700;
-        }
-
-        .draft-layout {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 1.5rem;
-        }
-
-        @media (max-width: 768px) {
-            .draft-layout { grid-template-columns: 1fr; }
-        }
-
-        /* ── Player Pool ── */
-        .pool-controls {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .pool-filter {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            padding: 0.4rem 0.8rem;
-            background: var(--card-bg);
-            color: var(--muted);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 3px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .pool-filter.active {
-            background: rgba(105, 240, 174, 0.1);
-            color: var(--neon-green);
-            border-color: rgba(105, 240, 174, 0.3);
-        }
-
-        .pool-filter:hover:not(.active) {
-            color: var(--chalk);
-        }
-
-        .player-pool {
+            padding: 0.75rem 1rem;
             background: var(--panel-bg);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 6px;
-            max-height: 600px;
-            overflow-y: auto;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
-
-        .player-pool::-webkit-scrollbar { width: 6px; }
-        .player-pool::-webkit-scrollbar-track { background: var(--card-bg); }
-        .player-pool::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
-
+        .draft-round {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--chalk);
+        }
+        .draft-turn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .roster-needs {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .roster-need {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+        .roster-need .need-count { color: var(--neon-amber); }
+        .roster-need.filled .need-count { color: var(--neon-green); }
+        .draft-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 1rem;
+        }
+        @media (max-width: 768px) {
+            .draft-layout { grid-template-columns: 1fr; }
+        }
+        .pool-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .pool-filter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.3rem 0.7rem;
+            background: var(--panel-bg);
+            color: var(--muted);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pool-filter.active, .pool-filter:hover {
+            color: var(--neon-orange);
+            border-color: var(--neon-orange);
+        }
+        .player-pool {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            background: var(--panel-bg);
+        }
+        .pool-header {
+            display: grid;
+            grid-template-columns: 40px 1fr 70px 30px;
+            padding: 0.5rem 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            position: sticky;
+            top: 0;
+            background: var(--panel-bg);
+            z-index: 2;
+        }
         .pool-row {
             display: grid;
-            grid-template-columns: 44px 1fr auto auto;
-            align-items: center;
-            gap: 0.5rem;
+            grid-template-columns: 40px 1fr 70px 30px;
             padding: 0.5rem 0.75rem;
+            align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
             cursor: pointer;
             transition: background 0.15s;
         }
-
-        .pool-row:hover {
-            background: rgba(105, 240, 174, 0.06);
-        }
-
-        .pool-row.drafted {
-            opacity: 0.25;
-            pointer-events: none;
-        }
-
-        .pool-row.just-drafted {
-            background: rgba(255, 107, 10, 0.1);
-            opacity: 0.4;
-            pointer-events: none;
-            animation: draftFlash 0.6s ease;
-        }
-
-        @keyframes draftFlash {
-            0% { background: rgba(255, 107, 10, 0.4); }
-            100% { background: rgba(255, 107, 10, 0.1); }
-        }
-
+        .pool-row:hover { background: rgba(255, 107, 10, 0.05); }
+        .pool-row.drafted { opacity: 0.25; pointer-events: none; }
         .pool-photo {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
             background: var(--card-bg);
         }
-
-        .pool-player-info {
-            min-width: 0;
-        }
-
         .pool-player-name {
-            font-weight: 600;
             font-size: 0.85rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: 500;
         }
-
         .pool-player-meta {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--muted);
-        }
-
-        .pool-vibe-score {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--neon-green);
-            text-shadow: 0 0 8px rgba(105, 240, 174, 0.3);
-            text-align: right;
-        }
-
-        .pool-vibe-label {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.6rem;
             color: var(--muted);
+            margin-top: 2px;
+        }
+        .pool-vibe-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--neon-green);
             text-align: right;
         }
-
-        .pool-header {
-            display: grid;
-            grid-template-columns: 44px 1fr auto auto;
-            gap: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            background: var(--card-bg);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        .pool-vibe-label {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
+            font-size: 0.5rem;
             color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            position: sticky;
-            top: 0;
-            z-index: 2;
+            text-align: right;
         }
-
-        /* ── Draft Sidebar ── */
         .draft-sidebar {
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
-
         .my-roster {
             background: var(--panel-bg);
             border: 1px solid rgba(105, 240, 174, 0.15);
             border-radius: 6px;
-            padding: 1rem;
+            padding: 0.75rem;
         }
-
         .my-roster h3 {
             font-family: 'Playfair Display', serif;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             color: var(--neon-green);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
-
         .roster-slot {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.4rem 0;
+            padding: 0.3rem 0;
             font-size: 0.8rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         }
-
-        .roster-slot:last-child { border-bottom: none; }
-
         .slot-pos {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            font-weight: 700;
+            font-size: 0.6rem;
             color: var(--neon-orange);
             width: 28px;
-            text-align: center;
         }
-
-        .slot-empty {
-            color: var(--muted);
-            font-style: italic;
-            font-size: 0.75rem;
-        }
-
-        .slot-player {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .slot-player-name {
-            font-weight: 600;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .slot-team {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem;
-            color: var(--muted);
-        }
-
+        .slot-player { flex: 1; }
+        .slot-player-name { font-size: 0.8rem; }
+        .slot-team { font-size: 0.65rem; color: var(--muted); }
         .slot-score {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
             font-size: 0.75rem;
             color: var(--neon-green);
         }
-
+        .slot-empty { color: var(--muted); font-size: 0.75rem; font-style: italic; }
         .draft-log {
             background: var(--panel-bg);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 6px;
-            padding: 1rem;
+            padding: 0.75rem;
             max-height: 200px;
             overflow-y: auto;
         }
-
         .draft-log h3 {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.7rem;
             color: var(--muted);
             text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 0.5rem;
         }
-
         .log-entry {
-            font-family: 'JetBrains Mono', monospace;
             font-size: 0.7rem;
-            padding: 0.25rem 0;
+            padding: 0.2rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-            color: var(--muted);
         }
-
-        .log-entry .log-team { font-weight: 700; }
-        .log-entry .log-player { color: var(--chalk); }
-        .log-entry.my-pick .log-team { color: var(--neon-green); }
-        .log-entry.cpu-pick .log-team { color: var(--neon-orange); }
-
-        /* ── Results Phase ── */
-        .results-header {
+        .log-team { font-weight: 700; }
+        .log-player { color: var(--neon-green); }
+        .cpu-drafting-banner {
+            display: none;
             text-align: center;
-            padding: 2rem 0;
-        }
-
-        .results-header h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1.8rem, 4vw, 2.5rem);
-            color: var(--neon-green);
-            text-shadow: 0 0 20px rgba(105, 240, 174, 0.3);
-        }
-
-        .results-header .results-subtitle {
+            padding: 0.6rem;
+            margin-bottom: 0.75rem;
+            background: rgba(255, 107, 10, 0.1);
+            border: 1px solid rgba(255, 107, 10, 0.2);
+            border-radius: 6px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
-            color: var(--muted);
-            margin-top: 0.5rem;
+            color: var(--neon-amber);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
         }
 
-        .standings {
-            max-width: 800px;
-            margin: 2rem auto;
+        /* ── Season Phase ── */
+        .season-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
-
-        .standings h3 {
+        .season-header h2 {
             font-family: 'Playfair Display', serif;
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             color: var(--neon-orange);
-            margin-bottom: 1rem;
+        }
+        .week-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .week-nav button {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            background: var(--panel-bg);
+            color: var(--neon-orange);
+            border: 1px solid rgba(255, 107, 10, 0.3);
+            border-radius: 4px;
+            padding: 0.3rem 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .week-nav button:hover:not(:disabled) { background: rgba(255, 107, 10, 0.1); }
+        .week-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .week-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--chalk);
+            min-width: 150px;
             text-align: center;
         }
-
-        .standing-row {
+        .week-label .week-type {
+            font-size: 0.6rem;
+            color: var(--neon-amber);
+            display: block;
+            margin-top: 2px;
+        }
+        .matchup-grid {
             display: grid;
-            grid-template-columns: 40px 1fr auto;
-            align-items: center;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 1rem;
-            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .matchup-card {
             background: var(--panel-bg);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 6px;
-            margin-bottom: 0.5rem;
-            transition: all 0.3s;
+            padding: 1rem;
+            transition: border-color 0.2s;
         }
-
-        .standing-row.first-place {
-            border-color: rgba(105, 240, 174, 0.3);
-            background: rgba(105, 240, 174, 0.05);
+        .matchup-card.my-matchup {
+            border-color: rgba(105, 240, 174, 0.25);
         }
-
-        .standing-rank {
-            font-family: 'Press Start 2P', monospace;
-            font-size: 1.2rem;
+        .matchup-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .matchup-team {
             text-align: center;
+            flex: 1;
         }
-
-        .standing-row.first-place .standing-rank { color: var(--neon-green); }
-        .standing-row:nth-child(2) .standing-rank { color: var(--neon-amber); }
-        .standing-row:nth-child(3) .standing-rank { color: var(--neon-blue); }
-        .standing-row:nth-child(4) .standing-rank { color: var(--muted); }
-
-        .standing-team-name {
+        .matchup-team-name {
             font-family: 'Playfair Display', serif;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             font-weight: 700;
         }
-
-        .standing-team-owner {
+        .matchup-team-record {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            color: var(--muted);
-        }
-
-        .standing-score {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 1.3rem;
-            color: var(--neon-green);
-            text-shadow: 0 0 10px rgba(105, 240, 174, 0.3);
-        }
-
-        .standing-score-label {
             font-size: 0.6rem;
             color: var(--muted);
+        }
+        .matchup-vs {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.6rem;
+            color: var(--muted);
+            padding: 0 0.5rem;
+        }
+        .matchup-result {
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.35rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .matchup-result.win { color: var(--win-green); background: rgba(105, 240, 174, 0.08); }
+        .matchup-result.loss { color: var(--loss-red); background: rgba(255, 82, 82, 0.08); }
+        .matchup-result.tie { color: var(--tie-amber); background: rgba(255, 140, 42, 0.08); }
+        .cat-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 50px 50px;
+            align-items: center;
+            padding: 0.2rem 0;
+            font-size: 0.7rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .cat-row:last-child { border-bottom: none; }
+        .cat-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--neon-amber);
+        }
+        .cat-bar-wrap {
+            display: flex;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .cat-bar-left, .cat-bar-right { height: 100%; transition: width 0.3s; }
+        .cat-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
             text-align: right;
         }
+        .cat-val.winner { color: var(--neon-green); font-weight: 700; }
 
+        /* ── Standings Table ── */
+        .standings-section {
+            margin-top: 1.5rem;
+        }
+        .standings-section h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--neon-orange);
+            margin-bottom: 0.75rem;
+        }
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .standings-table th {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: left;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .standings-table td {
+            padding: 0.45rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .standings-table tr:hover { background: rgba(255, 107, 10, 0.03); }
+        .standings-table .rank {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            width: 30px;
+        }
+        .standings-table .team-name-col {
+            font-weight: 700;
+        }
+        .standings-table .record {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+        .playoff-line td {
+            border-top: 2px solid var(--neon-orange) !important;
+        }
+
+        /* ── Champion Phase ── */
+        .champion-banner {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .champion-banner h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+        }
+        .champion-banner .champ-team {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            margin-top: 0.75rem;
+        }
+        .champion-banner .champ-record {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+        }
         .trash-talk {
             text-align: center;
             padding: 1.5rem;
-            margin: 2rem auto;
-            max-width: 600px;
+            margin: 1.5rem auto;
+            max-width: 650px;
             background: var(--panel-bg);
             border: 1px solid rgba(255, 140, 42, 0.2);
             border-radius: 6px;
         }
-
         .trash-talk p {
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--neon-amber);
             line-height: 1.5;
         }
-
         .trash-talk .attribution {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.7rem;
@@ -661,121 +639,41 @@
             margin-top: 0.5rem;
             font-style: normal;
         }
-
-        /* ── Team Detail Cards ── */
-        .team-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        .team-card {
-            background: var(--panel-bg);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 6px;
-            padding: 1.25rem;
-        }
-
-        .team-card.my-team {
-            border-color: rgba(105, 240, 174, 0.2);
-        }
-
-        .team-card h4 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .team-card.my-team h4 { color: var(--neon-green); }
-
-        .team-card-player {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.35rem 0;
-            font-size: 0.8rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .team-card-player:last-child { border-bottom: none; }
-
-        .tcp-pos {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.6rem;
-            color: var(--neon-orange);
-            width: 24px;
-        }
-
-        .tcp-name {
-            flex: 1;
-            margin: 0 0.5rem;
-        }
-
-        .tcp-score {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 0.75rem;
-            color: var(--neon-green);
-        }
-
-        .team-card-total {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 0.75rem;
-            padding-top: 0.75rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-
-        .team-card-total .total-score { color: var(--neon-green); }
-
-        /* ── Scoring Breakdown ── */
         .scoring-explainer {
             max-width: 800px;
-            margin: 2rem auto;
+            margin: 1.5rem auto;
             padding: 1.5rem;
             background: var(--panel-bg);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 6px;
         }
-
         .scoring-explainer h3 {
             font-family: 'Playfair Display', serif;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--neon-orange);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
-
         .scoring-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
-
-        @media (max-width: 600px) {
-            .scoring-grid { grid-template-columns: 1fr; }
-        }
-
+        @media (max-width: 600px) { .scoring-grid { grid-template-columns: 1fr; } }
         .scoring-cat h4 {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
             color: var(--neon-green);
             margin-bottom: 0.5rem;
         }
-
         .scoring-cat .formula {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--muted);
-            line-height: 1.6;
+            line-height: 1.8;
         }
-
-        .scoring-cat .formula span {
-            color: var(--neon-amber);
-        }
+        .scoring-cat .formula span { color: var(--neon-amber); }
+        .scoring-cat .formula .byrd-highlight { color: var(--neon-blue); }
+        .scoring-cat .formula .moyer-highlight { color: var(--neon-purple); }
 
         /* ── Footer ── */
         .footer {
@@ -784,7 +682,6 @@
             position: relative;
             z-index: 1;
         }
-
         .footer a {
             color: var(--neon-orange);
             text-decoration: none;
@@ -792,66 +689,98 @@
             font-size: 0.8rem;
             transition: color 0.2s;
         }
-
         .footer a:hover { color: var(--neon-amber); text-decoration: underline; }
-
         .footer .copy {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: var(--muted);
             margin-top: 0.5rem;
         }
-
-        /* ── Animations ── */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        .animate-in {
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        /* ── CPU Drafting Overlay ── */
-        .cpu-drafting-banner {
-            display: none;
+        .animate-in { animation: fadeIn 0.4s ease forwards; }
+        .sim-progress {
             text-align: center;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            background: rgba(255, 107, 10, 0.1);
-            border: 1px solid rgba(255, 107, 10, 0.25);
-            border-radius: 6px;
+            padding: 1rem;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
             color: var(--neon-amber);
-            animation: pulse 1.5s ease-in-out infinite;
         }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
+        .sim-progress .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 0.5rem auto;
+            overflow: hidden;
         }
-
-        /* ── Season Select ── */
-        .season-row {
+        .sim-progress .progress-fill {
+            height: 100%;
+            background: var(--neon-orange);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+        .season-tabs {
             display: flex;
             justify-content: center;
-            gap: 1rem;
-            margin: 1rem 0;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .season-tab {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.35rem 0.8rem;
+            background: var(--panel-bg);
+            color: var(--muted);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .season-tab.active { color: var(--neon-orange); border-color: var(--neon-orange); }
+        .season-view { display: none; }
+        .season-view.active { display: block; }
+        .playoff-bracket {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
             flex-wrap: wrap;
+        }
+        .bracket-round {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
             align-items: center;
         }
-
-        .season-select {
+        .bracket-round h4 {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .bracket-matchup {
             background: var(--panel-bg);
-            color: var(--chalk);
-            border: 1px solid rgba(255, 107, 10, 0.3);
-            border-radius: 4px;
-            padding: 0.35rem 0.6rem;
-            cursor: pointer;
-            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            min-width: 180px;
+        }
+        .bracket-team {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+            font-size: 0.8rem;
+        }
+        .bracket-team.winner { color: var(--neon-green); font-weight: 700; }
+        .bracket-team.loser { color: var(--muted); }
+        .bracket-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
         }
     </style>
 </head>
@@ -860,67 +789,75 @@
 <div class="header">
     <a href="/" class="back-link">&larr; Back to the Data Dive Bar</a>
     <h1>Fantasy Vibes League</h1>
-    <div class="subtitle">A Brofessor's Lab Production</div>
-    <div class="tagline">"Where your team's value is measured in BEEF, not batting average."</div>
+    <div class="subtitle">Head-to-Head &middot; A Brofessor's Lab Production</div>
+    <div class="tagline">"Ten categories of nonsense. One champion of vibes."</div>
 </div>
 
 <div class="container">
 
-    <!-- ═══ PHASE 1: SETUP ═══ -->
+    <!-- PHASE: SETUP -->
     <div id="phaseSetup" class="phase active">
         <div class="setup-card animate-in">
             <h2>Create Your League</h2>
-
             <label for="teamName">Your Team Name</label>
             <input type="text" id="teamName" placeholder="e.g. The Steroid Stallions" maxlength="30" value="">
-
-            <label for="seasonSelect">Season</label>
-            <select id="seasonSelect" class="season-select"></select>
-
-            <div class="team-preview">
-                <h3>Your League Opponents</h3>
-                <div class="cpu-team"><span class="cpu-dot" style="background: var(--neon-orange);"></span> The Craft Daddies <span style="color:var(--muted); font-size:0.7rem; margin-left:auto;">managed by Paul Byrd's Ghost</span></div>
-                <div class="cpu-team"><span class="cpu-dot" style="background: var(--neon-pink);"></span> Roid Rage & Chill <span style="color:var(--muted); font-size:0.7rem; margin-left:auto;">managed by BALCO Labs AI</span></div>
-                <div class="cpu-team"><span class="cpu-dot" style="background: var(--neon-purple);"></span> The Old Moyers Club <span style="color:var(--muted); font-size:0.7rem; margin-left:auto;">managed by Jamie's Changeup</span></div>
+            <div class="setup-row">
+                <div>
+                    <label for="leagueSize">League Size</label>
+                    <select id="leagueSize">
+                        <option value="4">4 Teams</option>
+                        <option value="6">6 Teams</option>
+                        <option value="8" selected>8 Teams</option>
+                        <option value="10">10 Teams</option>
+                        <option value="12">12 Teams</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="seasonSelect">Season Data</label>
+                    <select id="seasonSelect"></select>
+                </div>
             </div>
-
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <button id="btnStartDraft" class="btn btn-primary" onclick="startDraft()">Start the Draft</button>
+            <div class="team-preview" id="teamPreview"></div>
+            <div style="text-align:center;margin-top:1.5rem;">
+                <button id="btnStartDraft" class="btn btn-primary" onclick="startLeague()">Start the Draft</button>
             </div>
         </div>
-
-        <div class="scoring-explainer animate-in" style="animation-delay: 0.2s;">
-            <h3>How Scoring Works</h3>
-            <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem;">
-                Forget RBIs. Forget ERA. In the Fantasy Vibes League, your players score on the Brofessor's proprietary metrics.
-                Draft 5 batters and 3 pitchers. Highest combined VIBE SCORE wins.
+        <div class="scoring-explainer animate-in" style="animation-delay:0.15s;">
+            <h3>H2H Category Scoring</h3>
+            <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">
+                Each week you go head-to-head against one opponent across 10 proprietary categories.
+                Win more categories, win the week. Draft 5 batters and 5 pitchers. All stats are volume-weighted &mdash; workhorses beat one-inning wonders.
             </p>
             <div class="scoring-grid">
                 <div class="scoring-cat">
-                    <h4>Batter Scoring</h4>
+                    <h4>Batting Categories (5)</h4>
                     <div class="formula">
-                        <span>VAR</span> = (HR &times; OPS &times; weight&sup2;) / 1000<br>
-                        <span>BEEF</span> = (SLG &times; 1000) &times; (weight/180)^1.5<br>
-                        <span>SAUCE</span> = AVG &times; HR &times; OPS &times; 100<br>
-                        <br>
-                        Batter Score = VAR + BEEF + SAUCE
+                        <span>VAR</span> = (HR &times; OPS &times; (wt/180)&sup2;) &times; &radic;(AB/400)<br>
+                        <span>BEEF</span> = (SLG &times; TB) &times; (wt/180)^1.2 / 100<br>
+                        <span>SAUCE</span> = (AVG &times; HR &times; OPS) &times; (AB/400) &times; 30<br>
+                        <span>GRIT</span> = ((RBI + SB&times;3) &times; H &times; AVG) / max(HR,1) &times; (AB/500) / 5<br>
+                        <span>JUICE</span> = (TB &times; OPS &times; HR) / 50 &times; &radic;(AB/400)
                     </div>
                 </div>
                 <div class="scoring-cat">
-                    <h4>Pitcher Scoring</h4>
+                    <h4>Pitching Categories (5)</h4>
                     <div class="formula">
-                        <span>FILTH</span> = (K/9 &times; 100) / max(ERA, 0.5)<br>
-                        <span>MENACE</span> = (SO-BB) &times; IP &times; (1/max(WHIP,0.5))<br>
-                        <span>ICE</span> = (SO/max(BB,1)) &times; (1/max(ERA,0.5)) &times; IP<br>
-                        <br>
-                        Pitcher Score = (FILTH + ICE) &times; 2 + MENACE/50
+                        <span>FILTH</span> = (K/9 &times; IP) / max(ERA,0.5) / 8<br>
+                        <span>ICE</span> = (SO / max(BB,1)) &times; IP / max(ERA,0.5) / 10<br>
+                        <span>MENACE</span> = (SO&minus;BB) &times; IP / max(WHIP,0.5) / 800<br>
+                        <span class="byrd-highlight">BYRD</span> = (IP &times; SO/max(BB,1)) / max(K/9,3) / 5<br>
+                        <span class="moyer-highlight">MOYER</span> = (IP &times; Age &times; 9/max(ERA,0.5)) / max(K/9,3) / 50
                     </div>
                 </div>
             </div>
+            <p style="font-size:0.7rem;color:var(--muted);margin-top:1rem;font-family:'JetBrains Mono',monospace;">
+                <span style="color:var(--neon-blue);">BYRD Index</span>: Named for Paul Byrd, who threw 83 mph with a delivery like he was checking his blind spot. Rewards craft over stuff.<br>
+                <span style="color:var(--neon-purple);">MOYER Score</span>: Named for Jamie Moyer, who threw 78 mph changeups until age 49. Rewards elder statesmen who defy time.
+            </p>
         </div>
     </div>
 
-    <!-- ═══ PHASE 2: LOADING ═══ -->
+    <!-- PHASE: LOADING -->
     <div id="phaseLoading" class="phase">
         <div class="loading-state">
             <div class="loading-spinner"></div>
@@ -928,63 +865,70 @@
         </div>
     </div>
 
-    <!-- ═══ PHASE 3: DRAFT ═══ -->
+    <!-- PHASE: DRAFT -->
     <div id="phaseDraft" class="phase">
         <div class="draft-header">
-            <div class="draft-info">
-                <span class="draft-round" id="draftRound">Round 1 of 8</span>
-                <span class="draft-turn" id="draftTurn">Your Pick</span>
+            <div>
+                <span class="draft-round" id="draftRound">Round 1 of 10</span>
+                <span class="draft-turn" id="draftTurn" style="margin-left:1rem;">Your Pick</span>
             </div>
             <div class="roster-needs" id="rosterNeeds"></div>
         </div>
-
-        <div id="cpuDraftingBanner" class="cpu-drafting-banner">
-            CPU is drafting...
-        </div>
-
+        <div id="cpuDraftingBanner" class="cpu-drafting-banner">CPU is drafting...</div>
         <div class="draft-layout">
             <div>
                 <div class="pool-controls" id="poolControls">
-                    <button class="pool-filter active" data-filter="all" onclick="filterPool('all')">All</button>
-                    <button class="pool-filter" data-filter="batter" onclick="filterPool('batter')">Batters</button>
-                    <button class="pool-filter" data-filter="pitcher" onclick="filterPool('pitcher')">Pitchers</button>
+                    <button class="pool-filter active" data-filter="all" onclick="FVL.filterPool('all')">All</button>
+                    <button class="pool-filter" data-filter="batter" onclick="FVL.filterPool('batter')">Batters</button>
+                    <button class="pool-filter" data-filter="pitcher" onclick="FVL.filterPool('pitcher')">Pitchers</button>
                 </div>
                 <div class="player-pool" id="playerPool">
-                    <div class="pool-header">
-                        <span></span>
-                        <span>Player</span>
-                        <span>Score</span>
-                        <span></span>
-                    </div>
+                    <div class="pool-header"><span></span><span>Player</span><span style="text-align:right">Vibes</span><span></span></div>
                 </div>
             </div>
             <div class="draft-sidebar">
-                <div class="my-roster" id="myRoster">
-                    <h3 id="myTeamLabel">Your Team</h3>
-                </div>
-                <div class="draft-log" id="draftLog">
-                    <h3>Draft Log</h3>
-                </div>
+                <div class="my-roster" id="myRoster"><h3 id="myTeamLabel">Your Team</h3></div>
+                <div class="draft-log" id="draftLog"><h3>Draft Log</h3></div>
             </div>
         </div>
     </div>
 
-    <!-- ═══ PHASE 4: RESULTS ═══ -->
-    <div id="phaseResults" class="phase">
-        <div class="results-header">
-            <h2 id="resultsTitle">League Standings</h2>
-            <div class="results-subtitle" id="resultsSeason"></div>
+    <!-- PHASE: SEASON -->
+    <div id="phaseSeason" class="phase">
+        <div class="season-header">
+            <h2 id="seasonTitle">2026 Fantasy Vibes League</h2>
         </div>
+        <div class="season-tabs">
+            <button class="season-tab active" data-view="matchups" onclick="FVL.showSeasonView('matchups')">Matchups</button>
+            <button class="season-tab" data-view="standings" onclick="FVL.showSeasonView('standings')">Standings</button>
+            <button class="season-tab" data-view="playoffs" onclick="FVL.showSeasonView('playoffs')">Playoffs</button>
+        </div>
+        <div id="viewMatchups" class="season-view active">
+            <div class="week-nav">
+                <button id="btnPrevWeek" onclick="FVL.changeWeek(-1)">&larr;</button>
+                <div class="week-label" id="weekLabel">Week 1 of 20</div>
+                <button id="btnNextWeek" onclick="FVL.changeWeek(1)">&rarr;</button>
+            </div>
+            <div id="matchupGrid" class="matchup-grid"></div>
+        </div>
+        <div id="viewStandings" class="season-view">
+            <div class="standings-section" id="standingsSection"></div>
+        </div>
+        <div id="viewPlayoffs" class="season-view">
+            <div id="playoffContent"></div>
+        </div>
+        <div style="text-align:center;margin-top:1.5rem;">
+            <button class="btn btn-primary" onclick="FVL.viewChampion()">View Champion</button>
+            <button class="btn btn-secondary" onclick="FVL.resetAll()" style="margin-left:0.5rem;">New League</button>
+        </div>
+    </div>
 
-        <div id="trashTalk" class="trash-talk"></div>
-
-        <div class="standings" id="standings"></div>
-
-        <div class="team-cards" id="teamCards"></div>
-
-        <div style="text-align: center; margin: 2rem 0;">
-            <button class="btn btn-primary" onclick="resetDraft()">Draft Again</button>
-            <a href="/the-lab/" class="btn btn-secondary" style="display:inline-block; text-decoration:none; margin-left:0.5rem;">Visit The Lab</a>
+    <!-- PHASE: CHAMPION -->
+    <div id="phaseChampion" class="phase">
+        <div id="championContent"></div>
+        <div style="text-align:center;margin-top:2rem;">
+            <button class="btn btn-primary" onclick="FVL.resetAll()">Start New League</button>
+            <a href="/the-lab/" class="btn btn-secondary" style="display:inline-block;text-decoration:none;margin-left:0.5rem;">Visit The Lab</a>
         </div>
     </div>
 
@@ -992,10 +936,11 @@
 
 <footer class="footer">
     <a href="/">&larr; Back to the Data Dive Bar</a>
-    <div class="copy">&copy; The Brofessor's Fantasy Vibes League &middot; A Data Dive Bar Research Facility Production &middot; No real athletes were harmed in the scoring of these vibes</div>
+    <div class="copy">&copy; The Brofessor's Fantasy Vibes League &middot; Head-to-Head &middot; A Data Dive Bar Research Facility Production</div>
 </footer>
 
 <script>
+window.FVL = {};
 (function() {
     'use strict';
 
@@ -1005,45 +950,66 @@
     const CACHE_TTL = 10 * 60 * 1000;
     const DEFAULT_WEIGHT = 200;
     const DEFAULT_HEIGHT_IN = 73;
+    const ROSTER = { batters: 5, pitchers: 5 };
+    const TOTAL_PICKS = ROSTER.batters + ROSTER.pitchers;
+    const REG_SEASON_WEEKS = 20;
+    const PLAYOFF_TEAMS = 4;
 
-    const ROSTER_SIZE = { batters: 5, pitchers: 3 };
-    const TOTAL_PICKS = (ROSTER_SIZE.batters + ROSTER_SIZE.pitchers);
-    const NUM_TEAMS = 4;
-    const TOTAL_ROUNDS = TOTAL_PICKS; // 8 rounds
-
-    const currentYear = new Date().getFullYear();
-    let selectedSeason = currentYear;
-    let useCorsProxy = false;
-
-    // CPU team definitions
-    const CPU_TEAMS = [
-        { name: 'The Craft Daddies', owner: "Paul Byrd's Ghost", color: '#FF6B0A', strategy: 'balanced' },
-        { name: 'Roid Rage & Chill', owner: 'BALCO Labs AI', color: '#ff6b9d', strategy: 'power' },
-        { name: 'The Old Moyers Club', owner: "Jamie's Changeup", color: '#b388ff', strategy: 'pitching' }
+    const CATEGORIES = [
+        { key: 'var',    name: 'VAR',    group: 'bat',   desc: 'Volume-Adjusted Rake' },
+        { key: 'beef',   name: 'BEEF',   group: 'bat',   desc: 'Brute Exit-velo Energy Force' },
+        { key: 'sauce',  name: 'SAUCE',  group: 'bat',   desc: 'Slugging Attitude Unreal Contact Energy' },
+        { key: 'grit',   name: 'GRIT',   group: 'bat',   desc: 'Grind Rate Intensity Total' },
+        { key: 'juice',  name: 'JUICE',  group: 'bat',   desc: 'Just Unbelievably Incredible Contact Energy' },
+        { key: 'filth',  name: 'FILTH',  group: 'pit',   desc: 'Filthy Innings Lethal Terrifying Heat' },
+        { key: 'ice',    name: 'ICE',    group: 'pit',   desc: 'Impossibly Cold Efficiency' },
+        { key: 'menace', name: 'MENACE', group: 'pit',   desc: 'Menacing Efficiency Nullifying All Contact Everywhere' },
+        { key: 'byrd',   name: 'BYRD',   group: 'pit',   desc: 'The Paul Byrd Craft Index' },
+        { key: 'moyer',  name: 'MOYER',  group: 'pit',   desc: 'The Jamie Moyer Elder Score' }
     ];
 
-    // State
+    const CPU_TEAMS = [
+        { name: 'The Craft Daddies',      owner: "Paul Byrd's Ghost",         color: '#FF6B0A', strategy: 'balanced' },
+        { name: 'Roid Rage & Chill',       owner: 'BALCO Labs AI',             color: '#ff6b9d', strategy: 'power' },
+        { name: 'The Old Moyers Club',     owner: "Jamie's Changeup",          color: '#b388ff', strategy: 'pitching' },
+        { name: 'Designated Drinkers',     owner: 'The Bartender Bot',         color: '#4A90FF', strategy: 'balanced' },
+        { name: 'The Chin Music Choir',    owner: "Nolan Ryan's Fist",         color: '#ff9800', strategy: 'power' },
+        { name: 'Pine Tar Pounders',       owner: "George Brett's Fury",       color: '#8bc34a', strategy: 'power' },
+        { name: 'Junkballers Anonymous',   owner: "Tim Wakefield's Ghost",     color: '#00bcd4', strategy: 'pitching' },
+        { name: 'Saloon Door Sliders',     owner: 'The Bouncer AI',            color: '#e91e63', strategy: 'balanced' },
+        { name: 'Bottom Shelf Bombers',    owner: 'Dollar Draft Dave',         color: '#ffc107', strategy: 'power' },
+        { name: 'Happy Hour Heroes',       owner: 'Two-for-One Tony',          color: '#9c27b0', strategy: 'balanced' },
+        { name: 'Last Call Lineup',        owner: 'Closing Time Carl',         color: '#607d8b', strategy: 'pitching' }
+    ];
+
+    const TEAM_COLORS = {
+        'ARI':'#A71930','ATL':'#CE1141','BAL':'#DF4601','BOS':'#BD3039','CHC':'#0E3386',
+        'CWS':'#27251F','CIN':'#C6011F','CLE':'#00385D','COL':'#333366','DET':'#0C2340',
+        'HOU':'#EB6E1F','KC':'#004687','LAA':'#BA0021','LAD':'#005A9C','MIA':'#00A3E0',
+        'MIL':'#FFC52F','MIN':'#002B5C','NYM':'#002D72','NYY':'#003087','OAK':'#003831',
+        'PHI':'#E81828','PIT':'#FDB827','SD':'#2F241D','SF':'#FD5A1E','SEA':'#0C2C56',
+        'STL':'#C41E3A','TB':'#092C5C','TEX':'#003278','TOR':'#134A8E','WSH':'#AB0003','ATH':'#003831'
+    };
+
+    // ── State ──
+    const currentYear = new Date().getFullYear();
+    let selectedSeason = currentYear;
+    let numTeams = 8;
+    let useCorsProxy = false;
     let allBatters = [];
     let allPitchers = [];
-    let playerPool = []; // combined, with vibes calculated
-    let teams = []; // [0] = human, [1-3] = CPU
+    let playerPool = [];
+    let teams = [];
     let draftOrder = [];
     let currentPick = 0;
     let draftComplete = false;
     let poolFilter = 'all';
+    let seasonResults = [];  // [{week, matchups: [{t1, t2, catWins, result}]}]
+    let playoffResults = null;
+    let currentWeek = 0;
+    let champion = null;
 
-    const TEAM_COLORS = {
-        'ARI': '#A71930', 'ATL': '#CE1141', 'BAL': '#DF4601', 'BOS': '#BD3039',
-        'CHC': '#0E3386', 'CWS': '#27251F', 'CIN': '#C6011F', 'CLE': '#00385D',
-        'COL': '#333366', 'DET': '#0C2340', 'HOU': '#EB6E1F', 'KC': '#004687',
-        'LAA': '#BA0021', 'LAD': '#005A9C', 'MIA': '#00A3E0', 'MIL': '#FFC52F',
-        'MIN': '#002B5C', 'NYM': '#002D72', 'NYY': '#003087', 'OAK': '#003831',
-        'PHI': '#E81828', 'PIT': '#FDB827', 'SD': '#2F241D', 'SF': '#FD5A1E',
-        'SEA': '#0C2C56', 'STL': '#C41E3A', 'TB': '#092C5C', 'TEX': '#003278',
-        'TOR': '#134A8E', 'WSH': '#AB0003', 'ATH': '#003831'
-    };
-
-    // ── Season selector ──
+    // ── Init ──
     const seasonSelect = document.getElementById('seasonSelect');
     for (let y = currentYear; y >= 2015; y--) {
         const opt = document.createElement('option');
@@ -1051,42 +1017,57 @@
         opt.textContent = y + ' Season';
         seasonSelect.appendChild(opt);
     }
-    // Default to previous year if early in season (before May)
-    const currentMonth = new Date().getMonth();
-    if (currentMonth < 4) {
+    if (new Date().getMonth() < 4) {
         selectedSeason = currentYear - 1;
         seasonSelect.value = selectedSeason;
     }
-    seasonSelect.addEventListener('change', function() {
-        selectedSeason = parseInt(this.value);
-    });
+    seasonSelect.addEventListener('change', function() { selectedSeason = parseInt(this.value); });
 
-    // ── Phase management ──
+    const leagueSizeEl = document.getElementById('leagueSize');
+    leagueSizeEl.addEventListener('change', function() {
+        numTeams = parseInt(this.value);
+        renderTeamPreview();
+    });
+    renderTeamPreview();
+
+    function renderTeamPreview() {
+        const el = document.getElementById('teamPreview');
+        const count = parseInt(leagueSizeEl.value) - 1;
+        let html = '<h3>Your League Opponents (' + count + ' CPU Teams)</h3>';
+        for (let i = 0; i < count; i++) {
+            const t = CPU_TEAMS[i];
+            html += '<div class="cpu-team"><span class="cpu-dot" style="background:' + t.color + '"></span> ' +
+                esc(t.name) + ' <span style="color:var(--muted);font-size:0.7rem;margin-left:auto">' + esc(t.owner) + '</span></div>';
+        }
+        el.innerHTML = html;
+    }
+
+    // ── Phase mgmt ──
     function showPhase(id) {
         document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ── API fetch with CORS fallback ──
+    // ── API ──
     async function apiFetch(path) {
         const url = API_BASE + path;
-        const cacheKey = 'fvl_' + selectedSeason + '_' + path;
+        const cacheKey = 'fvl2_' + selectedSeason + '_' + path;
         const cached = sessionStorage.getItem(cacheKey);
         if (cached) {
-            const parsed = JSON.parse(cached);
-            if (Date.now() - parsed.ts < CACHE_TTL) return parsed.data;
+            const p = JSON.parse(cached);
+            if (Date.now() - p.ts < CACHE_TTL) return p.data;
         }
-
         let data;
         if (!useCorsProxy) {
             try {
                 const res = await fetch(url);
                 if (!res.ok) throw new Error(res.status);
                 data = await res.json();
-            } catch (e) {
+            } catch(e) {
                 useCorsProxy = true;
                 const res = await fetch(CORS_PROXY + encodeURIComponent(url));
-                if (!res.ok) throw new Error('Proxy also failed: ' + res.status);
+                if (!res.ok) throw new Error('Proxy failed: ' + res.status);
                 data = await res.json();
             }
         } else {
@@ -1094,602 +1075,826 @@
             if (!res.ok) throw new Error('Fetch failed: ' + res.status);
             data = await res.json();
         }
-
-        try {
-            sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data }));
-        } catch(e) {}
-
+        try { sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
         return data;
     }
 
     function parseHeight(str) {
         if (!str) return DEFAULT_HEIGHT_IN;
         const m = str.match(/(\d+)\s*['\']\s*(\d+)/);
-        if (m) return parseInt(m[1]) * 12 + parseInt(m[2]);
-        return DEFAULT_HEIGHT_IN;
+        return m ? parseInt(m[1]) * 12 + parseInt(m[2]) : DEFAULT_HEIGHT_IN;
     }
 
-    async function fetchPlayerBio(playerId) {
+    async function fetchPlayerBio(id) {
         try {
-            const data = await apiFetch('/people/' + playerId);
-            const person = data.people && data.people[0];
-            if (!person) return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN, position: '', age: 0 };
+            const data = await apiFetch('/people/' + id);
+            const p = data.people && data.people[0];
+            if (!p) return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN, position: '', age: 28 };
             return {
-                weight: person.weight || DEFAULT_WEIGHT,
-                heightIn: parseHeight(person.height),
-                position: person.primaryPosition ? person.primaryPosition.abbreviation || '' : '',
-                age: person.currentAge || 0
+                weight: p.weight || DEFAULT_WEIGHT,
+                heightIn: parseHeight(p.height),
+                position: p.primaryPosition ? p.primaryPosition.abbreviation || '' : '',
+                age: p.currentAge || 28
             };
         } catch(e) {
-            return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN, position: '', age: 0 };
+            return { weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN, position: '', age: 28 };
         }
     }
 
-    // ── Load all player data ──
+
+    // ── Scoring formulas ──
+    function calcBatterScores(p) {
+        const w = p.weight || DEFAULT_WEIGHT;
+        const ab = Math.max(p.ab || 1, 1);
+        const abFactor = Math.sqrt(ab / 400);
+        const hr = p.hr || 0, ops = p.ops || 0, slg = p.slg || 0;
+        const avg = p.avg || 0, rbi = p.rbi || 0, sb = p.sb || 0;
+        const tb = p.tb || 0, hits = p.hits || 0;
+
+        p.scores = {
+            var:   (hr * ops * Math.pow(w / 180, 2)) * abFactor,
+            beef:  (slg * tb) * Math.pow(w / 180, 1.2) / 100,
+            sauce: (avg * hr * ops) * (ab / 400) * 30,
+            grit:  ((rbi + sb * 3) * hits * Math.max(avg, 0.01)) / Math.max(hr, 1) * (ab / 500) / 5,
+            juice: (tb * ops * hr) / 50 * abFactor
+        };
+        p.vibeTotal = Object.values(p.scores).reduce((s, v) => s + v, 0);
+    }
+
+    function calcPitcherScores(p) {
+        const ip = p.ip || 0, so = p.so || 0, bb = p.bb || 0;
+        const era = p.era || 4.50, whip = p.whip || 1.30;
+        const age = p.age || 28;
+        const k9 = ip > 0 ? (so / ip) * 9 : 0;
+
+        p.scores = {
+            filth:  (k9 * ip) / Math.max(era, 0.5) / 8,
+            ice:    (so / Math.max(bb, 1)) * ip / Math.max(era, 0.5) / 10,
+            menace: Math.max(so - bb, 0) * ip / Math.max(whip, 0.5) / 800,
+            byrd:   (ip * (so / Math.max(bb, 1))) / Math.max(k9, 3) / 5,
+            moyer:  (ip * age * (9 / Math.max(era, 0.5))) / Math.max(k9, 3) / 50
+        };
+        p.vibeTotal = Object.values(p.scores).reduce((s, v) => s + v, 0);
+    }
+
+    // ── Data loading ──
     async function loadPlayerData() {
         showPhase('phaseLoading');
-        document.getElementById('loadingMsg').textContent = 'Fetching ' + selectedSeason + ' MLB data from the Brofessor\'s servers...';
-
+        setLoading('Fetching ' + selectedSeason + ' MLB data...');
         try {
-            const [battingLeaders, pitchingLeaders] = await Promise.all([
-                apiFetch('/stats/leaders?leaderCategories=homeRuns,battingAverage,runsBattedIn,onBasePlusSlugging,stolenBases,hits&season=' + selectedSeason + '&sportId=1&limit=30'),
-                apiFetch('/stats/leaders?leaderCategories=earnedRunAverage,strikeouts,walksAndHitsPerInningPitched,wins,saves&season=' + selectedSeason + '&sportId=1&limit=30')
+            const [batData, pitData] = await Promise.all([
+                apiFetch('/stats/leaders?leaderCategories=homeRuns,battingAverage,runsBattedIn,onBasePlusSlugging,stolenBases,hits&season=' + selectedSeason + '&sportId=1&limit=80'),
+                apiFetch('/stats/leaders?leaderCategories=earnedRunAverage,strikeouts,walksAndHitsPerInningPitched,wins,saves,inningsPitched&season=' + selectedSeason + '&sportId=1&limit=80')
             ]);
 
-            // Build batter map
             const batterMap = {};
-            if (battingLeaders.leagueLeaders) {
-                battingLeaders.leagueLeaders.forEach(cat => {
-                    const catName = cat.leaderCategory;
-                    (cat.leaders || []).forEach(leader => {
-                        const id = leader.person.id;
+            if (batData.leagueLeaders) {
+                batData.leagueLeaders.forEach(cat => {
+                    (cat.leaders || []).forEach(l => {
+                        const id = l.person.id;
                         if (!batterMap[id]) {
                             batterMap[id] = {
-                                id, name: leader.person.fullName,
-                                team: leader.team ? leader.team.abbreviation || '' : '',
+                                id, name: l.person.fullName,
+                                team: l.team ? l.team.abbreviation || '' : '',
                                 hr: 0, avg: 0, ops: 0, rbi: 0, sb: 0, hits: 0,
                                 slg: 0, ab: 0, tb: 0,
                                 weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN,
-                                position: '', age: 0, type: 'batter'
+                                position: '', age: 28, type: 'batter'
                             };
                         }
-                        const val = parseFloat(leader.value) || 0;
-                        if (catName === 'homeRuns') batterMap[id].hr = val;
-                        else if (catName === 'battingAverage') batterMap[id].avg = val;
-                        else if (catName === 'runsBattedIn') batterMap[id].rbi = val;
-                        else if (catName === 'onBasePlusSlugging') batterMap[id].ops = val;
-                        else if (catName === 'stolenBases') batterMap[id].sb = val;
-                        else if (catName === 'hits') batterMap[id].hits = val;
+                        const v = parseFloat(l.value) || 0;
+                        const c = cat.leaderCategory;
+                        if (c === 'homeRuns') batterMap[id].hr = v;
+                        else if (c === 'battingAverage') batterMap[id].avg = v;
+                        else if (c === 'runsBattedIn') batterMap[id].rbi = v;
+                        else if (c === 'onBasePlusSlugging') batterMap[id].ops = v;
+                        else if (c === 'stolenBases') batterMap[id].sb = v;
+                        else if (c === 'hits') batterMap[id].hits = v;
                     });
                 });
             }
 
-            // Build pitcher map
             const pitcherMap = {};
-            if (pitchingLeaders.leagueLeaders) {
-                pitchingLeaders.leagueLeaders.forEach(cat => {
-                    const catName = cat.leaderCategory;
-                    (cat.leaders || []).forEach(leader => {
-                        const id = leader.person.id;
+            if (pitData.leagueLeaders) {
+                pitData.leagueLeaders.forEach(cat => {
+                    (cat.leaders || []).forEach(l => {
+                        const id = l.person.id;
                         if (!pitcherMap[id]) {
                             pitcherMap[id] = {
-                                id, name: leader.person.fullName,
-                                team: leader.team ? leader.team.abbreviation || '' : '',
+                                id, name: l.person.fullName,
+                                team: l.team ? l.team.abbreviation || '' : '',
                                 w: 0, era: 0, so: 0, whip: 0, ip: 0,
                                 bb: 0, er: 0, saves: 0,
                                 weight: DEFAULT_WEIGHT, heightIn: DEFAULT_HEIGHT_IN,
-                                position: '', age: 0, type: 'pitcher'
+                                position: 'P', age: 28, type: 'pitcher'
                             };
                         }
-                        const val = parseFloat(leader.value) || 0;
-                        if (catName === 'earnedRunAverage') pitcherMap[id].era = val;
-                        else if (catName === 'strikeouts') pitcherMap[id].so = val;
-                        else if (catName === 'walksAndHitsPerInningPitched') pitcherMap[id].whip = val;
-                        else if (catName === 'wins') pitcherMap[id].w = val;
-                        else if (catName === 'saves') pitcherMap[id].saves = val;
+                        const v = parseFloat(l.value) || 0;
+                        const c = cat.leaderCategory;
+                        if (c === 'earnedRunAverage') pitcherMap[id].era = v;
+                        else if (c === 'strikeouts') pitcherMap[id].so = v;
+                        else if (c === 'walksAndHitsPerInningPitched') pitcherMap[id].whip = v;
+                        else if (c === 'wins') pitcherMap[id].w = v;
+                        else if (c === 'saves') pitcherMap[id].saves = v;
+                        else if (c === 'inningsPitched') pitcherMap[id].ip = v;
                     });
                 });
             }
 
-            const batterIds = Object.keys(batterMap);
-            const pitcherIds = Object.keys(pitcherMap);
+            const batIds = Object.keys(batterMap);
+            const pitIds = Object.keys(pitcherMap);
 
-            if (batterIds.length === 0 && pitcherIds.length === 0) {
+            if (batIds.length === 0 && pitIds.length === 0) {
                 if (selectedSeason === currentYear) {
                     selectedSeason = currentYear - 1;
                     seasonSelect.value = selectedSeason;
                     return loadPlayerData();
                 }
-                throw new Error('No data available for ' + selectedSeason);
+                throw new Error('No data for ' + selectedSeason);
             }
 
-            document.getElementById('loadingMsg').textContent = 'Computing vibes for ' + batterIds.length + ' batters and ' + pitcherIds.length + ' pitchers...';
+            setLoading('Computing vibes for ' + batIds.length + ' batters, ' + pitIds.length + ' pitchers...');
+            await fetchDetails(batIds, batterMap, 'hitting');
+            await fetchDetails(pitIds, pitcherMap, 'pitching');
 
-            // Fetch detailed stats + bios
-            await fetchDetailsBatched(batterIds, batterMap, 'hitting');
-            await fetchDetailsBatched(pitcherIds, pitcherMap, 'pitching');
-
-            // Calculate batter vibes
             allBatters = Object.values(batterMap).filter(p => p.position !== 'P').map(p => {
-                const w = p.weight;
-                p.var_score = (p.hr * p.ops * (w * w)) / 1000;
-                p.beef = (p.slg * 1000) * Math.pow(w / 180, 1.5);
-                p.sauce = p.avg * p.hr * p.ops * 100;
-                p.vibeTotal = p.var_score + p.beef + p.sauce;
+                calcBatterScores(p);
                 p.type = 'batter';
                 return p;
             });
 
-            // Calculate pitcher vibes
             allPitchers = Object.values(pitcherMap).filter(p => p.position === 'P' || p.position === '').map(p => {
-                const k9 = p.ip > 0 ? (p.so / p.ip) * 9 : 0;
-                p.filth = (k9 * 100) / Math.max(p.era, 0.5);
-                p.menace = (p.so - p.bb) * p.ip * (1 / Math.max(p.whip, 0.5));
-                p.ice = (p.so / Math.max(p.bb, 1)) * (1 / Math.max(p.era, 0.5)) * p.ip;
-                p.vibeTotal = (p.filth + p.ice) * 2 + p.menace / 50;
+                calcPitcherScores(p);
                 p.type = 'pitcher';
                 return p;
             });
 
-            // Sort by vibe total
             allBatters.sort((a, b) => b.vibeTotal - a.vibeTotal);
             allPitchers.sort((a, b) => b.vibeTotal - a.vibeTotal);
 
-            // Combined pool
+            // Ensure enough players for the league
+            const needed = numTeams * 5;
+            if (allBatters.length < needed || allPitchers.length < needed) {
+                // Pad with lower-tier players if needed (shouldn't happen with limit=80)
+                console.warn('Player pool thin: ' + allBatters.length + ' bat, ' + allPitchers.length + ' pit');
+            }
+
             playerPool = [...allBatters, ...allPitchers].map(p => ({ ...p, drafted: false, draftedBy: -1 }));
             playerPool.sort((a, b) => b.vibeTotal - a.vibeTotal);
 
             initDraft();
-
         } catch(e) {
             console.error('Load failed:', e);
-            document.getElementById('loadingMsg').textContent = 'Failed to load data. ' + e.message;
+            setLoading('Failed to load data. ' + e.message);
         }
     }
 
-    async function fetchDetailsBatched(ids, map, group) {
-        const BATCH = 8;
+    async function fetchDetails(ids, map, group) {
+        const BATCH = 10;
         for (let i = 0; i < ids.length; i += BATCH) {
             const batch = ids.slice(i, i + BATCH);
             await Promise.all(batch.map(async id => {
                 try {
-                    const [bioData, statsData] = await Promise.all([
+                    const [bio, stats] = await Promise.all([
                         fetchPlayerBio(id),
                         apiFetch('/people/' + id + '/stats?stats=season&group=' + group + '&season=' + selectedSeason)
                     ]);
-                    map[id].weight = bioData.weight;
-                    map[id].heightIn = bioData.heightIn;
-                    map[id].position = bioData.position;
-                    map[id].age = bioData.age;
-
-                    if (statsData.stats && statsData.stats[0] && statsData.stats[0].splits) {
-                        const s = statsData.stats[0].splits;
-                        const stat = s.length > 0 ? s[s.length - 1].stat : null;
-                        if (stat && group === 'hitting') {
-                            map[id].hr = parseInt(stat.homeRuns) || map[id].hr;
-                            map[id].avg = parseFloat(stat.avg) || map[id].avg;
-                            map[id].ops = parseFloat(stat.ops) || map[id].ops;
-                            map[id].rbi = parseInt(stat.rbi) || map[id].rbi;
-                            map[id].sb = parseInt(stat.stolenBases) || map[id].sb;
-                            map[id].slg = parseFloat(stat.slg) || 0;
-                            map[id].ab = parseInt(stat.atBats) || 0;
-                            map[id].tb = parseInt(stat.totalBases) || 0;
-                            map[id].hits = parseInt(stat.hits) || map[id].hits;
-                        } else if (stat && group === 'pitching') {
-                            map[id].w = parseInt(stat.wins) || map[id].w;
-                            map[id].era = parseFloat(stat.era) || map[id].era;
-                            map[id].so = parseInt(stat.strikeOuts) || map[id].so;
-                            map[id].whip = parseFloat(stat.whip) || map[id].whip;
-                            map[id].ip = parseFloat(stat.inningsPitched) || 0;
-                            map[id].bb = parseInt(stat.baseOnBalls) || 0;
-                            map[id].er = parseInt(stat.earnedRuns) || 0;
+                    map[id].weight = bio.weight;
+                    map[id].heightIn = bio.heightIn;
+                    map[id].position = bio.position;
+                    map[id].age = bio.age;
+                    if (stats.stats && stats.stats[0] && stats.stats[0].splits) {
+                        const s = stats.stats[0].splits;
+                        const st = s.length > 0 ? s[s.length - 1].stat : null;
+                        if (st && group === 'hitting') {
+                            map[id].hr = parseInt(st.homeRuns) || map[id].hr;
+                            map[id].avg = parseFloat(st.avg) || map[id].avg;
+                            map[id].ops = parseFloat(st.ops) || map[id].ops;
+                            map[id].rbi = parseInt(st.rbi) || map[id].rbi;
+                            map[id].sb = parseInt(st.stolenBases) || map[id].sb;
+                            map[id].slg = parseFloat(st.slg) || 0;
+                            map[id].ab = parseInt(st.atBats) || 0;
+                            map[id].tb = parseInt(st.totalBases) || 0;
+                            map[id].hits = parseInt(st.hits) || map[id].hits;
+                        } else if (st && group === 'pitching') {
+                            map[id].w = parseInt(st.wins) || map[id].w;
+                            map[id].era = parseFloat(st.era) || map[id].era;
+                            map[id].so = parseInt(st.strikeOuts) || map[id].so;
+                            map[id].whip = parseFloat(st.whip) || map[id].whip;
+                            map[id].ip = parseFloat(st.inningsPitched) || 0;
+                            map[id].bb = parseInt(st.baseOnBalls) || 0;
                         }
                     }
                 } catch(e) {}
             }));
-            // Update loading message with progress
-            const progress = Math.min(100, Math.round(((i + batch.length) / ids.length) * 100));
-            document.getElementById('loadingMsg').textContent =
-                'Computing vibes... (' + group + ' ' + progress + '%)';
+            setLoading('Computing vibes... (' + group + ' ' + Math.min(100, Math.round(((i + batch.length) / ids.length) * 100)) + '%)');
         }
     }
+
+    function setLoading(msg) {
+        document.getElementById('loadingMsg').textContent = msg;
+    }
+
 
     // ── Draft Logic ──
     function initDraft() {
         const teamName = document.getElementById('teamName').value.trim() || 'My Team';
+        numTeams = parseInt(leagueSizeEl.value);
 
-        // Initialize teams
-        teams = [
-            { name: teamName, owner: 'You', color: '#69f0ae', roster: [], isHuman: true },
-            ...CPU_TEAMS.map(t => ({ ...t, roster: [], isHuman: false }))
-        ];
+        teams = [{ name: teamName, owner: 'You', color: '#69f0ae', roster: [], isHuman: true, w: 0, l: 0, t: 0, catWins: 0 }];
+        for (let i = 0; i < numTeams - 1; i++) {
+            const cpu = CPU_TEAMS[i];
+            teams.push({ ...cpu, roster: [], isHuman: false, w: 0, l: 0, t: 0, catWins: 0 });
+        }
 
-        // Snake draft order: 0,1,2,3,3,2,1,0,0,1,2,3,...
         draftOrder = [];
-        for (let round = 0; round < TOTAL_ROUNDS; round++) {
+        for (let round = 0; round < TOTAL_PICKS; round++) {
             if (round % 2 === 0) {
-                for (let t = 0; t < NUM_TEAMS; t++) draftOrder.push(t);
+                for (let t = 0; t < numTeams; t++) draftOrder.push(t);
             } else {
-                for (let t = NUM_TEAMS - 1; t >= 0; t--) draftOrder.push(t);
+                for (let t = numTeams - 1; t >= 0; t--) draftOrder.push(t);
             }
         }
 
         currentPick = 0;
         draftComplete = false;
-
         showPhase('phaseDraft');
         document.getElementById('myTeamLabel').textContent = teamName;
         renderPool();
         renderMyRoster();
         updateDraftHeader();
         document.getElementById('draftLog').innerHTML = '<h3>Draft Log</h3>';
-
-        // If first pick is CPU, do it
         processNextCpuPicks();
     }
 
     function updateDraftHeader() {
         if (draftComplete) return;
-        const round = Math.floor(currentPick / NUM_TEAMS) + 1;
+        const round = Math.floor(currentPick / numTeams) + 1;
         const teamIdx = draftOrder[currentPick];
         const team = teams[teamIdx];
-
-        document.getElementById('draftRound').textContent = 'Round ' + round + ' of ' + TOTAL_ROUNDS;
+        document.getElementById('draftRound').textContent = 'Round ' + round + ' of ' + TOTAL_PICKS;
         document.getElementById('draftTurn').textContent = team.isHuman ? 'Your Pick' : team.name + ' picking...';
         document.getElementById('draftTurn').style.color = team.isHuman ? '#69f0ae' : '#FF8C2A';
 
-        // Roster needs
-        const needsEl = document.getElementById('rosterNeeds');
         const myTeam = teams[0];
-        const myBatters = myTeam.roster.filter(p => p.type === 'batter').length;
-        const myPitchers = myTeam.roster.filter(p => p.type === 'pitcher').length;
-        needsEl.innerHTML =
-            '<span class="roster-need ' + (myBatters >= ROSTER_SIZE.batters ? 'filled' : '') + '">BAT <span class="need-count">' + myBatters + '/' + ROSTER_SIZE.batters + '</span></span>' +
-            '<span class="roster-need ' + (myPitchers >= ROSTER_SIZE.pitchers ? 'filled' : '') + '">PIT <span class="need-count">' + myPitchers + '/' + ROSTER_SIZE.pitchers + '</span></span>';
+        const mb = myTeam.roster.filter(p => p.type === 'batter').length;
+        const mp = myTeam.roster.filter(p => p.type === 'pitcher').length;
+        document.getElementById('rosterNeeds').innerHTML =
+            '<span class="roster-need ' + (mb >= ROSTER.batters ? 'filled' : '') + '">BAT <span class="need-count">' + mb + '/' + ROSTER.batters + '</span></span>' +
+            '<span class="roster-need ' + (mp >= ROSTER.pitchers ? 'filled' : '') + '">PIT <span class="need-count">' + mp + '/' + ROSTER.pitchers + '</span></span>';
     }
 
     function renderPool() {
         const pool = document.getElementById('playerPool');
-        // Keep header
-        let html = '<div class="pool-header"><span></span><span>Player</span><span style="text-align:right">Vibe Score</span><span></span></div>';
-
+        let html = '<div class="pool-header"><span></span><span>Player</span><span style="text-align:right">Vibes</span><span></span></div>';
         const filtered = playerPool.filter(p => {
             if (poolFilter === 'batter') return p.type === 'batter';
             if (poolFilter === 'pitcher') return p.type === 'pitcher';
             return true;
         });
-
         filtered.forEach(p => {
-            const teamColor = TEAM_COLORS[p.team] || '#666';
-            const topMetric = p.type === 'batter'
-                ? 'VAR ' + fmtVibe(p.var_score) + ' / BEEF ' + fmtVibe(p.beef)
-                : 'FILTH ' + fmtVibe(p.filth) + ' / ICE ' + fmtVibe(p.ice);
-
-            const draftedClass = p.drafted ? (p.draftedBy === 0 ? 'drafted' : 'drafted') : '';
-            const justDrafted = p.justDrafted ? ' just-drafted' : '';
-
-            html += '<div class="pool-row ' + draftedClass + justDrafted + '" data-id="' + p.id + '" onclick="draftPlayer(' + p.id + ')">' +
-                '<img class="pool-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_80,q_auto:best/v1/people/' + p.id + '/headshot/67/current" alt="" loading="lazy" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect fill=%22%230D1520%22 width=%2240%22 height=%2240%22/><text x=%2220%22 y=%2226%22 text-anchor=%22middle%22 fill=%22%237a7265%22 font-size=%2214%22>?</text></svg>\'">' +
-                '<div class="pool-player-info">' +
-                    '<div class="pool-player-name">' + escHtml(p.name) + '</div>' +
-                    '<div class="pool-player-meta"><span style="color:' + teamColor + '">' + escHtml(p.team) + '</span> &middot; ' + (p.type === 'batter' ? (p.position || 'BAT') : 'P') + ' &middot; ' + topMetric + '</div>' +
-                '</div>' +
-                '<div><div class="pool-vibe-score">' + fmtVibe(p.vibeTotal) + '</div><div class="pool-vibe-label">VIBES</div></div>' +
-                '<div></div>' +
-            '</div>';
+            const tc = TEAM_COLORS[p.team] || '#666';
+            const topCats = p.type === 'batter'
+                ? 'VAR ' + fmt(p.scores.var) + ' / BEEF ' + fmt(p.scores.beef)
+                : 'BYRD ' + fmt(p.scores.byrd) + ' / MOYER ' + fmt(p.scores.moyer);
+            html += '<div class="pool-row ' + (p.drafted ? 'drafted' : '') + '" onclick="FVL.draftPlayer(' + p.id + ')">' +
+                '<img class="pool-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_80,q_auto:best/v1/people/' + p.id + '/headshot/67/current" alt="" loading="lazy" onerror="this.style.display=\'none\'">' +
+                '<div class="pool-player-info"><div class="pool-player-name">' + esc(p.name) + '</div>' +
+                '<div class="pool-player-meta"><span style="color:' + tc + '">' + esc(p.team) + '</span> &middot; ' +
+                (p.type === 'batter' ? (p.position || 'BAT') : 'P') + ' &middot; ' + topCats + '</div></div>' +
+                '<div><div class="pool-vibe-score">' + fmt(p.vibeTotal) + '</div><div class="pool-vibe-label">VIBES</div></div><div></div></div>';
         });
-
         pool.innerHTML = html;
     }
 
     function renderMyRoster() {
         const el = document.getElementById('myRoster');
-        const myTeam = teams[0];
-        let html = '<h3>' + escHtml(myTeam.name) + '</h3>';
-
-        // Batter slots
-        for (let i = 0; i < ROSTER_SIZE.batters; i++) {
-            const batter = myTeam.roster.filter(p => p.type === 'batter')[i];
-            if (batter) {
-                html += '<div class="roster-slot">' +
-                    '<span class="slot-pos">' + (batter.position || 'BAT') + '</span>' +
-                    '<span class="slot-player"><span class="slot-player-name">' + escHtml(batter.name) + '</span><span class="slot-team"> ' + escHtml(batter.team) + '</span></span>' +
-                    '<span class="slot-score">' + fmtVibe(batter.vibeTotal) + '</span>' +
-                '</div>';
-            } else {
-                html += '<div class="roster-slot"><span class="slot-pos">BAT</span><span class="slot-empty">Empty slot</span></div>';
-            }
+        const my = teams[0];
+        let html = '<h3>' + esc(my.name) + '</h3>';
+        for (let i = 0; i < ROSTER.batters; i++) {
+            const b = my.roster.filter(p => p.type === 'batter')[i];
+            html += b
+                ? '<div class="roster-slot"><span class="slot-pos">' + (b.position || 'BAT') + '</span><span class="slot-player"><span class="slot-player-name">' + esc(b.name) + '</span><span class="slot-team"> ' + esc(b.team) + '</span></span><span class="slot-score">' + fmt(b.vibeTotal) + '</span></div>'
+                : '<div class="roster-slot"><span class="slot-pos">BAT</span><span class="slot-empty">Empty slot</span></div>';
         }
-
-        // Pitcher slots
-        for (let i = 0; i < ROSTER_SIZE.pitchers; i++) {
-            const pitcher = myTeam.roster.filter(p => p.type === 'pitcher')[i];
-            if (pitcher) {
-                html += '<div class="roster-slot">' +
-                    '<span class="slot-pos">P</span>' +
-                    '<span class="slot-player"><span class="slot-player-name">' + escHtml(pitcher.name) + '</span><span class="slot-team"> ' + escHtml(pitcher.team) + '</span></span>' +
-                    '<span class="slot-score">' + fmtVibe(pitcher.vibeTotal) + '</span>' +
-                '</div>';
-            } else {
-                html += '<div class="roster-slot"><span class="slot-pos">P</span><span class="slot-empty">Empty slot</span></div>';
-            }
+        for (let i = 0; i < ROSTER.pitchers; i++) {
+            const p = my.roster.filter(p => p.type === 'pitcher')[i];
+            html += p
+                ? '<div class="roster-slot"><span class="slot-pos">P</span><span class="slot-player"><span class="slot-player-name">' + esc(p.name) + '</span><span class="slot-team"> ' + esc(p.team) + '</span></span><span class="slot-score">' + fmt(p.vibeTotal) + '</span></div>'
+                : '<div class="roster-slot"><span class="slot-pos">P</span><span class="slot-empty">Empty slot</span></div>';
         }
-
         el.innerHTML = html;
     }
 
-    function addDraftLogEntry(teamIdx, player) {
+    function addDraftLog(teamIdx, player) {
         const log = document.getElementById('draftLog');
         const team = teams[teamIdx];
         const entry = document.createElement('div');
-        entry.className = 'log-entry ' + (teamIdx === 0 ? 'my-pick' : 'cpu-pick');
-        const pickNum = currentPick;
-        entry.innerHTML = '<span class="log-team" style="color:' + team.color + '">' + escHtml(team.name) + '</span> drafted <span class="log-player">' + escHtml(player.name) + '</span> <span style="color:var(--muted)">(' + (player.type === 'batter' ? player.position || 'BAT' : 'P') + ', ' + fmtVibe(player.vibeTotal) + ' vibes)</span>';
+        entry.className = 'log-entry';
+        entry.innerHTML = '<span class="log-team" style="color:' + team.color + '">' + esc(team.name) + '</span> drafted <span class="log-player">' + esc(player.name) + '</span> <span style="color:var(--muted)">(' + (player.type === 'batter' ? player.position || 'BAT' : 'P') + ')</span>';
         log.appendChild(entry);
         log.scrollTop = log.scrollHeight;
     }
 
-    // ── Human draft pick ──
-    window.draftPlayer = function(playerId) {
+    FVL.draftPlayer = function(playerId) {
         if (draftComplete) return;
         const teamIdx = draftOrder[currentPick];
-        if (teamIdx !== 0) return; // not human's turn
-
+        if (teamIdx !== 0) return;
         const player = playerPool.find(p => p.id === playerId);
         if (!player || player.drafted) return;
 
-        // Check roster limits
-        const myTeam = teams[0];
-        const myBatters = myTeam.roster.filter(p => p.type === 'batter').length;
-        const myPitchers = myTeam.roster.filter(p => p.type === 'pitcher').length;
+        const my = teams[0];
+        const mb = my.roster.filter(p => p.type === 'batter').length;
+        const mp = my.roster.filter(p => p.type === 'pitcher').length;
+        if (player.type === 'batter' && mb >= ROSTER.batters) return;
+        if (player.type === 'pitcher' && mp >= ROSTER.pitchers) return;
 
-        if (player.type === 'batter' && myBatters >= ROSTER_SIZE.batters) {
-            // Can't draft more batters
-            return;
-        }
-        if (player.type === 'pitcher' && myPitchers >= ROSTER_SIZE.pitchers) {
-            return;
-        }
-
-        // Draft the player
         player.drafted = true;
         player.draftedBy = 0;
-        myTeam.roster.push(player);
-        addDraftLogEntry(0, player);
+        my.roster.push(player);
+        addDraftLog(0, player);
         currentPick++;
-
         renderPool();
         renderMyRoster();
-
-        if (currentPick >= draftOrder.length) {
-            finishDraft();
-            return;
-        }
-
+        if (currentPick >= draftOrder.length) { finishDraft(); return; }
         updateDraftHeader();
         processNextCpuPicks();
     };
 
-    // ── CPU draft picks ──
     function processNextCpuPicks() {
         if (draftComplete || currentPick >= draftOrder.length) return;
-
         const teamIdx = draftOrder[currentPick];
         if (teamIdx === 0) {
-            // Human's turn
             document.getElementById('cpuDraftingBanner').style.display = 'none';
             updateDraftHeader();
             return;
         }
-
         document.getElementById('cpuDraftingBanner').style.display = 'block';
         document.getElementById('cpuDraftingBanner').textContent = teams[teamIdx].name + ' is picking...';
 
         setTimeout(() => {
             cpuDraft(teamIdx);
             currentPick++;
-
             renderPool();
             updateDraftHeader();
-
-            if (currentPick >= draftOrder.length) {
-                finishDraft();
-                return;
-            }
-
-            // Continue if next pick is also CPU
+            if (currentPick >= draftOrder.length) { finishDraft(); return; }
             processNextCpuPicks();
-        }, 600 + Math.random() * 400);
+        }, 300 + Math.random() * 300);
     }
 
     function cpuDraft(teamIdx) {
         const team = teams[teamIdx];
-        const batters = team.roster.filter(p => p.type === 'batter').length;
-        const pitchers = team.roster.filter(p => p.type === 'pitcher').length;
-        const needsBatter = batters < ROSTER_SIZE.batters;
-        const needsPitcher = pitchers < ROSTER_SIZE.pitchers;
+        const nb = team.roster.filter(p => p.type === 'batter').length;
+        const np = team.roster.filter(p => p.type === 'pitcher').length;
+        let avail = playerPool.filter(p => !p.drafted);
 
-        let available = playerPool.filter(p => !p.drafted);
-
-        // Must-pick logic: if out of slots for one type, force the other
-        if (!needsBatter) {
-            available = available.filter(p => p.type === 'pitcher');
-        } else if (!needsPitcher) {
-            available = available.filter(p => p.type === 'batter');
-        } else {
-            // Strategy-based preference
-            const cpu = CPU_TEAMS[teamIdx - 1];
-            if (cpu.strategy === 'power') {
-                // Prefer batters 70% of the time
-                const batAvail = available.filter(p => p.type === 'batter');
-                if (batAvail.length > 0 && Math.random() < 0.7) available = batAvail;
-            } else if (cpu.strategy === 'pitching') {
-                const pitAvail = available.filter(p => p.type === 'pitcher');
-                if (pitAvail.length > 0 && Math.random() < 0.7) available = pitAvail;
+        if (nb >= ROSTER.batters) avail = avail.filter(p => p.type === 'pitcher');
+        else if (np >= ROSTER.pitchers) avail = avail.filter(p => p.type === 'batter');
+        else {
+            const strat = team.strategy;
+            if (strat === 'power') {
+                const ba = avail.filter(p => p.type === 'batter');
+                if (ba.length > 0 && Math.random() < 0.65) avail = ba;
+            } else if (strat === 'pitching') {
+                const pa = avail.filter(p => p.type === 'pitcher');
+                if (pa.length > 0 && Math.random() < 0.65) avail = pa;
             }
-            // 'balanced' just picks BPA
         }
+        if (avail.length === 0) return;
 
-        if (available.length === 0) return;
-
-        // Add some randomness: pick from top 3 with weighting
-        available.sort((a, b) => b.vibeTotal - a.vibeTotal);
-        const topN = available.slice(0, Math.min(3, available.length));
-        const weights = [0.6, 0.25, 0.15];
+        avail.sort((a, b) => b.vibeTotal - a.vibeTotal);
+        const topN = avail.slice(0, Math.min(3, avail.length));
+        const weights = [0.55, 0.3, 0.15];
         let r = Math.random();
         let pick = topN[0];
         for (let i = 0; i < topN.length; i++) {
             r -= weights[i] || 0.1;
             if (r <= 0) { pick = topN[i]; break; }
         }
-
         pick.drafted = true;
         pick.draftedBy = teamIdx;
-        pick.justDrafted = true;
         team.roster.push(pick);
-        addDraftLogEntry(teamIdx, pick);
-
-        // Clear justDrafted after animation
-        setTimeout(() => {
-            pick.justDrafted = false;
-        }, 1500);
+        addDraftLog(teamIdx, pick);
     }
 
     function finishDraft() {
         draftComplete = true;
         document.getElementById('cpuDraftingBanner').style.display = 'none';
-
-        setTimeout(() => {
-            showResults();
-        }, 500);
+        setTimeout(() => simulateSeason(), 500);
     }
 
-    // ── Results ──
-    function showResults() {
-        showPhase('phaseResults');
 
-        document.getElementById('resultsSeason').textContent = selectedSeason + ' Season Stats';
+    // ── Season Simulation ──
+    function generateSchedule(nTeams, nWeeks) {
+        // Round-robin schedule generator
+        const schedule = [];
+        const ids = [];
+        for (let i = 0; i < nTeams; i++) ids.push(i);
 
-        // Calculate total vibes per team
-        const standings = teams.map((t, i) => {
-            const totalVibes = t.roster.reduce((sum, p) => sum + p.vibeTotal, 0);
-            return { ...t, idx: i, totalVibes };
+        // If odd number of teams, add a bye placeholder
+        const hasbye = nTeams % 2 !== 0;
+        if (hasbye) ids.push(-1);
+        const n = ids.length;
+
+        const rounds = [];
+        const fixed = ids[0];
+        const rotating = ids.slice(1);
+
+        for (let r = 0; r < n - 1; r++) {
+            const round = [];
+            const current = [fixed, ...rotating];
+            for (let i = 0; i < n / 2; i++) {
+                const t1 = current[i];
+                const t2 = current[n - 1 - i];
+                if (t1 !== -1 && t2 !== -1) round.push([t1, t2]);
+            }
+            rounds.push(round);
+            rotating.push(rotating.shift());
+        }
+
+        // Fill weeks by cycling through rounds
+        for (let w = 0; w < nWeeks; w++) {
+            schedule.push(rounds[w % rounds.length]);
+        }
+        return schedule;
+    }
+
+    function gaussRandom() {
+        // Box-Muller
+        let u = 0, v = 0;
+        while (u === 0) u = Math.random();
+        while (v === 0) v = Math.random();
+        return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function getWeeklyScores(team) {
+        // For each player, apply random weekly multiplier to their season scores
+        // Then sum across roster for each category
+        const totals = {};
+        CATEGORIES.forEach(c => { totals[c.key] = 0; });
+
+        team.roster.forEach((player, pi) => {
+            const catKeys = player.type === 'batter'
+                ? ['var', 'beef', 'sauce', 'grit', 'juice']
+                : ['filth', 'ice', 'menace', 'byrd', 'moyer'];
+
+            catKeys.forEach(key => {
+                const base = player.scores[key] / REG_SEASON_WEEKS;
+                // Each player has independent weekly variance
+                const noise = 1.0 + gaussRandom() * 0.35;
+                const weekVal = Math.max(base * Math.max(noise, 0.1), 0);
+                totals[key] += weekVal;
+            });
         });
 
-        standings.sort((a, b) => b.totalVibes - a.totalVibes);
+        return totals;
+    }
 
-        // Render standings
-        const standingsEl = document.getElementById('standings');
-        standingsEl.innerHTML = '<h3>Final Standings</h3>';
-
-        standings.forEach((t, rank) => {
-            const row = document.createElement('div');
-            row.className = 'standing-row' + (rank === 0 ? ' first-place' : '');
-            row.style.animationDelay = (rank * 100) + 'ms';
-            row.classList.add('animate-in');
-            row.innerHTML =
-                '<div class="standing-rank">' + (rank + 1) + '</div>' +
-                '<div><div class="standing-team-name" style="color:' + t.color + '">' + escHtml(t.name) + '</div>' +
-                '<div class="standing-team-owner">' + escHtml(t.owner) + '</div></div>' +
-                '<div><div class="standing-score">' + fmtVibe(t.totalVibes) + '</div>' +
-                '<div class="standing-score-label">TOTAL VIBES</div></div>';
-            standingsEl.appendChild(row);
+    function compareMatchup(scores1, scores2) {
+        let w1 = 0, w2 = 0;
+        const cats = {};
+        CATEGORIES.forEach(c => {
+            const v1 = scores1[c.key] || 0;
+            const v2 = scores2[c.key] || 0;
+            let winner = 0;
+            if (v1 > v2) { w1++; winner = 1; }
+            else if (v2 > v1) { w2++; winner = 2; }
+            cats[c.key] = { v1, v2, winner };
         });
+        return { w1, w2, cats };
+    }
 
-        // Trash talk
-        const myRank = standings.findIndex(t => t.idx === 0);
-        const trashEl = document.getElementById('trashTalk');
-        const trashLines = {
-            0: [
-                "Congratulations. You've won a trophy that doesn't exist, in a league scored on metrics nobody respects. Your mother would be confused but proud.",
-                "First place in the Fantasy Vibes League. Put it on your resume. Employers love candidates with high BEEF.",
-                "You are the champion of absolutely nothing. The Brofessor salutes your commitment to nonsense."
-            ],
-            1: [
-                "Second place. Close enough to taste victory, far enough to know you'll never have it.",
-                "You finished runner-up in a league where SAUCE is a real statistic. Process that.",
-                "Silver medal energy. Your team had vibes, just not enough of them."
-            ],
-            2: [
-                "Third place. The 'I participated' of competitive finishes.",
-                "Bronze. Your draft strategy was... interesting. The Brofessor is reviewing the tape.",
-                "You beat one CPU team. Barely. The one managed by a changeup."
-            ],
-            3: [
-                "Dead last. You got out-vibed by three robots with names like 'Roid Rage & Chill.' Reflect on this.",
-                "Fourth place in a four-team league. You are statistically the worst thing that's happened to fantasy baseball.",
-                "Congratulations on your last-place finish. The Brofessor recommends more BEEF in your next draft."
-            ]
-        };
+    function simulateSeason() {
+        showPhase('phaseLoading');
+        setLoading('Simulating ' + REG_SEASON_WEEKS + '-week H2H season...');
 
-        const lines = trashLines[myRank] || trashLines[3];
-        const line = lines[Math.floor(Math.random() * lines.length)];
-        trashEl.innerHTML = '<p>"' + line + '"</p><div class="attribution">— The Brofessor</div>';
+        const schedule = generateSchedule(numTeams, REG_SEASON_WEEKS);
+        seasonResults = [];
 
-        // Results title
-        const titles = {
-            0: 'You Won the Vibes Championship!',
-            1: 'Almost Had It',
-            2: 'Middle of the Pack',
-            3: 'Better Luck Next Draft'
-        };
-        document.getElementById('resultsTitle').textContent = titles[myRank] || 'League Standings';
+        // Reset standings
+        teams.forEach(t => { t.w = 0; t.l = 0; t.t = 0; t.catWins = 0; });
 
-        // Team cards
-        const cardsEl = document.getElementById('teamCards');
-        cardsEl.innerHTML = '';
+        for (let w = 0; w < REG_SEASON_WEEKS; w++) {
+            const matchups = [];
+            const weekMatchups = schedule[w];
 
-        standings.forEach(t => {
-            const card = document.createElement('div');
-            card.className = 'team-card' + (t.idx === 0 ? ' my-team' : '');
-            let html = '<h4 style="color:' + t.color + '">' + escHtml(t.name) + '</h4>';
+            weekMatchups.forEach(([t1, t2]) => {
+                const s1 = getWeeklyScores(teams[t1]);
+                const s2 = getWeeklyScores(teams[t2]);
+                const result = compareMatchup(s1, s2);
 
-            t.roster.forEach(p => {
-                const pos = p.type === 'batter' ? (p.position || 'BAT') : 'P';
-                html += '<div class="team-card-player">' +
-                    '<span class="tcp-pos">' + pos + '</span>' +
-                    '<span class="tcp-name">' + escHtml(p.name) + ' <span style="color:var(--muted);font-size:0.7rem">' + escHtml(p.team) + '</span></span>' +
-                    '<span class="tcp-score">' + fmtVibe(p.vibeTotal) + '</span>' +
-                '</div>';
+                if (result.w1 > result.w2) {
+                    teams[t1].w++;
+                    teams[t2].l++;
+                } else if (result.w2 > result.w1) {
+                    teams[t2].w++;
+                    teams[t1].l++;
+                } else {
+                    teams[t1].t++;
+                    teams[t2].t++;
+                }
+                teams[t1].catWins += result.w1;
+                teams[t2].catWins += result.w2;
+
+                matchups.push({ t1, t2, s1, s2, result });
             });
 
-            html += '<div class="team-card-total"><span>Total Vibes</span><span class="total-score">' + fmtVibe(t.totalVibes) + '</span></div>';
-            card.innerHTML = html;
-            cardsEl.appendChild(card);
+            // Snapshot records at end of this week
+            const snapshot = teams.map(t => ({ w: t.w, l: t.l, t: t.t, catWins: t.catWins }));
+            seasonResults.push({ week: w + 1, matchups, records: snapshot });
+        }
+
+        // Playoffs
+        simulatePlayoffs();
+
+        // Show season
+        currentWeek = 0;
+        document.getElementById('seasonTitle').textContent = selectedSeason + ' Fantasy Vibes League';
+        showPhase('phaseSeason');
+        FVL.showSeasonView('matchups');
+        renderWeek();
+        renderStandings();
+        renderPlayoffs();
+    }
+
+    function getStandings() {
+        return [...teams].sort((a, b) => {
+            const wa = a.w + a.t * 0.5;
+            const wb = b.w + b.t * 0.5;
+            if (wb !== wa) return wb - wa;
+            return b.catWins - a.catWins;
         });
     }
 
-    // ── Pool filter ──
-    window.filterPool = function(filter) {
+    function simulatePlayoffs() {
+        const standings = getStandings();
+        const playoffTeams = standings.slice(0, PLAYOFF_TEAMS);
+        const semis = [
+            { t1: teams.indexOf(playoffTeams[0]), t2: teams.indexOf(playoffTeams[3]) },
+            { t1: teams.indexOf(playoffTeams[1]), t2: teams.indexOf(playoffTeams[2]) }
+        ];
+
+        playoffResults = { semis: [], finals: null, champion: null };
+
+        // Simulate semis (best of 1 week)
+        const finalists = [];
+        semis.forEach(({ t1, t2 }) => {
+            const s1 = getWeeklyScores(teams[t1]);
+            const s2 = getWeeklyScores(teams[t2]);
+            const result = compareMatchup(s1, s2);
+            // Tie goes to higher seed (t1 is always higher seed in semis)
+            const winner = result.w1 > result.w2 ? t1 : result.w2 > result.w1 ? t2 : (teams[t1].catWins >= teams[t2].catWins ? t1 : t2);
+            finalists.push(winner);
+            playoffResults.semis.push({ t1, t2, s1, s2, result, winner });
+        });
+
+        // Finals
+        const ft1 = finalists[0], ft2 = finalists[1];
+        const fs1 = getWeeklyScores(teams[ft1]);
+        const fs2 = getWeeklyScores(teams[ft2]);
+        const fResult = compareMatchup(fs1, fs2);
+        const champIdx = fResult.w1 > fResult.w2 ? ft1 : fResult.w2 > fResult.w1 ? ft2 : (teams[ft1].catWins >= teams[ft2].catWins ? ft1 : ft2);
+        playoffResults.finals = { t1: ft1, t2: ft2, s1: fs1, s2: fs2, result: fResult, winner: champIdx };
+        playoffResults.champion = champIdx;
+        champion = champIdx;
+    }
+
+
+    // ── Rendering: Season Views ──
+    FVL.showSeasonView = function(view) {
+        document.querySelectorAll('.season-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.season-tab[data-view="' + view + '"]').classList.add('active');
+        document.querySelectorAll('.season-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1)).classList.add('active');
+    };
+
+    FVL.changeWeek = function(delta) {
+        currentWeek = Math.max(0, Math.min(REG_SEASON_WEEKS - 1, currentWeek + delta));
+        renderWeek();
+    };
+
+    function renderWeek() {
+        const wk = seasonResults[currentWeek];
+        document.getElementById('weekLabel').innerHTML = 'Week ' + wk.week + ' of ' + REG_SEASON_WEEKS;
+        document.getElementById('btnPrevWeek').disabled = currentWeek === 0;
+        document.getElementById('btnNextWeek').disabled = currentWeek === REG_SEASON_WEEKS - 1;
+
+        const grid = document.getElementById('matchupGrid');
+        let html = '';
+
+        // Use previous week's records (or 0-0-0 for week 1)
+        const prevRecords = currentWeek > 0 ? seasonResults[currentWeek - 1].records : teams.map(() => ({ w: 0, l: 0, t: 0, catWins: 0 }));
+
+        wk.matchups.forEach(m => {
+            const team1 = teams[m.t1];
+            const team2 = teams[m.t2];
+            const rec1 = prevRecords[m.t1];
+            const rec2 = prevRecords[m.t2];
+            const isMy = m.t1 === 0 || m.t2 === 0;
+            const myIsT1 = m.t1 === 0;
+
+            // Determine result from winner's perspective
+            let resultText, resultClass;
+            if (m.result.w1 > m.result.w2) {
+                resultText = m.result.w1 + '-' + m.result.w2;
+                resultClass = isMy ? (myIsT1 ? 'win' : 'loss') : 'win';
+            } else if (m.result.w2 > m.result.w1) {
+                resultText = m.result.w2 + '-' + m.result.w1;
+                resultClass = isMy ? (myIsT1 ? 'loss' : 'win') : 'loss';
+            } else {
+                resultText = m.result.w1 + '-' + m.result.w2;
+                resultClass = 'tie';
+            }
+
+            html += '<div class="matchup-card ' + (isMy ? 'my-matchup' : '') + '">';
+            html += '<div class="matchup-teams">';
+            html += '<div class="matchup-team"><div class="matchup-team-name" style="color:' + team1.color + '">' + esc(team1.name) + '</div><div class="matchup-team-record">' + rec1.w + '-' + rec1.l + '-' + rec1.t + '</div></div>';
+            html += '<div class="matchup-vs">VS</div>';
+            html += '<div class="matchup-team"><div class="matchup-team-name" style="color:' + team2.color + '">' + esc(team2.name) + '</div><div class="matchup-team-record">' + rec2.w + '-' + rec2.l + '-' + rec2.t + '</div></div>';
+            html += '</div>';
+
+            // Show result badge — label with winner's name
+            let winnerName;
+            if (m.result.w1 > m.result.w2) winnerName = team1.name;
+            else if (m.result.w2 > m.result.w1) winnerName = team2.name;
+            else winnerName = 'TIE';
+            html += '<div class="matchup-result ' + resultClass + '">' + esc(winnerName) + ' wins ' + resultText + '</div>';
+
+            // Category breakdown
+            CATEGORIES.forEach(cat => {
+                const cd = m.result.cats[cat.key];
+                const total = cd.v1 + cd.v2;
+                const pct1 = total > 0 ? (cd.v1 / total * 100) : 50;
+                const pct2 = total > 0 ? (cd.v2 / total * 100) : 50;
+                const c1 = cd.winner === 1 ? team1.color : 'rgba(255,255,255,0.15)';
+                const c2 = cd.winner === 2 ? team2.color : 'rgba(255,255,255,0.15)';
+
+                html += '<div class="cat-row">';
+                html += '<div class="cat-name">' + cat.name + '</div>';
+                html += '<div class="cat-bar-wrap"><div class="cat-bar-left" style="width:' + pct1 + '%;background:' + c1 + '"></div><div class="cat-bar-right" style="width:' + pct2 + '%;background:' + c2 + '"></div></div>';
+                html += '<div class="cat-val ' + (cd.winner === 1 ? 'winner' : '') + '">' + fmt(cd.v1) + '</div>';
+                html += '<div class="cat-val ' + (cd.winner === 2 ? 'winner' : '') + '">' + fmt(cd.v2) + '</div>';
+                html += '</div>';
+            });
+
+            html += '</div>';
+        });
+
+        grid.innerHTML = html;
+    }
+
+    function renderStandings() {
+        const standings = getStandings();
+        const el = document.getElementById('standingsSection');
+        let html = '<h3>League Standings</h3>';
+        html += '<table class="standings-table"><thead><tr>';
+        html += '<th>#</th><th>Team</th><th>Owner</th><th>W</th><th>L</th><th>T</th><th>Win%</th><th>Cat W</th>';
+        html += '</tr></thead><tbody>';
+
+        standings.forEach((t, i) => {
+            const total = t.w + t.l + t.t;
+            const winPct = total > 0 ? ((t.w + t.t * 0.5) / total).toFixed(3) : '.000';
+            const isPlayoff = i < PLAYOFF_TEAMS;
+            const teamIdx = teams.indexOf(t);
+            const lineClass = i === PLAYOFF_TEAMS ? 'playoff-line' : '';
+
+            html += '<tr class="' + lineClass + '">';
+            html += '<td class="rank" style="color:' + (i < 4 ? t.color : 'var(--muted)') + '">' + (i + 1) + '</td>';
+            html += '<td class="team-name-col" style="color:' + t.color + '">' + esc(t.name) + (isPlayoff ? ' *' : '') + '</td>';
+            html += '<td style="color:var(--muted);font-size:0.75rem">' + esc(t.owner) + '</td>';
+            html += '<td class="record">' + t.w + '</td>';
+            html += '<td class="record">' + t.l + '</td>';
+            html += '<td class="record">' + t.t + '</td>';
+            html += '<td class="record">' + winPct + '</td>';
+            html += '<td class="record">' + t.catWins + '</td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        html += '<p style="font-size:0.65rem;color:var(--muted);margin-top:0.5rem;font-family:\'JetBrains Mono\',monospace;">* Top ' + PLAYOFF_TEAMS + ' teams qualify for the Vibes Playoffs</p>';
+        el.innerHTML = html;
+    }
+
+    function renderPlayoffs() {
+        if (!playoffResults) return;
+        const el = document.getElementById('playoffContent');
+        let html = '<h3 style="font-family:\'Playfair Display\',serif;font-size:1.2rem;color:var(--neon-orange);text-align:center;margin-bottom:1rem;">Vibes Playoffs</h3>';
+        html += '<div class="playoff-bracket">';
+
+        // Semis
+        html += '<div class="bracket-round"><h4>Semifinals</h4>';
+        playoffResults.semis.forEach(s => {
+            const t1 = teams[s.t1];
+            const t2 = teams[s.t2];
+            const w1 = s.winner === s.t1;
+            html += '<div class="bracket-matchup">';
+            html += '<div class="bracket-team ' + (w1 ? 'winner' : 'loser') + '"><span>' + esc(t1.name) + '</span><span class="bracket-score">' + s.result.w1 + '</span></div>';
+            html += '<div class="bracket-team ' + (w1 ? 'loser' : 'winner') + '"><span>' + esc(t2.name) + '</span><span class="bracket-score">' + s.result.w2 + '</span></div>';
+            html += '</div>';
+        });
+        html += '</div>';
+
+        // Finals
+        html += '<div class="bracket-round"><h4>Championship</h4>';
+        const f = playoffResults.finals;
+        const ft1 = teams[f.t1];
+        const ft2 = teams[f.t2];
+        const fw1 = f.winner === f.t1;
+        html += '<div class="bracket-matchup" style="border-color:var(--neon-orange)">';
+        html += '<div class="bracket-team ' + (fw1 ? 'winner' : 'loser') + '"><span>' + esc(ft1.name) + '</span><span class="bracket-score">' + f.result.w1 + '</span></div>';
+        html += '<div class="bracket-team ' + (fw1 ? 'loser' : 'winner') + '"><span>' + esc(ft2.name) + '</span><span class="bracket-score">' + f.result.w2 + '</span></div>';
+        html += '</div></div></div>';
+
+        el.innerHTML = html;
+    }
+
+
+    // ── Champion View ──
+    FVL.viewChampion = function() {
+        showPhase('phaseChampion');
+        const champ = teams[champion];
+        const isHuman = champion === 0;
+        const el = document.getElementById('championContent');
+
+        let html = '<div class="champion-banner">';
+        if (isHuman) {
+            html += '<h2 style="color:var(--neon-green)">YOU ARE THE VIBES CHAMPION</h2>';
+        } else {
+            html += '<h2 style="color:var(--neon-orange)">Season Complete</h2>';
+        }
+        html += '<div class="champ-team" style="color:' + champ.color + '">' + esc(champ.name) + '</div>';
+        html += '<div class="champ-record">' + champ.w + '-' + champ.l + '-' + champ.t + ' &middot; ' + champ.catWins + ' category wins</div>';
+        html += '</div>';
+
+        // Trash talk
+        const trashLines = isHuman ? [
+            "You won a championship scored on BEEF, FILTH, and the BYRD Index. Put it on your LinkedIn.",
+            "Congratulations. You're the best at fake stats derived from real stats. The Brofessor is weeping with pride.",
+            "First place in a league where MOYER Score matters. Jamie Moyer would approve, slowly, at 78 mph."
+        ] : [
+            "You lost to a robot named '" + esc(champ.name) + "' in a league scored on vibes. The Brofessor suggests more GRIT.",
+            "The CPU out-vibed you. Their BYRD Index was simply superior. Paul Byrd's Ghost sends condolences.",
+            "Better luck next season. Maybe draft more JUICE and less whatever you were drafting."
+        ];
+        const line = trashLines[Math.floor(Math.random() * trashLines.length)];
+        html += '<div class="trash-talk"><p>"' + line + '"</p><div class="attribution">— The Brofessor</div></div>';
+
+        // Final standings summary
+        const standings = getStandings();
+        html += '<div class="standings-section" style="max-width:700px;margin:1.5rem auto;"><h3>Final Standings</h3>';
+        html += '<table class="standings-table"><thead><tr><th>#</th><th>Team</th><th>W-L-T</th><th>Cat W</th></tr></thead><tbody>';
+        standings.forEach((t, i) => {
+            html += '<tr><td class="rank" style="color:' + t.color + '">' + (i + 1) + '</td>';
+            html += '<td class="team-name-col" style="color:' + t.color + '">' + esc(t.name) + '</td>';
+            html += '<td class="record">' + t.w + '-' + t.l + '-' + t.t + '</td>';
+            html += '<td class="record">' + t.catWins + '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+
+        // Playoff bracket
+        html += '<div style="max-width:700px;margin:1rem auto;">';
+        renderPlayoffs();
+        html += document.getElementById('playoffContent').innerHTML;
+        html += '</div>';
+
+        el.innerHTML = html;
+    };
+
+    // ── Global actions ──
+    FVL.filterPool = function(filter) {
         poolFilter = filter;
         document.querySelectorAll('.pool-filter').forEach(b => b.classList.remove('active'));
         document.querySelector('.pool-filter[data-filter="' + filter + '"]').classList.add('active');
         renderPool();
     };
 
-    // ── Start draft ──
-    window.startDraft = function() {
-        loadPlayerData();
-    };
-
-    // ── Reset ──
-    window.resetDraft = function() {
-        playerPool.forEach(p => { p.drafted = false; p.draftedBy = -1; p.justDrafted = false; });
+    FVL.resetAll = function() {
+        playerPool.forEach(p => { p.drafted = false; p.draftedBy = -1; });
+        seasonResults = [];
+        playoffResults = null;
+        champion = null;
+        currentWeek = 0;
         showPhase('phaseSetup');
     };
 
-    // ── Formatters ──
-    function fmtVibe(v) {
-        if (!v || isNaN(v)) return '0';
+    // ── Start ──
+    window.startLeague = function() {
+        numTeams = parseInt(leagueSizeEl.value);
+        loadPlayerData();
+    };
+
+    // ── Utilities ──
+    function fmt(v) {
+        if (!v || isNaN(v)) return '0.0';
         if (v >= 1000) return v.toFixed(0);
         if (v >= 100) return v.toFixed(1);
         if (v >= 10) return v.toFixed(1);
         return v.toFixed(2);
     }
 
-    function escHtml(s) {
+    function esc(s) {
         if (!s) return '';
-        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
 })();
