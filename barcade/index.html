@@ -319,6 +319,31 @@
         box-shadow: 0 0 15px rgba(180,74,255,0.2);
     }
 
+    /* Spreadsheet Viper cabinet */
+    .cabinet-spreadsheet .cabinet-marquee {
+        background: linear-gradient(135deg, rgba(0,179,54,0.15) 0%, rgba(57,255,20,0.05) 100%);
+    }
+    .cabinet-spreadsheet .cabinet-marquee::before {
+        background: linear-gradient(90deg, transparent, #00b336, transparent);
+    }
+    .cabinet-spreadsheet .cabinet-game-title {
+        color: #00b336;
+        text-shadow: 0 0 15px rgba(0,179,54,0.5);
+    }
+    .cabinet-spreadsheet .cabinet-screen {
+        background: radial-gradient(ellipse, #0a0e1a 0%, #050810 100%);
+    }
+    .cabinet-spreadsheet .insert-coin { color: #00b336; }
+    .cabinet-spreadsheet .control-btn { background: rgba(0,179,54,0.3); }
+    .cabinet-spreadsheet .cabinet-play {
+        color: #00b336;
+        border: 1px solid rgba(0,179,54,0.3);
+    }
+    .cabinet-spreadsheet:hover .cabinet-play {
+        background: rgba(0,179,54,0.1);
+        box-shadow: 0 0 15px rgba(0,179,54,0.2);
+    }
+
     /* Footer */
     .barcade-footer {
         width: 100%;
@@ -482,6 +507,60 @@
                 </div>
                 <div class="cabinet-info">
                     <p class="cabinet-desc">Neon snake. Power-ups. Hazards. Combos. How long can you survive?</p>
+                    <span class="cabinet-play">PLAY &rarr;</span>
+                </div>
+            </a>
+            <!-- Spreadsheet Viper Cabinet -->
+            <a href="/barcade/spreadsheet-viper.html" class="arcade-cabinet cabinet-spreadsheet">
+                <div class="cabinet-marquee">
+                    <div class="cabinet-game-title">SPREADSHEET<br>VIPER</div>
+                </div>
+                <div class="cabinet-screen">
+                    <div class="screen-art">
+                        <svg viewBox="0 0 120 90" width="200" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">
+                            <!-- CSV file chain (snake body) -->
+                            <rect x="14" y="42" width="10" height="12" fill="#006622" opacity="0.5" rx="1"/>
+                            <rect x="26" y="42" width="10" height="12" fill="#008830" opacity="0.6" rx="1"/>
+                            <rect x="38" y="42" width="10" height="12" fill="#00aa3a" opacity="0.7" rx="1"/>
+                            <rect x="50" y="42" width="10" height="12" fill="#00cc44" opacity="0.8" rx="1"/>
+                            <rect x="62" y="42" width="10" height="12" fill="#00cc44" opacity="0.8" rx="1"/>
+                            <rect x="62" y="28" width="10" height="12" fill="#00dd55" opacity="0.9" rx="1"/>
+                            <!-- Grid lines on files -->
+                            <line x1="32" y1="46" x2="32" y2="52" stroke="#000" stroke-width="0.3" opacity="0.3"/>
+                            <line x1="44" y1="46" x2="44" y2="52" stroke="#000" stroke-width="0.3" opacity="0.3"/>
+                            <line x1="56" y1="46" x2="56" y2="52" stroke="#000" stroke-width="0.3" opacity="0.3"/>
+                            <!-- Head: laptop/monitor -->
+                            <rect x="61" y="14" width="12" height="12" fill="#1a1a2e" rx="2"/>
+                            <rect x="63" y="16" width="8" height="7" fill="#33ff66"/>
+                            <rect x="64" y="25" width="6" height="2" fill="#333"/>
+                            <!-- CSV food -->
+                            <rect x="88" y="30" width="8" height="10" fill="#39ff14" opacity="0.9" rx="1"/>
+                            <line x1="92" y1="33" x2="92" y2="38" stroke="#000" stroke-width="0.3" opacity="0.3"/>
+                            <!-- Data silo -->
+                            <rect x="86" y="62" width="12" height="8" fill="#ff6b35" opacity="0.6" rx="1"/>
+                            <ellipse cx="92" cy="62" rx="6" ry="2.5" fill="#ff6b35" opacity="0.6"/>
+                            <ellipse cx="92" cy="70" rx="6" ry="2.5" fill="#ff6b35" opacity="0.6"/>
+                            <!-- IT Audit shield -->
+                            <polygon points="30,18 36,21 36,27 30,30 24,27 24,21" fill="#ff2244" opacity="0.4"/>
+                            <text x="30" y="26" text-anchor="middle" fill="#fff" font-size="5" opacity="0.4">IT</text>
+                            <!-- Grid decoration -->
+                            <line x1="0" y1="0" x2="0" y2="90" stroke="#00b336" stroke-width="0.3" opacity="0.08"/>
+                            <line x1="20" y1="0" x2="20" y2="90" stroke="#00b336" stroke-width="0.3" opacity="0.08"/>
+                            <line x1="40" y1="0" x2="40" y2="90" stroke="#00b336" stroke-width="0.3" opacity="0.08"/>
+                            <line x1="60" y1="0" x2="60" y2="90" stroke="#00b336" stroke-width="0.3" opacity="0.08"/>
+                            <line x1="80" y1="0" x2="80" y2="90" stroke="#00b336" stroke-width="0.3" opacity="0.08"/>
+                            <line x1="100" y1="0" x2="100" y2="90" stroke="#00b336" stroke-width="0.3" opacity="0.08"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="insert-coin">INSERT COIN</div>
+                <div class="cabinet-controls">
+                    <div class="control-stick"></div>
+                    <div class="control-btn"></div>
+                    <div class="control-btn"></div>
+                </div>
+                <div class="cabinet-info">
+                    <p class="cabinet-desc">Hoard CSVs. Dodge the data team. How many spreadsheets can you save to your desktop?</p>
                     <span class="cabinet-play">PLAY &rarr;</span>
                 </div>
             </a>
