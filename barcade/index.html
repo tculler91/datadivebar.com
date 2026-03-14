@@ -294,6 +294,31 @@
         box-shadow: 0 0 15px rgba(74,144,255,0.2);
     }
 
+    /* Pit Viper cabinet */
+    .cabinet-viper .cabinet-marquee {
+        background: linear-gradient(135deg, rgba(180,74,255,0.15) 0%, rgba(57,255,20,0.05) 100%);
+    }
+    .cabinet-viper .cabinet-marquee::before {
+        background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+    }
+    .cabinet-viper .cabinet-game-title {
+        color: var(--neon-purple);
+        text-shadow: 0 0 15px rgba(180,74,255,0.5);
+    }
+    .cabinet-viper .cabinet-screen {
+        background: radial-gradient(ellipse, #0a0e1a 0%, #050810 100%);
+    }
+    .cabinet-viper .insert-coin { color: var(--neon-purple); }
+    .cabinet-viper .control-btn { background: rgba(180,74,255,0.3); }
+    .cabinet-viper .cabinet-play {
+        color: var(--neon-purple);
+        border: 1px solid rgba(180,74,255,0.3);
+    }
+    .cabinet-viper:hover .cabinet-play {
+        background: rgba(180,74,255,0.1);
+        box-shadow: 0 0 15px rgba(180,74,255,0.2);
+    }
+
     /* Footer */
     .barcade-footer {
         width: 100%;
@@ -408,6 +433,55 @@
                 </div>
                 <div class="cabinet-info">
                     <p class="cabinet-desc">Burt Lake, 2018. Dodge falling anchors. 100 waves. No mercy.</p>
+                    <span class="cabinet-play">PLAY &rarr;</span>
+                </div>
+            </a>
+            <!-- Pit Viper Cabinet -->
+            <a href="/barcade/pit-viper.html" class="arcade-cabinet cabinet-viper">
+                <div class="cabinet-marquee">
+                    <div class="cabinet-game-title">PIT<br>VIPER</div>
+                </div>
+                <div class="cabinet-screen">
+                    <div class="screen-art">
+                        <svg viewBox="0 0 120 90" width="200" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">
+                            <!-- Snake body -->
+                            <rect x="20" y="45" width="8" height="8" fill="#8a3acc" opacity="0.6"/>
+                            <rect x="28" y="45" width="8" height="8" fill="#9944dd" opacity="0.7"/>
+                            <rect x="36" y="45" width="8" height="8" fill="#a855ee" opacity="0.8"/>
+                            <rect x="44" y="45" width="8" height="8" fill="#b44aff" opacity="0.85"/>
+                            <rect x="52" y="45" width="8" height="8" fill="#c06aff" opacity="0.9"/>
+                            <rect x="60" y="45" width="8" height="8" fill="#c06aff" opacity="0.9"/>
+                            <rect x="60" y="37" width="8" height="8" fill="#c06aff" opacity="0.9"/>
+                            <rect x="60" y="29" width="8" height="8" fill="#d08aff"/>
+                            <!-- Head -->
+                            <rect x="60" y="21" width="8" height="8" fill="#d88aff"/>
+                            <rect x="62" y="22" width="2" height="2" fill="#fff"/>
+                            <rect x="65" y="22" width="2" height="2" fill="#fff"/>
+                            <!-- Food -->
+                            <circle cx="85" cy="35" r="4" fill="#39ff14" opacity="0.9"/>
+                            <!-- Bonus diamond -->
+                            <polygon points="40,20 44,24 40,28 36,24" fill="#FF6B0A" opacity="0.8"/>
+                            <!-- Hazard X -->
+                            <line x1="82" y1="62" x2="90" y2="70" stroke="#ff2244" stroke-width="2" opacity="0.6"/>
+                            <line x1="90" y1="62" x2="82" y2="70" stroke="#ff2244" stroke-width="2" opacity="0.6"/>
+                            <!-- Grid lines -->
+                            <line x1="0" y1="0" x2="0" y2="90" stroke="#b44aff" stroke-width="0.3" opacity="0.1"/>
+                            <line x1="20" y1="0" x2="20" y2="90" stroke="#b44aff" stroke-width="0.3" opacity="0.1"/>
+                            <line x1="40" y1="0" x2="40" y2="90" stroke="#b44aff" stroke-width="0.3" opacity="0.1"/>
+                            <line x1="60" y1="0" x2="60" y2="90" stroke="#b44aff" stroke-width="0.3" opacity="0.1"/>
+                            <line x1="80" y1="0" x2="80" y2="90" stroke="#b44aff" stroke-width="0.3" opacity="0.1"/>
+                            <line x1="100" y1="0" x2="100" y2="90" stroke="#b44aff" stroke-width="0.3" opacity="0.1"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="insert-coin">INSERT COIN</div>
+                <div class="cabinet-controls">
+                    <div class="control-stick"></div>
+                    <div class="control-btn"></div>
+                    <div class="control-btn"></div>
+                </div>
+                <div class="cabinet-info">
+                    <p class="cabinet-desc">Neon snake. Power-ups. Hazards. Combos. How long can you survive?</p>
                     <span class="cabinet-play">PLAY &rarr;</span>
                 </div>
             </a>
