@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Spreadsheet Viper | Data Dive Bar Barcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+        width: 100%; height: 100%;
+        background: #050510;
+        overflow: hidden;
+        font-family: 'Share Tech Mono', monospace;
+        color: #c8c8d4;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    canvas {
+        display: block;
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        image-rendering: pixelated;
+    }
+    /* Scanlines */
+    #scanlines {
+        position: fixed; inset: 0; z-index: 10;
+        background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+        pointer-events: none;
+    }
+    /* Vignette */
+    #vignette {
+        position: fixed; inset: 0; z-index: 11;
+        background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+        pointer-events: none;
+    }
+    /* Mobile D-Pad */
+    #mobile-controls {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+    }
+    .dpad {
+        display: grid;
+        grid-template-columns: 60px 60px 60px;
+        grid-template-rows: 60px 60px 60px;
+        gap: 4px;
+    }
+    .dpad-btn {
+        background: rgba(0,179,54,0.25);
+        border: 2px solid rgba(0,179,54,0.4);
+        border-radius: 8px;
+        color: rgba(0,179,54,0.8);
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .dpad-btn:active { background: rgba(0,179,54,0.5); }
+    .dpad-center { background: none; border: none; }
+    @media (pointer: coarse) {
+        #mobile-controls { display: block; }
+    }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="scanlines"></div>
+<div id="vignette"></div>
+
+<div id="mobile-controls">
+    <div class="dpad">
+        <div class="dpad-center"></div>
+        <div class="dpad-btn" data-dir="up">&#9650;</div>
+        <div class="dpad-center"></div>
+        <div class="dpad-btn" data-dir="left">&#9664;</div>
+        <div class="dpad-center"></div>
+        <div class="dpad-btn" data-dir="right">&#9654;</div>
+        <div class="dpad-center"></div>
+        <div class="dpad-btn" data-dir="down">&#9660;</div>
+        <div class="dpad-center"></div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+//  SPREADSHEET VIPER — Hoard CSVs. Dodge the Data Team.
+//  A Data Dive Bar Original
+// ============================================================
+
+// --- SUPABASE LEADERBOARD (loaded async — never blocks the game) ---
+const SUPABASE_URL = 'https://lfxfutgrgzygqnwdeyby.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmeGZ1dGdyZ3p5Z3Fud2RleWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMjQ5MzAsImV4cCI6MjA4NzgwMDkzMH0.xBWGRbrBloOZgUqIpnd-aHC89MgqBAZhZkx57u3FwQo';
+const LB_TABLE = 'spreadsheet_viper_scores';
+
+let sbClient = null, cloudReady = false;
+
+(function loadSupabase() {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    s.async = true;
+    s.onload = function() {
+        try {
+            sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            cloudReady = true;
+            const pending = JSON.parse(localStorage.getItem('spreadsheetViperPending') || '[]');
+            if (pending.length > 0) {
+                sbClient.from(LB_TABLE).insert(pending)
+                    .then(({ error }) => { if (!error) localStorage.removeItem('spreadsheetViperPending'); });
+            }
+        } catch(e) { console.warn('Supabase init failed:', e); }
+    };
+    s.onerror = function() { console.warn('Supabase SDK failed to load — leaderboard offline'); };
+    document.head.appendChild(s);
+})();
+
+// --- CANVAS SETUP ---
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+const GRID = 20;
+const COLS = 30;
+const ROWS = 22;
+const HUD_HEIGHT = 2;
+
+canvas.width = COLS * GRID;
+canvas.height = (ROWS + HUD_HEIGHT) * GRID;
+
+function resize() {
+    const pad = 10;
+    const scaleX = (window.innerWidth - pad) / canvas.width;
+    const scaleY = (window.innerHeight - pad) / canvas.height;
+    const scale = Math.min(scaleX, scaleY, 2);
+    canvas.style.width = (canvas.width * scale) + 'px';
+    canvas.style.height = (canvas.height * scale) + 'px';
+}
+window.addEventListener('resize', resize);
+resize();
+
+// --- AUDIO ENGINE ---
+class SFX {
+    constructor() {
+        this.ctx = null;
+        this.muted = false;
+    }
+    init() {
+        if (this.ctx) return;
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    play(type) {
+        if (this.muted || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        switch(type) {
+            case 'eat':
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(523, now);
+                osc.frequency.exponentialRampToValueAtTime(1047, now + 0.06);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+                break;
+            case 'silo':
+                // Descending "consolidated" sound
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(200, now + 0.2);
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.start(now); osc.stop(now + 0.25);
+                break;
+            case 'powerup':
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523, now);
+                osc.frequency.exponentialRampToValueAtTime(1047, now + 0.15);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.start(now); osc.stop(now + 0.25);
+                const o2 = this.ctx.createOscillator();
+                const g2 = this.ctx.createGain();
+                o2.connect(g2); g2.connect(this.ctx.destination);
+                o2.type = 'sine';
+                o2.frequency.setValueAtTime(659, now + 0.08);
+                o2.frequency.exponentialRampToValueAtTime(1319, now + 0.2);
+                g2.gain.setValueAtTime(0.15, now + 0.08);
+                g2.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                o2.start(now + 0.08); o2.stop(now + 0.3);
+                break;
+            case 'die':
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+                break;
+            case 'combo':
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(660, now);
+                osc.frequency.exponentialRampToValueAtTime(1320, now + 0.06);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+                break;
+            case 'levelup':
+                osc.type = 'square';
+                [523,659,784,1047].forEach((f,i) => {
+                    osc.frequency.setValueAtTime(f, now + i*0.1);
+                });
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.setValueAtTime(0.15, now + 0.35);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+                break;
+            case 'coin':
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(988, now);
+                osc.frequency.setValueAtTime(1319, now + 0.08);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+                break;
+            case 'email':
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(1600, now + 0.12);
+                osc.frequency.exponentialRampToValueAtTime(200, now + 0.24);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+                break;
+        }
+    }
+    toggle() { this.muted = !this.muted; }
+}
+const sfx = new SFX();
+
+// --- SPREADSHEET FILE NAMES (for flavor) ---
+const CSV_NAMES = [
+    'sales_Q3.csv', 'budget_FINAL.csv', 'headcount.csv', 'revenue.csv',
+    'kpi_tracker.csv', 'forecast.csv', 'pipeline.csv', 'leads.csv',
+    'expenses.csv', 'inventory.csv', 'customers.csv', 'orders.csv',
+    'payroll.csv', 'metrics.csv', 'targets.csv', 'actuals.csv',
+    'report_v2.csv', 'dashboard_data.csv', 'ad_spend.csv', 'churn.csv',
+    'sales_Q3_FINAL.csv', 'sales_Q3_FINAL_v2.csv', 'budget_backup.csv',
+    'DO_NOT_DELETE.csv', 'copy_of_copy.csv', 'old_old_backup.csv',
+    'for_meeting_tuesday.csv', 'Johns_version.csv', 'REAL_numbers.csv',
+    'my_formulas.csv', 'vlookup_hell.csv', 'pivot_source.csv',
+    'definitely_final.csv', 'use_this_one.csv', 'ask_karen.csv',
+];
+const XLSX_NAMES = [
+    'master_plan.xlsx', 'THE_model.xlsx', 'Board_Deck_Data.xlsx',
+    'capacity_plan.xlsx', 'bonus_calc.xlsx', 'headcount_v7.xlsx',
+    'CEO_dashboard.xlsx', 'magic_spreadsheet.xlsx', 'Franks_tracker.xlsx',
+];
+const GOLDEN_NAMES = [
+    'sales_Q3_FINAL_FINAL_v2_USE_THIS_ONE.csv',
+    'THE_source_of_truth_DO_NOT_TOUCH.xlsx',
+    'budget_FINAL_FINAL_REAL_FINAL.csv',
+    'master_data_DONT_ASK_KAREN.xlsx',
+    'literally_the_only_copy.csv',
+];
+
+const SILO_MESSAGES = [
+    'CONSOLIDATED!', 'MIGRATED!', 'INTO THE WAREHOUSE!', 'NORMALIZED!',
+    'SINGLE SOURCE!', 'DATA GOVERNANCE!', 'ETL\'D!', 'WAREHOUSED!',
+    'CENTRALIZED!', 'dbt RUN!', 'SCHEMA ON READ!', 'STAR SCHEMA\'D!',
+    'MEDALLION\'D!', 'LAKEHOUSE\'D!', 'MODELED!',
+];
+
+const EAT_MESSAGES = [
+    '+1 SPREADSHEET', 'NICE FORMULA', 'HOARDED!', 'SAVED TO DESKTOP',
+    'EMAILED TO SELF', 'USB BACKUP\'D', 'IT CAN\'T FIND THIS',
+    'MY PRECIOUS', 'CTRL+S', 'NO ONE ELSE NEEDS THIS',
+    'PERSONAL COPY', 'JUST IN CASE', 'DON\'T TELL ANALYTICS',
+    'OFF THE GRID', 'SHADOW IT', 'ROGUE DATA',
+];
+
+const DEATH_MESSAGES = [
+    'IT FOUND YOUR USB DRIVE',
+    'YOUR SPREADSHEETS HAVE BEEN AUDITED',
+    'DATA GOVERNANCE WINS THIS ROUND',
+    'THE DATA TEAM FOUND YOUR STASH',
+    'COMPLIANCE REVIEW: FAILED',
+    'YOUR DESKTOP HAS BEEN CLEANED',
+    'SOMEONE CHECKED THE SHARED DRIVE',
+    'THE DBA IS ONTO YOU',
+    'ANNUAL DATA AUDIT: CAUGHT',
+    'LAPTOP REFRESH DAY',
+];
+
+// --- COLORS ---
+const C = {
+    bg: '#080f08',
+    grid: 'rgba(0,179,54,0.04)',
+    snake: '#00b336',
+    snakeHead: '#33ff66',
+    snakeGlow: 'rgba(0,179,54,0.5)',
+    trail: 'rgba(0,179,54,0.12)',
+    food: '#39ff14',
+    foodGlow: 'rgba(57,255,20,0.4)',
+    bonus: '#4A90FF',
+    bonusGlow: 'rgba(74,144,255,0.4)',
+    golden: '#FFD700',
+    goldenGlow: 'rgba(255,215,0,0.5)',
+    silo: '#ff6b35',
+    siloGlow: 'rgba(255,107,53,0.4)',
+    hazard: '#ff2244',
+    hazardGlow: 'rgba(255,34,68,0.3)',
+    powerVlookup: '#4A90FF',
+    powerPivot: '#00ffcc',
+    powerCtrlC: '#FFD700',
+    powerEmail: '#ff69b4',
+    hud: '#00b336',
+    hudDim: 'rgba(0,179,54,0.5)',
+    text: '#c8c8d4',
+    white: '#ffffff',
+    csvIcon: '#2ecc71',
+    xlsxIcon: '#217346',
+};
+
+// --- GAME STATE ---
+const STATE = { TITLE: 0, PLAYING: 1, PAUSED: 2, GAMEOVER: 3, LEADERBOARD: 4 };
+let state = STATE.TITLE;
+
+let snake, dir, nextDir, food, bonusFood, goldenFood;
+let score, hiScore, level, speed, baseSpeed;
+let combo, comboTimer, maxCombo;
+let particles = [], floatingTexts = [], screenShake = { x: 0, y: 0, intensity: 0 };
+let hazards = [], silos = [], powerUp, activePower, powerTimer = 0;
+let ghostMode = false, doublePoints = false, slowMode = false;
+let totalEaten, totalSiloed, maxLength, deathCount;
+let lastMoveTime = 0, moveInterval = 120;
+let snakeTrail = [];
+let levelUpFlash = 0, levelUpTimer = 0;
+let inputQueue = [];
+let leaderboard;
+let deathMessage = '';
+let currentFileName = '';
+
+hiScore = parseInt(localStorage.getItem('spreadsheetViperHi') || '0');
+leaderboard = [];
+
+function randomCSVName() { return CSV_NAMES[Math.floor(Math.random() * CSV_NAMES.length)]; }
+function randomXLSXName() { return XLSX_NAMES[Math.floor(Math.random() * XLSX_NAMES.length)]; }
+function randomGoldenName() { return GOLDEN_NAMES[Math.floor(Math.random() * GOLDEN_NAMES.length)]; }
+function randomEatMsg() { return EAT_MESSAGES[Math.floor(Math.random() * EAT_MESSAGES.length)]; }
+function randomSiloMsg() { return SILO_MESSAGES[Math.floor(Math.random() * SILO_MESSAGES.length)]; }
+function randomDeathMsg() { return DEATH_MESSAGES[Math.floor(Math.random() * DEATH_MESSAGES.length)]; }
+
+function initGame() {
+    const startX = Math.floor(COLS / 2);
+    const startY = Math.floor(ROWS / 2) + HUD_HEIGHT;
+    snake = [];
+    for (let i = 0; i < 4; i++) snake.push({ x: startX - i, y: startY });
+    dir = { x: 1, y: 0 };
+    nextDir = { x: 1, y: 0 };
+    inputQueue = [];
+    score = 0;
+    level = 1;
+    combo = 0;
+    comboTimer = 0;
+    maxCombo = 0;
+    totalEaten = 0;
+    totalSiloed = 0;
+    maxLength = 4;
+    particles = [];
+    floatingTexts = [];
+    screenShake = { x: 0, y: 0, intensity: 0 };
+    hazards = [];
+    silos = [];
+    powerUp = null;
+    activePower = null;
+    powerTimer = 0;
+    ghostMode = false;
+    doublePoints = false;
+    slowMode = false;
+    snakeTrail = [];
+    levelUpFlash = 0;
+    levelUpTimer = 0;
+    baseSpeed = 120;
+    speed = baseSpeed;
+    moveInterval = speed;
+    lastMoveTime = 0;
+    bonusFood = null;
+    goldenFood = null;
+    deathMessage = '';
+    currentFileName = randomCSVName();
+
+    spawnFood();
+}
+
+// --- FOOD & SPAWNING ---
+function isCellOccupied(x, y) {
+    if (snake.some(s => s.x === x && s.y === y)) return true;
+    if (hazards.some(h => h.x === x && h.y === y)) return true;
+    if (silos.some(s => s.x === x && s.y === y)) return true;
+    if (food && food.x === x && food.y === y) return true;
+    if (bonusFood && bonusFood.x === x && bonusFood.y === y) return true;
+    if (goldenFood && goldenFood.x === x && goldenFood.y === y) return true;
+    if (powerUp && powerUp.x === x && powerUp.y === y) return true;
+    return false;
+}
+
+function randomCell() {
+    let x, y, attempts = 0;
+    do {
+        x = Math.floor(Math.random() * COLS);
+        y = Math.floor(Math.random() * ROWS) + HUD_HEIGHT;
+        attempts++;
+    } while (isCellOccupied(x, y) && attempts < 200);
+    return { x, y };
+}
+
+function spawnFood() {
+    food = randomCell();
+    food.pulse = 0;
+    food.name = randomCSVName();
+}
+
+function maybeSpawnBonus() {
+    if (bonusFood || Math.random() > 0.12) return;
+    bonusFood = randomCell();
+    bonusFood.pulse = 0;
+    bonusFood.life = 300;
+    bonusFood.name = randomXLSXName();
+}
+
+function maybeSpawnGolden() {
+    if (goldenFood || Math.random() > 0.04) return;
+    goldenFood = randomCell();
+    goldenFood.pulse = 0;
+    goldenFood.life = 180;
+    goldenFood.name = randomGoldenName();
+}
+
+function maybeSpawnPowerUp() {
+    if (powerUp || activePower || Math.random() > 0.06) return;
+    powerUp = randomCell();
+    powerUp.pulse = 0;
+    powerUp.life = 250;
+    const types = ['vlookup', 'pivot', 'ctrlc', 'email'];
+    powerUp.type = types[Math.floor(Math.random() * types.length)];
+}
+
+function updateHazards() {
+    // IT Audit hazards start at level 3
+    const targetCount = Math.max(0, Math.min(level - 2, 15));
+    while (hazards.length < targetCount) {
+        const h = randomCell();
+        h.pulse = Math.random() * Math.PI * 2;
+        hazards.push(h);
+    }
+}
+
+function updateSilos() {
+    // Data silos start at level 2, increase with level
+    const targetCount = Math.max(0, Math.min(level - 1, 8));
+    while (silos.length < targetCount) {
+        const s = randomCell();
+        s.pulse = Math.random() * Math.PI * 2;
+        silos.push(s);
+    }
+}
+
+// --- PARTICLES ---
+function spawnParticles(x, y, color, count) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x: (x + 0.5) * GRID,
+            y: (y + 0.5) * GRID,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
+            life: 1,
+            decay: 0.02 + Math.random() * 0.03,
+            color: color,
+            size: 2 + Math.random() * 3,
+        });
+    }
+}
+
+function spawnFloatingText(x, y, text, color) {
+    floatingTexts.push({
+        x: (x + 0.5) * GRID,
+        y: (y + 0.5) * GRID,
+        text, color,
+        life: 1,
+        decay: 0.018,
+    });
+}
+
+// --- INPUT ---
+document.addEventListener('keydown', e => {
+    sfx.init();
+    if (state === STATE.TITLE) {
+        state = STATE.PLAYING;
+        initGame();
+        sfx.play('coin');
+        return;
+    }
+    if (state === STATE.GAMEOVER) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            state = STATE.PLAYING;
+            initGame();
+            sfx.play('coin');
+        }
+        if (e.key === 'l' || e.key === 'L') {
+            showLeaderboard();
+        }
+        return;
+    }
+    if (state === STATE.LEADERBOARD) {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+            state = STATE.GAMEOVER;
+        }
+        return;
+    }
+    if (state === STATE.PAUSED) {
+        if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+            state = STATE.PLAYING;
+        }
+        return;
+    }
+    if (state !== STATE.PLAYING) return;
+
+    if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        state = STATE.PAUSED;
+        return;
+    }
+    if (e.key === 'm' || e.key === 'M') {
+        sfx.toggle();
+        return;
+    }
+
+    let newDir = null;
+    switch(e.key) {
+        case 'ArrowUp':    case 'w': case 'W': newDir = { x: 0, y: -1 }; break;
+        case 'ArrowDown':  case 's': case 'S': newDir = { x: 0, y: 1 };  break;
+        case 'ArrowLeft':  case 'a': case 'A': newDir = { x: -1, y: 0 }; break;
+        case 'ArrowRight': case 'd': case 'D': newDir = { x: 1, y: 0 };  break;
+    }
+    if (newDir) {
+        e.preventDefault();
+        queueDirection(newDir);
+    }
+});
+
+function queueDirection(newDir) {
+    const checkDir = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : dir;
+    if (newDir.x + checkDir.x !== 0 || newDir.y + checkDir.y !== 0) {
+        if (inputQueue.length < 3) {
+            inputQueue.push(newDir);
+        }
+    }
+}
+
+// Mobile controls
+document.querySelectorAll('.dpad-btn').forEach(btn => {
+    const handler = (e) => {
+        e.preventDefault();
+        sfx.init();
+        const d = btn.dataset.dir;
+        if (state === STATE.TITLE) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
+        if (state === STATE.GAMEOVER) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
+        if (state !== STATE.PLAYING) return;
+        const dirs = { up: {x:0,y:-1}, down: {x:0,y:1}, left: {x:-1,y:0}, right: {x:1,y:0} };
+        if (dirs[d]) queueDirection(dirs[d]);
+    };
+    btn.addEventListener('touchstart', handler, { passive: false });
+    btn.addEventListener('mousedown', handler);
+});
+
+// Swipe support
+let touchStart = null;
+canvas.addEventListener('touchstart', e => {
+    sfx.init();
+    if (state === STATE.TITLE) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
+    if (state === STATE.GAMEOVER) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+canvas.addEventListener('touchmove', e => {
+    if (!touchStart || state !== STATE.PLAYING) return;
+    const dx = e.touches[0].clientX - touchStart.x;
+    const dy = e.touches[0].clientY - touchStart.y;
+    const minSwipe = 20;
+    if (Math.abs(dx) < minSwipe && Math.abs(dy) < minSwipe) return;
+    let newDir;
+    if (Math.abs(dx) > Math.abs(dy)) {
+        newDir = dx > 0 ? {x:1,y:0} : {x:-1,y:0};
+    } else {
+        newDir = dy > 0 ? {x:0,y:1} : {x:0,y:-1};
+    }
+    queueDirection(newDir);
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+
+// --- GAME LOGIC ---
+function getLevel() {
+    if (totalEaten < 5) return 1;
+    if (totalEaten < 12) return 2;
+    if (totalEaten < 22) return 3;
+    if (totalEaten < 35) return 4;
+    if (totalEaten < 50) return 5;
+    if (totalEaten < 70) return 6;
+    if (totalEaten < 95) return 7;
+    if (totalEaten < 125) return 8;
+    if (totalEaten < 160) return 9;
+    return 10;
+}
+
+function getSpeed() {
+    let s = baseSpeed - (level - 1) * 8;
+    s = Math.max(s, 50);
+    if (slowMode) s *= 1.6;
+    return s;
+}
+
+function moveSnake() {
+    // Process input queue
+    if (inputQueue.length > 0) {
+        const next = inputQueue.shift();
+        if (next.x + dir.x !== 0 || next.y + dir.y !== 0) {
+            dir = next;
+        }
+    }
+
+    const head = snake[0];
+    let nx = head.x + dir.x;
+    let ny = head.y + dir.y;
+
+    // Wrap around edges
+    if (nx < 0) nx = COLS - 1;
+    if (nx >= COLS) nx = 0;
+    if (ny < HUD_HEIGHT) ny = ROWS + HUD_HEIGHT - 1;
+    if (ny >= ROWS + HUD_HEIGHT) ny = HUD_HEIGHT;
+
+    // Check self-collision (unless ghost mode)
+    if (!ghostMode) {
+        for (let i = 0; i < snake.length; i++) {
+            if (snake[i].x === nx && snake[i].y === ny) {
+                die();
+                return;
+            }
+        }
+    }
+
+    // Check IT Audit hazard collision (unless ghost mode)
+    if (!ghostMode) {
+        for (const h of hazards) {
+            if (h.x === nx && h.y === ny) {
+                die();
+                return;
+            }
+        }
+    }
+
+    // Add trail
+    snakeTrail.push({ x: head.x, y: head.y, life: 1 });
+    if (snakeTrail.length > 60) snakeTrail.shift();
+
+    // Move
+    snake.unshift({ x: nx, y: ny });
+
+    let ate = false;
+
+    // Check CSV food
+    if (food && nx === food.x && ny === food.y) {
+        const pts = doublePoints ? 20 : 10;
+        score += pts * (1 + Math.floor(combo / 3));
+        combo++;
+        comboTimer = 120;
+        if (combo > maxCombo) maxCombo = combo;
+        totalEaten++;
+        currentFileName = food.name;
+        sfx.play(combo >= 3 ? 'combo' : 'eat');
+        spawnParticles(nx, ny, C.food, 8);
+        const msg = Math.random() < 0.4 ? randomEatMsg() : `+${pts * (1 + Math.floor(combo / 3))}`;
+        spawnFloatingText(nx, ny, msg, C.food);
+        spawnFood();
+        ate = true;
+        maybeSpawnBonus();
+        maybeSpawnGolden();
+        maybeSpawnPowerUp();
+    }
+
+    // Check .xlsx bonus food
+    if (bonusFood && nx === bonusFood.x && ny === bonusFood.y) {
+        const pts = doublePoints ? 50 : 25;
+        score += pts * (1 + Math.floor(combo / 3));
+        combo++;
+        comboTimer = 120;
+        if (combo > maxCombo) maxCombo = combo;
+        totalEaten++;
+        currentFileName = bonusFood.name;
+        sfx.play('combo');
+        spawnParticles(nx, ny, C.bonus, 12);
+        spawnFloatingText(nx, ny, '.XLSX HOARDED!', C.bonus);
+        bonusFood = null;
+        ate = true;
+    }
+
+    // Check golden food (the legendary file)
+    if (goldenFood && nx === goldenFood.x && ny === goldenFood.y) {
+        const pts = doublePoints ? 200 : 100;
+        score += pts;
+        combo += 3;
+        comboTimer = 180;
+        if (combo > maxCombo) maxCombo = combo;
+        totalEaten++;
+        currentFileName = goldenFood.name;
+        sfx.play('powerup');
+        spawnParticles(nx, ny, C.golden, 20);
+        spawnFloatingText(nx, ny, 'THE GOLDEN FILE!', C.golden);
+        screenShake.intensity = 6;
+        goldenFood = null;
+        ate = true;
+    }
+
+    // Check data silo collision — shrink by 1, gain points
+    for (let i = silos.length - 1; i >= 0; i--) {
+        if (silos[i].x === nx && silos[i].y === ny) {
+            const pts = doublePoints ? 30 : 15;
+            score += pts;
+            totalSiloed++;
+            sfx.play('silo');
+            spawnParticles(nx, ny, C.silo, 10);
+            spawnFloatingText(nx, ny, randomSiloMsg(), C.silo);
+            // Remove one tail segment (min 2)
+            if (snake.length > 2) {
+                snake.pop();
+            }
+            // Respawn the silo elsewhere
+            const newSilo = randomCell();
+            newSilo.pulse = Math.random() * Math.PI * 2;
+            silos[i] = newSilo;
+            break;
+        }
+    }
+
+    // Check power-up
+    if (powerUp && nx === powerUp.x && ny === powerUp.y) {
+        activatePower(powerUp.type);
+        sfx.play('powerup');
+        spawnParticles(nx, ny, getPowerColor(powerUp.type), 15);
+        powerUp = null;
+        ate = true;
+    }
+
+    if (!ate) {
+        snake.pop();
+    }
+
+    // Track max length
+    if (snake.length > maxLength) maxLength = snake.length;
+
+    // Level check
+    const newLevel = getLevel();
+    if (newLevel > level) {
+        level = newLevel;
+        levelUpFlash = 1;
+        levelUpTimer = 90;
+        sfx.play('levelup');
+        updateHazards();
+        updateSilos();
+    }
+
+    // Update speed
+    moveInterval = getSpeed();
+
+    // Update hi score
+    if (score > hiScore) {
+        hiScore = score;
+        localStorage.setItem('spreadsheetViperHi', hiScore);
+    }
+}
+
+function die() {
+    sfx.play('die');
+    screenShake.intensity = 12;
+    spawnParticles(snake[0].x, snake[0].y, C.hazard, 30);
+    deathMessage = randomDeathMsg();
+    state = STATE.GAMEOVER;
+    deathCount = (parseInt(localStorage.getItem('spreadsheetViperDeaths') || '0')) + 1;
+    localStorage.setItem('spreadsheetViperDeaths', deathCount);
+    submitScore();
+}
+
+// --- POWER-UPS ---
+function getPowerColor(type) {
+    switch(type) {
+        case 'vlookup': return C.powerVlookup;
+        case 'pivot': return C.powerPivot;
+        case 'ctrlc': return C.powerCtrlC;
+        case 'email': return C.powerEmail;
+    }
+    return C.white;
+}
+
+function getPowerLabel(type) {
+    switch(type) {
+        case 'vlookup': return 'VLOOKUP';
+        case 'pivot': return 'PIVOT';
+        case 'ctrlc': return 'CTRL+C';
+        case 'email': return 'FWD:FWD:';
+    }
+    return '';
+}
+
+function activatePower(type) {
+    activePower = type;
+    powerTimer = 300;
+    ghostMode = type === 'pivot';
+    doublePoints = type === 'ctrlc';
+    slowMode = type === 'vlookup';
+    if (type === 'email') {
+        // FWD:FWD: — email the spreadsheet to 3 coworkers, creating 3 more copies!
+        sfx.play('email');
+        spawnFloatingText(snake[0].x, snake[0].y, 'FWD:FWD:RE:DATA!', C.powerEmail);
+        // Grow snake by 3
+        for (let i = 0; i < 3; i++) {
+            const tail = snake[snake.length - 1];
+            snake.push({ x: tail.x, y: tail.y });
+        }
+        activePower = null;
+        powerTimer = 0;
+    } else {
+        const labels = {
+            vlookup: 'VLOOKUP! (SLOW-MO)',
+            pivot: 'PIVOT TABLE! (GHOST)',
+            ctrlc: 'CTRL+C! (2X PTS)',
+        };
+        spawnFloatingText(snake[0].x, snake[0].y, labels[type] || '', getPowerColor(type));
+    }
+}
+
+// --- LEADERBOARD ---
+async function submitScore() {
+    const entry = { name: 'AAA', score, level, max_combo: maxCombo, max_length: maxLength, timestamp: Date.now() };
+    entry.name = promptName();
+
+    if (cloudReady) {
+        try {
+            await sbClient.from(LB_TABLE).insert([entry]);
+        } catch(e) {
+            const pending = JSON.parse(localStorage.getItem('spreadsheetViperPending') || '[]');
+            pending.push(entry);
+            localStorage.setItem('spreadsheetViperPending', JSON.stringify(pending));
+        }
+    }
+
+    const local = JSON.parse(localStorage.getItem('spreadsheetViperScores') || '[]');
+    local.push(entry);
+    local.sort((a,b) => b.score - a.score);
+    localStorage.setItem('spreadsheetViperScores', JSON.stringify(local.slice(0, 20)));
+}
+
+function promptName() {
+    return localStorage.getItem('spreadsheetViperName') || 'AAA';
+}
+
+async function showLeaderboard() {
+    state = STATE.LEADERBOARD;
+    leaderboard = [];
+    if (cloudReady) {
+        try {
+            const { data } = await sbClient.from(LB_TABLE)
+                .select('name, score, level, max_combo, max_length')
+                .order('score', { ascending: false })
+                .limit(15);
+            if (data) leaderboard = data;
+        } catch(e) {}
+    }
+    if (leaderboard.length === 0) {
+        leaderboard = JSON.parse(localStorage.getItem('spreadsheetViperScores') || '[]').slice(0, 15);
+    }
+}
+
+// --- RENDERING ---
+function drawGrid() {
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Subtle spreadsheet grid
+    ctx.strokeStyle = C.grid;
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x <= COLS; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * GRID, HUD_HEIGHT * GRID);
+        ctx.lineTo(x * GRID, canvas.height);
+        ctx.stroke();
+    }
+    for (let y = HUD_HEIGHT; y <= ROWS + HUD_HEIGHT; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * GRID);
+        ctx.lineTo(canvas.width, y * GRID);
+        ctx.stroke();
+    }
+
+    // Arena border glow
+    ctx.strokeStyle = C.hudDim;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, HUD_HEIGHT * GRID, COLS * GRID, ROWS * GRID);
+}
+
+function drawTrail() {
+    for (const t of snakeTrail) {
+        const alpha = t.life * 0.15;
+        ctx.fillStyle = `rgba(0,179,54,${alpha})`;
+        ctx.fillRect(t.x * GRID + 3, t.y * GRID + 3, GRID - 6, GRID - 6);
+    }
+}
+
+// Draw a mini spreadsheet/CSV icon
+function drawCSVIcon(x, y, size, color, alpha) {
+    ctx.globalAlpha = alpha;
+    const px = x * GRID + (GRID - size) / 2;
+    const py = y * GRID + (GRID - size) / 2;
+
+    // File shape (rectangle with folded corner)
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.lineTo(px + size * 0.7, py);
+    ctx.lineTo(px + size, py + size * 0.3);
+    ctx.lineTo(px + size, py + size);
+    ctx.lineTo(px, py + size);
+    ctx.closePath();
+    ctx.fill();
+
+    // Fold triangle
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.moveTo(px + size * 0.7, py);
+    ctx.lineTo(px + size, py + size * 0.3);
+    ctx.lineTo(px + size * 0.7, py + size * 0.3);
+    ctx.closePath();
+    ctx.fill();
+
+    // Grid lines on the file
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 0.5;
+    for (let i = 1; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.moveTo(px + 1, py + size * (0.3 + i * 0.2));
+        ctx.lineTo(px + size - 1, py + size * (0.3 + i * 0.2));
+        ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(px + size * 0.5, py + size * 0.35);
+    ctx.lineTo(px + size * 0.5, py + size - 1);
+    ctx.stroke();
+
+    ctx.globalAlpha = 1;
+}
+
+function drawSnake() {
+    for (let i = snake.length - 1; i >= 0; i--) {
+        const s = snake[i];
+        const isHead = i === 0;
+        const t = i / Math.max(snake.length, 1);
+
+        if (ghostMode) {
+            ctx.globalAlpha = 0.4 + Math.sin(Date.now() / 100 + i * 0.3) * 0.2;
+        }
+
+        if (isHead) {
+            // Head: monitor/laptop icon
+            ctx.shadowColor = C.snakeGlow;
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#1a1a2e';
+            const pad = 1;
+            roundRect(ctx, s.x * GRID + pad, s.y * GRID + pad, GRID - pad*2, GRID - pad*2, 3);
+            ctx.fill();
+
+            // Screen
+            ctx.fillStyle = C.snakeHead;
+            ctx.fillRect(s.x * GRID + 3, s.y * GRID + 3, GRID - 6, GRID - 8);
+
+            // Tiny spreadsheet grid on screen
+            ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(s.x * GRID + 3, s.y * GRID + 7);
+            ctx.lineTo(s.x * GRID + GRID - 3, s.y * GRID + 7);
+            ctx.moveTo(s.x * GRID + 3, s.y * GRID + 11);
+            ctx.lineTo(s.x * GRID + GRID - 3, s.y * GRID + 11);
+            ctx.moveTo(s.x * GRID + 10, s.y * GRID + 3);
+            ctx.lineTo(s.x * GRID + 10, s.y * GRID + GRID - 5);
+            ctx.stroke();
+
+            // Base
+            ctx.fillStyle = '#333';
+            ctx.fillRect(s.x * GRID + 6, s.y * GRID + GRID - 4, GRID - 12, 3);
+
+            ctx.shadowBlur = 0;
+        } else {
+            // Body: CSV file icons
+            const g = Math.floor(179 - t * 80);
+            const baseColor = `rgb(0,${g},${Math.floor(54 - t * 20)})`;
+            drawCSVIcon(s.x, s.y, GRID - 4, baseColor, ghostMode ? ctx.globalAlpha : (1 - t * 0.3));
+        }
+
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+    }
+}
+
+function drawFood() {
+    const time = Date.now() / 1000;
+
+    // Regular CSV food
+    if (food) {
+        const pulse = 1 + Math.sin(time * 4) * 0.1;
+        ctx.shadowColor = C.foodGlow;
+        ctx.shadowBlur = 12;
+        const size = (GRID - 4) * pulse;
+        drawCSVIcon(food.x, food.y, size, C.food, 1);
+        ctx.shadowBlur = 0;
+
+        // Tiny file name label
+        ctx.font = '5px "Share Tech Mono"';
+        ctx.fillStyle = C.foodGlow;
+        ctx.textAlign = 'center';
+        ctx.fillText('.csv', food.x * GRID + GRID/2, food.y * GRID + GRID + 6);
+    }
+
+    // Bonus .xlsx food (blue, larger)
+    if (bonusFood) {
+        const pulse = 1 + Math.sin(time * 6) * 0.15;
+        const size = (GRID - 2) * pulse;
+        const alpha = bonusFood.life > 60 ? 1 : (bonusFood.life / 60);
+        ctx.shadowColor = C.bonusGlow;
+        ctx.shadowBlur = 15;
+
+        // Draw xlsx icon (green tinted like Excel)
+        ctx.globalAlpha = alpha;
+        const px = bonusFood.x * GRID + (GRID - size) / 2;
+        const py = bonusFood.y * GRID + (GRID - size) / 2;
+        ctx.fillStyle = C.xlsxIcon;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + size * 0.7, py);
+        ctx.lineTo(px + size, py + size * 0.3);
+        ctx.lineTo(px + size, py + size);
+        ctx.lineTo(px, py + size);
+        ctx.closePath();
+        ctx.fill();
+        // "X" label for xlsx
+        ctx.fillStyle = '#fff';
+        ctx.font = `${Math.floor(size * 0.5)}px "Press Start 2P"`;
+        ctx.textAlign = 'center';
+        ctx.fillText('X', bonusFood.x * GRID + GRID/2, bonusFood.y * GRID + GRID/2 + size * 0.2);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+    }
+
+    // Golden file (the legendary spreadsheet)
+    if (goldenFood) {
+        const pulse = 1 + Math.sin(time * 8) * 0.2;
+        const size = (GRID - 1) * pulse;
+        const alpha = goldenFood.life > 60 ? 1 : (goldenFood.life / 60);
+        ctx.globalAlpha = alpha;
+        ctx.shadowColor = C.goldenGlow;
+        ctx.shadowBlur = 25;
+        // Glowing golden file
+        const px = goldenFood.x * GRID + (GRID - size) / 2;
+        const py = goldenFood.y * GRID + (GRID - size) / 2;
+        ctx.fillStyle = C.golden;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + size * 0.7, py);
+        ctx.lineTo(px + size, py + size * 0.3);
+        ctx.lineTo(px + size, py + size);
+        ctx.lineTo(px, py + size);
+        ctx.closePath();
+        ctx.fill();
+        // Crown/star on it
+        drawStar(goldenFood.x * GRID + GRID/2, goldenFood.y * GRID + GRID/2 + 2, 5, size * 0.25, size * 0.12);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+    }
+}
+
+function drawStar(cx, cy, spikes, outerR, innerR) {
+    ctx.beginPath();
+    for (let i = 0; i < spikes * 2; i++) {
+        const r = i % 2 === 0 ? outerR : innerR;
+        const angle = (i * Math.PI / spikes) - Math.PI / 2;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+}
+
+function drawPowerUp() {
+    if (!powerUp) return;
+    const time = Date.now() / 1000;
+    const pulse = 1 + Math.sin(time * 5) * 0.2;
+    const color = getPowerColor(powerUp.type);
+    const alpha = powerUp.life > 60 ? 1 : (powerUp.life / 60);
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = color;
+    const cx = powerUp.x * GRID + GRID/2;
+    const cy = powerUp.y * GRID + GRID/2;
+    const size = (GRID - 4) * pulse;
+
+    // Rotating square
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(time * 2);
+    ctx.fillRect(-size/2, -size/2, size, size);
+    ctx.restore();
+
+    // Label
+    ctx.shadowBlur = 0;
+    ctx.font = '6px "Press Start 2P"';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.fillText(getPowerLabel(powerUp.type), cx, cy - GRID/2 - 4);
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+}
+
+function drawSilos() {
+    const time = Date.now() / 1000;
+    for (const s of silos) {
+        const pulse = Math.sin(time * 2.5 + s.pulse) * 0.1;
+        ctx.shadowColor = C.siloGlow;
+        ctx.shadowBlur = 10;
+        ctx.globalAlpha = 0.8 + pulse;
+
+        const cx = s.x * GRID + GRID/2;
+        const cy = s.y * GRID + GRID/2;
+
+        // Database/silo cylinder icon
+        ctx.fillStyle = C.silo;
+        // Cylinder body
+        ctx.fillRect(cx - 7, cy - 4, 14, 10);
+        // Top ellipse
+        ctx.beginPath();
+        ctx.ellipse(cx, cy - 4, 7, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Bottom ellipse
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + 6, 7, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Highlight lines
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 7, 2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+    }
+}
+
+function drawHazards() {
+    const time = Date.now() / 1000;
+    for (const h of hazards) {
+        const pulse = Math.sin(time * 2 + h.pulse) * 0.1;
+        ctx.shadowColor = C.hazardGlow;
+        ctx.shadowBlur = 8;
+        ctx.globalAlpha = 0.7 + pulse;
+
+        const cx = h.x * GRID + GRID/2;
+        const cy = h.y * GRID + GRID/2;
+
+        // IT Audit shield icon
+        ctx.fillStyle = C.hazard;
+        // Shield shape
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 8);
+        ctx.lineTo(cx + 7, cy - 4);
+        ctx.lineTo(cx + 7, cy + 3);
+        ctx.quadraticCurveTo(cx, cy + 9, cx, cy + 9);
+        ctx.quadraticCurveTo(cx, cy + 9, cx - 7, cy + 3);
+        ctx.lineTo(cx - 7, cy - 4);
+        ctx.closePath();
+        ctx.fill();
+
+        // "IT" text
+        ctx.fillStyle = '#fff';
+        ctx.font = '6px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('IT', cx, cy + 2);
+
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+    }
+}
+
+function drawParticles() {
+    for (const p of particles) {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawFloatingTexts() {
+    for (const ft of floatingTexts) {
+        ctx.globalAlpha = ft.life;
+        ctx.font = 'bold 11px "Share Tech Mono"';
+        ctx.fillStyle = ft.color;
+        ctx.textAlign = 'center';
+        ctx.fillText(ft.text, ft.x, ft.y);
+    }
+    ctx.globalAlpha = 1;
+}
+
+function drawHUD() {
+    const y = GRID * 0.5;
+
+    // Background
+    ctx.fillStyle = 'rgba(8,15,8,0.9)';
+    ctx.fillRect(0, 0, canvas.width, HUD_HEIGHT * GRID);
+    ctx.strokeStyle = C.hudDim;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, HUD_HEIGHT * GRID);
+    ctx.lineTo(canvas.width, HUD_HEIGHT * GRID);
+    ctx.stroke();
+
+    // Score
+    ctx.font = '11px "Press Start 2P"';
+    ctx.fillStyle = C.food;
+    ctx.textAlign = 'left';
+    ctx.fillText('SCORE', 10, y + 4);
+    ctx.font = '14px "Share Tech Mono"';
+    ctx.fillText(score.toString().padStart(6, '0'), 10, y + 22);
+
+    // Hi Score
+    ctx.font = '11px "Press Start 2P"';
+    ctx.fillStyle = C.powerVlookup;
+    ctx.textAlign = 'center';
+    ctx.fillText('HI', canvas.width/2, y + 4);
+    ctx.font = '14px "Share Tech Mono"';
+    ctx.fillText(hiScore.toString().padStart(6, '0'), canvas.width/2, y + 22);
+
+    // Level
+    ctx.font = '11px "Press Start 2P"';
+    ctx.fillStyle = C.silo;
+    ctx.textAlign = 'right';
+    ctx.fillText('LVL ' + level, canvas.width - 10, y + 4);
+
+    // Combo
+    if (combo >= 2) {
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillStyle = combo >= 5 ? C.golden : C.silo;
+        const comboAlpha = comboTimer > 30 ? 1 : comboTimer / 30;
+        ctx.globalAlpha = comboAlpha;
+        ctx.textAlign = 'right';
+        ctx.fillText(`x${combo} HOARDING`, canvas.width - 10, y + 22);
+        ctx.globalAlpha = 1;
+    }
+
+    // Files count (length)
+    ctx.font = '10px "Share Tech Mono"';
+    ctx.fillStyle = C.hud;
+    ctx.textAlign = 'center';
+    ctx.fillText(`FILES: ${snake.length}`, canvas.width/2 + 80, y + 22);
+
+    // Active power indicator
+    if (activePower && powerTimer > 0) {
+        const pw = powerTimer / 300;
+        const barW = 80;
+        const barH = 6;
+        const bx = canvas.width/2 - barW/2;
+        const by = HUD_HEIGHT * GRID - 10;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(bx, by, barW, barH);
+        ctx.fillStyle = getPowerColor(activePower);
+        ctx.fillRect(bx, by, barW * pw, barH);
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillStyle = getPowerColor(activePower);
+        ctx.textAlign = 'center';
+        ctx.fillText(getPowerLabel(activePower), canvas.width/2, by - 3);
+    }
+
+    // Mute indicator
+    if (sfx.muted) {
+        ctx.font = '8px "Share Tech Mono"';
+        ctx.fillStyle = C.hudDim;
+        ctx.textAlign = 'left';
+        ctx.fillText('MUTED', 10, HUD_HEIGHT * GRID - 5);
+    }
+}
+
+function drawLevelUpFlash() {
+    if (levelUpFlash <= 0) return;
+    ctx.fillStyle = `rgba(0,179,54,${levelUpFlash * 0.15})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = '16px "Press Start 2P"';
+    ctx.fillStyle = C.hud;
+    ctx.globalAlpha = levelUpFlash;
+    ctx.textAlign = 'center';
+    const msgs = [
+        '', 'DEPT. REVIEW', 'QUARTERLY AUDIT',
+        'BUDGET SEASON', 'REORG INCOMING', 'NEW VP OF DATA',
+        'MANDATORY TRAINING', 'COMPLIANCE CHECK', 'MIGRATION SPRINT',
+        'BOARD MEETING', 'DATA GOVERNANCE 2.0'
+    ];
+    ctx.fillText(msgs[level] || `LEVEL ${level}`, canvas.width/2, canvas.height/2 - 10);
+    ctx.font = '10px "Share Tech Mono"';
+    ctx.fillText(`LEVEL ${level}`, canvas.width/2, canvas.height/2 + 15);
+    ctx.globalAlpha = 1;
+}
+
+function drawTitle() {
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const time = Date.now() / 1000;
+
+    // Draw spreadsheet grid as decoration
+    ctx.strokeStyle = 'rgba(0,179,54,0.06)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x <= COLS; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * GRID, 0);
+        ctx.lineTo(x * GRID, canvas.height);
+        ctx.stroke();
+    }
+    for (let y = 0; y <= ROWS + HUD_HEIGHT; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * GRID);
+        ctx.lineTo(canvas.width, y * GRID);
+        ctx.stroke();
+    }
+
+    // Animated chain of CSV file icons
+    const demoLen = 10;
+    for (let i = 0; i < demoLen; i++) {
+        const t = time * 1.2 - i * 0.35;
+        const dx = canvas.width/2 + Math.cos(t) * 120;
+        const dy = canvas.height/2 + 70 + Math.sin(t * 1.8) * 35;
+        const alpha = 1 - (i / demoLen) * 0.7;
+        ctx.globalAlpha = alpha;
+
+        if (i === 0) {
+            // Head: laptop
+            ctx.shadowColor = C.snakeGlow;
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#1a1a2e';
+            roundRect(ctx, dx - 10, dy - 10, 20, 20, 3);
+            ctx.fill();
+            ctx.fillStyle = C.snakeHead;
+            ctx.fillRect(dx - 7, dy - 7, 14, 12);
+            ctx.fillStyle = '#333';
+            ctx.fillRect(dx - 5, dy + 6, 10, 3);
+            ctx.shadowBlur = 0;
+        } else {
+            // Body: CSV icons
+            const g = Math.floor(179 - (i/demoLen) * 80);
+            const col = `rgb(0,${g},${Math.floor(54 - (i/demoLen) * 20)})`;
+            const px = dx - 8;
+            const py = dy - 8;
+            const sz = 16;
+            ctx.fillStyle = col;
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(px + sz * 0.7, py);
+            ctx.lineTo(px + sz, py + sz * 0.3);
+            ctx.lineTo(px + sz, py + sz);
+            ctx.lineTo(px, py + sz);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+
+    // Floating data silo chasing
+    const siloX = canvas.width/2 + Math.cos(time * 0.8 + 2) * 140;
+    const siloY = canvas.height/2 + 70 + Math.sin(time * 1.5 + 2) * 40;
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = C.silo;
+    ctx.fillRect(siloX - 7, siloY - 4, 14, 10);
+    ctx.beginPath();
+    ctx.ellipse(siloX, siloY - 4, 7, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(siloX, siloY + 6, 7, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Title
+    ctx.font = '20px "Press Start 2P"';
+    ctx.fillStyle = C.snake;
+    ctx.textAlign = 'center';
+    ctx.shadowColor = C.snakeGlow;
+    ctx.shadowBlur = 20;
+    ctx.fillText('SPREADSHEET', canvas.width/2, canvas.height/2 - 100);
+    ctx.fillText('VIPER', canvas.width/2, canvas.height/2 - 70);
+    ctx.shadowBlur = 0;
+
+    // Subtitle
+    ctx.font = '9px "Share Tech Mono"';
+    ctx.fillStyle = C.hudDim;
+    ctx.fillText('HOARD CSVS. DODGE THE DATA TEAM.', canvas.width/2, canvas.height/2 - 50);
+    ctx.fillText('A DATA DIVE BAR ORIGINAL', canvas.width/2, canvas.height/2 - 37);
+
+    // Blink
+    if (Math.sin(time * 3) > 0) {
+        ctx.font = '11px "Press Start 2P"';
+        ctx.fillStyle = C.snake;
+        ctx.fillText('PRESS ANY KEY', canvas.width/2, canvas.height/2 + 130);
+    }
+
+    // Controls & lore
+    ctx.font = '10px "Share Tech Mono"';
+    ctx.fillStyle = C.text;
+    ctx.fillText('WASD / ARROWS to move', canvas.width/2, canvas.height/2 + 158);
+    ctx.fillText('P to pause  |  M to mute', canvas.width/2, canvas.height/2 + 175);
+
+    // Game explanation
+    ctx.font = '8px "Share Tech Mono"';
+    ctx.fillStyle = C.hudDim;
+    const lore = [
+        'Collect spreadsheets to grow your chain of CSV hoarding',
+        'Avoid IT AUDIT shields (instant death)',
+        'Data Silos consolidate 1 file but give points',
+        'The analytics team is watching...',
+    ];
+    lore.forEach((line, i) => {
+        ctx.fillText(line, canvas.width/2, canvas.height/2 + 198 + i * 14);
+    });
+
+    // Stats
+    const deaths = parseInt(localStorage.getItem('spreadsheetViperDeaths') || '0');
+    if (hiScore > 0 || deaths > 0) {
+        ctx.font = '9px "Share Tech Mono"';
+        ctx.fillStyle = C.hudDim;
+        ctx.fillText(`HIGH SCORE: ${hiScore}  |  AUDITS: ${deaths}`, canvas.width/2, canvas.height/2 + 262);
+    }
+
+    // Back link
+    ctx.font = '9px "Share Tech Mono"';
+    ctx.fillStyle = C.hudDim;
+    ctx.fillText('datadivebar.com/barcade', canvas.width/2, canvas.height - 15);
+}
+
+function drawGameOver() {
+    // Dim overlay
+    ctx.fillStyle = 'rgba(5,5,16,0.85)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const time = Date.now() / 1000;
+
+    // AUDITED
+    ctx.font = '22px "Press Start 2P"';
+    ctx.fillStyle = C.hazard;
+    ctx.textAlign = 'center';
+    ctx.shadowColor = C.hazardGlow;
+    ctx.shadowBlur = 20;
+    ctx.fillText('AUDITED!', canvas.width/2, canvas.height/2 - 90);
+    ctx.shadowBlur = 0;
+
+    // Death message
+    ctx.font = '9px "Share Tech Mono"';
+    ctx.fillStyle = C.silo;
+    ctx.fillText(deathMessage, canvas.width/2, canvas.height/2 - 65);
+
+    // Stats
+    ctx.font = '12px "Share Tech Mono"';
+    ctx.fillStyle = C.text;
+    ctx.fillText(`SCORE: ${score}`, canvas.width/2, canvas.height/2 - 35);
+    ctx.fillText(`LEVEL: ${level}  |  FILES: ${snake.length}  |  MAX: ${maxLength}`, canvas.width/2, canvas.height/2 - 15);
+    ctx.fillText(`SILOED: ${totalSiloed}  |  HOARDED: ${totalEaten}`, canvas.width/2, canvas.height/2 + 5);
+    if (maxCombo >= 3) {
+        ctx.fillStyle = C.golden;
+        ctx.fillText(`HOARDING STREAK: x${maxCombo}`, canvas.width/2, canvas.height/2 + 25);
+    }
+
+    // Name entry
+    ctx.font = '10px "Press Start 2P"';
+    ctx.fillStyle = C.hud;
+    ctx.fillText('ENTER NAME:', canvas.width/2, canvas.height/2 + 58);
+
+    const name = localStorage.getItem('spreadsheetViperName') || 'AAA';
+    ctx.font = '16px "Press Start 2P"';
+    ctx.fillStyle = C.snake;
+    ctx.fillText(name, canvas.width/2, canvas.height/2 + 83);
+
+    // Prompt
+    if (Math.sin(time * 3) > 0) {
+        ctx.font = '9px "Press Start 2P"';
+        ctx.fillStyle = C.snake;
+        ctx.fillText('PRESS ENTER TO RETRY', canvas.width/2, canvas.height/2 + 115);
+    }
+    ctx.font = '9px "Share Tech Mono"';
+    ctx.fillStyle = C.hudDim;
+    ctx.fillText('L = LEADERBOARD', canvas.width/2, canvas.height/2 + 138);
+
+    // Flavor text
+    ctx.font = '8px "Share Tech Mono"';
+    ctx.fillStyle = 'rgba(0,179,54,0.3)';
+    ctx.fillText('"There is no cloud. It\'s just someone else\'s spreadsheet."', canvas.width/2, canvas.height/2 + 165);
+}
+
+function drawLeaderboard() {
+    ctx.fillStyle = 'rgba(5,5,16,0.95)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = '14px "Press Start 2P"';
+    ctx.fillStyle = C.golden;
+    ctx.textAlign = 'center';
+    ctx.fillText('SPREADSHEET HALL', canvas.width/2, 50);
+    ctx.fillText('OF SHAME', canvas.width/2, 72);
+
+    ctx.font = '10px "Share Tech Mono"';
+    ctx.fillStyle = C.hudDim;
+    ctx.textAlign = 'left';
+    ctx.fillText('RANK  NAME       SCORE    LVL', 80, 100);
+
+    for (let i = 0; i < leaderboard.length && i < 15; i++) {
+        const e = leaderboard[i];
+        const y = 122 + i * 20;
+        const rank = (i + 1).toString().padStart(2, ' ');
+        const name = (e.name || 'AAA').padEnd(10, ' ');
+        const sc = (e.score || 0).toString().padStart(8, ' ');
+        const lv = (e.level || 1).toString().padStart(3, ' ');
+        ctx.fillStyle = i === 0 ? C.golden : i < 3 ? C.silo : C.text;
+        ctx.fillText(`${rank}.  ${name} ${sc}  ${lv}`, 80, y);
+    }
+    if (leaderboard.length === 0) {
+        ctx.fillStyle = C.hudDim;
+        ctx.textAlign = 'center';
+        ctx.fillText('No hoarders yet. Be the first!', canvas.width/2, 140);
+    }
+
+    ctx.font = '9px "Press Start 2P"';
+    ctx.fillStyle = C.hudDim;
+    ctx.textAlign = 'center';
+    ctx.fillText('PRESS ESC TO GO BACK', canvas.width/2, canvas.height - 30);
+}
+
+function drawPaused() {
+    ctx.fillStyle = 'rgba(5,5,16,0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = '18px "Press Start 2P"';
+    ctx.fillStyle = C.hud;
+    ctx.textAlign = 'center';
+    ctx.fillText('SAVING TO', canvas.width/2, canvas.height/2 - 15);
+    ctx.fillText('DESKTOP...', canvas.width/2, canvas.height/2 + 15);
+
+    ctx.font = '10px "Share Tech Mono"';
+    ctx.fillStyle = C.hudDim;
+    ctx.fillText('Press P or ESC to resume', canvas.width/2, canvas.height/2 + 45);
+
+    ctx.font = '8px "Share Tech Mono"';
+    ctx.fillStyle = 'rgba(0,179,54,0.3)';
+    ctx.fillText('"I swear the shared drive was down"', canvas.width/2, canvas.height/2 + 75);
+}
+
+// --- UTILITY ---
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+// --- NAME INPUT ---
+let nameInput = localStorage.getItem('spreadsheetViperName') || 'AAA';
+document.addEventListener('keydown', e => {
+    if (state !== STATE.GAMEOVER) return;
+    if (e.key === 'Backspace') {
+        nameInput = nameInput.slice(0, -1);
+        localStorage.setItem('spreadsheetViperName', nameInput);
+    } else if (e.key.length === 1 && /[a-zA-Z0-9 ]/.test(e.key) && nameInput.length < 10) {
+        nameInput += e.key.toUpperCase();
+        localStorage.setItem('spreadsheetViperName', nameInput);
+    }
+});
+
+// --- MAIN LOOP ---
+let lastFrame = null;
+
+function update(dt) {
+    if (state !== STATE.PLAYING) return;
+
+    // Combo timer
+    if (comboTimer > 0) {
+        comboTimer--;
+        if (comboTimer <= 0) combo = 0;
+    }
+
+    // Power timer
+    if (powerTimer > 0) {
+        powerTimer--;
+        if (powerTimer <= 0) {
+            activePower = null;
+            ghostMode = false;
+            doublePoints = false;
+            slowMode = false;
+        }
+    }
+
+    // Bonus food lifetime
+    if (bonusFood) {
+        bonusFood.life--;
+        if (bonusFood.life <= 0) bonusFood = null;
+    }
+    if (goldenFood) {
+        goldenFood.life--;
+        if (goldenFood.life <= 0) goldenFood = null;
+    }
+    if (powerUp) {
+        powerUp.life--;
+        if (powerUp.life <= 0) powerUp = null;
+    }
+
+    // Trail decay
+    for (const t of snakeTrail) t.life -= 0.02;
+    snakeTrail = snakeTrail.filter(t => t.life > 0);
+
+    // Particles
+    for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= p.decay;
+        p.vx *= 0.96;
+        p.vy *= 0.96;
+    }
+    particles = particles.filter(p => p.life > 0);
+
+    // Floating texts
+    for (const ft of floatingTexts) {
+        ft.y -= 1;
+        ft.life -= ft.decay;
+    }
+    floatingTexts = floatingTexts.filter(ft => ft.life > 0);
+
+    // Screen shake decay
+    if (screenShake.intensity > 0) {
+        screenShake.x = (Math.random() - 0.5) * screenShake.intensity;
+        screenShake.y = (Math.random() - 0.5) * screenShake.intensity;
+        screenShake.intensity *= 0.85;
+        if (screenShake.intensity < 0.3) {
+            screenShake.intensity = 0;
+            screenShake.x = 0;
+            screenShake.y = 0;
+        }
+    }
+
+    // Level up flash
+    if (levelUpFlash > 0) levelUpFlash -= 0.015;
+    if (levelUpTimer > 0) levelUpTimer--;
+}
+
+function render() {
+    ctx.save();
+    if (screenShake.intensity > 0) {
+        ctx.translate(screenShake.x, screenShake.y);
+    }
+
+    if (state === STATE.TITLE) {
+        drawTitle();
+    } else if (state === STATE.LEADERBOARD) {
+        drawLeaderboard();
+    } else {
+        drawGrid();
+        drawTrail();
+        drawHazards();
+        drawSilos();
+        drawFood();
+        drawPowerUp();
+        drawSnake();
+        drawParticles();
+        drawFloatingTexts();
+        drawHUD();
+        drawLevelUpFlash();
+
+        if (state === STATE.GAMEOVER) drawGameOver();
+        if (state === STATE.PAUSED) drawPaused();
+    }
+
+    ctx.restore();
+}
+
+function gameLoop(timestamp) {
+    if (lastFrame === null) lastFrame = timestamp;
+    const dt = Math.min(timestamp - lastFrame, 100);
+    lastFrame = timestamp;
+
+    update(dt);
+
+    if (state === STATE.PLAYING) {
+        lastMoveTime += dt;
+        while (lastMoveTime >= moveInterval) {
+            lastMoveTime -= moveInterval;
+            moveSnake();
+            if (state !== STATE.PLAYING) break;
+        }
+    }
+
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+// Start
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
