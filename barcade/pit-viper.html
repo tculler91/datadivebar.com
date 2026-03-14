@@ -91,33 +91,38 @@
     </div>
 </div>
 
-<!-- Supabase SDK (cloud leaderboard) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-
 <script>
 // ============================================================
 //  PIT VIPER — An intense neon snake game for Data Dive Bar
 // ============================================================
 
-// --- SUPABASE LEADERBOARD ---
+// --- SUPABASE LEADERBOARD (loaded async — never blocks the game) ---
 const SUPABASE_URL = 'https://lfxfutgrgzygqnwdeyby.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmeGZ1dGdyZ3p5Z3Fud2RleWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMjQ5MzAsImV4cCI6MjA4NzgwMDkzMH0.xBWGRbrBloOZgUqIpnd-aHC89MgqBAZhZkx57u3FwQo';
 const LB_TABLE = 'pit_viper_scores';
 
 let sbClient = null, cloudReady = false;
-try {
-    if (!SUPABASE_URL.startsWith('YOUR_')) {
-        sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        cloudReady = true;
-    }
-} catch(e) { console.warn('Supabase init failed:', e); }
 
-// Flush pending scores
-const _pending = JSON.parse(localStorage.getItem('pitViperPending') || '[]');
-if (cloudReady && _pending.length > 0) {
-    sbClient.from(LB_TABLE).insert(_pending)
-        .then(({ error }) => { if (!error) localStorage.removeItem('pitViperPending'); });
-}
+// Load Supabase SDK async so the game always starts immediately
+(function loadSupabase() {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    s.async = true;
+    s.onload = function() {
+        try {
+            sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            cloudReady = true;
+            // Flush any scores queued while SDK was loading
+            const pending = JSON.parse(localStorage.getItem('pitViperPending') || '[]');
+            if (pending.length > 0) {
+                sbClient.from(LB_TABLE).insert(pending)
+                    .then(({ error }) => { if (!error) localStorage.removeItem('pitViperPending'); });
+            }
+        } catch(e) { console.warn('Supabase init failed:', e); }
+    };
+    s.onerror = function() { console.warn('Supabase SDK failed to load — leaderboard offline'); };
+    document.head.appendChild(s);
+})();
 
 // --- CANVAS SETUP ---
 const canvas = document.getElementById('game');
@@ -1395,7 +1400,8 @@ function render() {
 }
 
 function gameLoop(timestamp) {
-    const dt = timestamp - lastFrame;
+    if (!lastFrame) lastFrame = timestamp;
+    const dt = Math.min(timestamp - lastFrame, 100); // cap dt to avoid burst on first frame/tab switch
     lastFrame = timestamp;
 
     update(dt);
