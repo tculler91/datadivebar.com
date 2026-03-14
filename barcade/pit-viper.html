@@ -276,14 +276,14 @@ let state = STATE.TITLE;
 let snake, dir, nextDir, food, bonusFood, goldenFood;
 let score, hiScore, level, speed, baseSpeed;
 let combo, comboTimer, maxCombo;
-let particles, floatingTexts, screenShake;
-let hazards, powerUp, activePower, powerTimer;
-let ghostMode, doublePoints, slowMode;
+let particles = [], floatingTexts = [], screenShake = { x: 0, y: 0, intensity: 0 };
+let hazards = [], powerUp, activePower, powerTimer = 0;
+let ghostMode = false, doublePoints = false, slowMode = false;
 let totalEaten, deathCount;
-let lastMoveTime, moveInterval;
-let snakeTrail;
-let levelUpFlash, levelUpTimer;
-let inputQueue;
+let lastMoveTime = 0, moveInterval = 120;
+let snakeTrail = [];
+let levelUpFlash = 0, levelUpTimer = 0;
+let inputQueue = [];
 let leaderboard;
 
 hiScore = parseInt(localStorage.getItem('pitViperHi') || '0');
@@ -1296,7 +1296,7 @@ document.addEventListener('keydown', e => {
 });
 
 // --- MAIN LOOP ---
-let lastFrame = 0;
+let lastFrame = null;
 
 function update(dt) {
     if (state !== STATE.PLAYING) return;
@@ -1400,7 +1400,7 @@ function render() {
 }
 
 function gameLoop(timestamp) {
-    if (!lastFrame) lastFrame = timestamp;
+    if (lastFrame === null) lastFrame = timestamp;
     const dt = Math.min(timestamp - lastFrame, 100); // cap dt to avoid burst on first frame/tab switch
     lastFrame = timestamp;
 
