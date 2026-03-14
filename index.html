@@ -159,6 +159,83 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             text-shadow: 0 0 10px rgba(255, 107, 10, 0.2);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.8rem;
+            list-style: none;
+        }
+        .nav-links > li {
+            position: relative;
+        }
+        .nav-links > li > a {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: color 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .nav-links > li > a:hover {
+            color: var(--neon-amber);
+        }
+        .nav-links .dropdown-arrow {
+            font-size: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+        .nav-links > li:hover .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        .nav-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 0.75rem);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(14, 22, 38, 0.96);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 3px;
+            padding: 0.5rem 0;
+            min-width: 200px;
+            z-index: 100;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        .nav-dropdown::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-orange), transparent);
+        }
+        .nav-links > li:hover .nav-dropdown {
+            display: block;
+        }
+        .nav-dropdown a {
+            display: block;
+            padding: 0.6rem 1.2rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+        }
+        .nav-dropdown a:hover {
+            color: var(--neon-amber);
+            background: rgba(255,107,10,0.06);
+            padding-left: 1.5rem;
+        }
+        .nav-dropdown .dropdown-icon {
+            margin-right: 0.5rem;
+            font-size: 0.75rem;
         }
         .nav-status {
             display: flex;
@@ -179,6 +256,15 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.4; }
+        }
+        /* Hover bridge between nav item and dropdown */
+        .nav-links > li::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            height: 0.75rem;
         }
 
         @keyframes twinkle {
@@ -524,7 +610,40 @@
         .stagger-2 { animation-delay: 0.75s !important; }
         .stagger-3 { animation-delay: 0.9s !important; }
 
+        /* ---- AUTHOR BYLINE ---- */
+        .author-byline {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+        }
+        .author-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid rgba(255,107,10,0.3);
+            box-shadow: 0 0 8px rgba(255,107,10,0.1);
+        }
+        .author-name {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
         /* ---- RESPONSIVE ---- */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1rem;
+            }
+            .nav-links > li > a {
+                font-size: 0.6rem;
+            }
+            .nav-status {
+                display: none;
+            }
+        }
         @media (max-width: 640px) {
             .hero { padding: 3rem 0 2rem; }
             .neon-sign { padding: 0.8rem 1.2rem; max-width: 95vw; }
@@ -536,6 +655,16 @@
             .featured-bottom { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
             .featured-meta { order: -1; }
             .featured-bars { height: 45px; }
+            .nav-links {
+                gap: 0.6rem;
+            }
+            .nav-links > li > a {
+                font-size: 0.55rem;
+                letter-spacing: 0.5px;
+            }
+            .nav-dropdown {
+                min-width: 160px;
+            }
         }
 
        /* ---- FEATURED INVESTIGATION ---- */
@@ -715,7 +844,26 @@
     <div class="container">
 
         <nav>
-            <div class="nav-logo">Data Dive Bar</div>
+            <a href="/" class="nav-logo">Data Dive Bar</a>
+            <ul class="nav-links">
+                <li>
+                    <a href="#">Articles <span class="dropdown-arrow">&#9660;</span></a>
+                    <div class="nav-dropdown">
+                        <a href="/brofessor/"><span class="dropdown-icon">💉</span> The Brofessor Series</a>
+                        <a href="/Survival/"><span class="dropdown-icon">💧</span> Survival Series</a>
+                        <a href="/americas-deadliest-animal/"><span class="dropdown-icon">🦌</span> America's Deadliest Animal</a>
+                    </div>
+                </li>
+                <li>
+                    <a href="/barcade/">Barcade <span class="dropdown-arrow">&#9660;</span></a>
+                    <div class="nav-dropdown">
+                        <a href="/barcade/bar-invaders.html"><span class="dropdown-icon">👾</span> Bar Invaders</a>
+                        <a href="/anchor_man/"><span class="dropdown-icon">⚓</span> Anchor Man</a>
+                    </div>
+                </li>
+                <li><a href="/the-lab/">The Lab</a></li>
+                <li><a href="/weather/">Weather</a></li>
+            </ul>
             <div class="nav-status">
                 <span class="status-dot"></span>
                 Now Pouring
@@ -739,6 +887,10 @@
             <a href="/brofessor/" class="featured-card featured-headline">
                 <div class="featured-kicker"><span class="pulse-dot"></span> New Series — Now Live</div>
                 <h2 class="featured-title featured-title-headline">For Glory: A Data-Driven Plea for <em>PEDs</em> in Major League Baseball</h2>
+                <div class="author-byline">
+                    <img src="/brofessor/brofessor profile picture.png" alt="The Brofessor" class="author-avatar">
+                    <span class="author-name">The Brofessor</span>
+                </div>
                 <p class="featured-hook">The Brofessor has crunched the numbers, calculated the vibes, and drafted the literal contract language. The path to 550 ft home runs is just a few easy policy changes away.</p>
 
                 <div class="featured-viz">
@@ -781,6 +933,10 @@
             <a href="/Survival/" class="featured-card" style="margin-top:1.5rem;">
                 <div class="featured-kicker">Also on Tap</div>
                 <h2 class="featured-title">When Life Pisses in Your <em>Cheerios</em> — Get Yourself Some Water Goddammit!</h2>
+                <div class="author-byline">
+                    <img src="/Survival/bobby.jpg" alt="Bobby Pinkeye Butts" class="author-avatar">
+                    <span class="author-name">Bobby "Pinkeye" Butts</span>
+                </div>
                 <p class="featured-hook">Bobby "Pinkeye" Butts nearly died of dehydration in a Nebraska rest stop because of a cook named Darryl. He recovered, got mad, and now has 100+ gallons of water stashed in three locations. This is what he learned.</p>
 
                 <div class="featured-viz">
