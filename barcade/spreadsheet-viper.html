@@ -76,6 +76,8 @@
 <canvas id="game"></canvas>
 <div id="scanlines"></div>
 <div id="vignette"></div>
+<audio id="silentAudio" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
+<input type="text" id="mobileNameInput" maxlength="8" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" style="position:fixed;left:-9999px;top:0;opacity:0;width:1px;height:1px;border:none;font-size:16px;" />
 
 <div id="mobile-controls">
     <div class="dpad">
@@ -150,19 +152,49 @@ resize();
 class SFX {
     constructor() {
         this.ctx = null;
+        this.masterGain = null;
         this.muted = false;
+        this.initialized = false;
     }
     init() {
-        if (this.ctx) return;
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        // Play <audio> element to switch iOS out of "ambient" audio session
+        try {
+            const el = document.getElementById('silentAudio');
+            if (el) { el.volume = 0.01; const p = el.play(); if (p && p.catch) p.catch(() => {}); }
+        } catch(e) {}
+
+        if (this.initialized) {
+            if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+            this._playsilent();
+            return;
+        }
+        try {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.value = 0.3;
+            this.masterGain.connect(this.ctx.destination);
+            this.initialized = true;
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+            this._playsilent();
+        } catch(e) { console.warn('Web Audio not supported'); }
+    }
+    _playsilent() {
+        try {
+            const buf = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
+            const src = this.ctx.createBufferSource();
+            src.buffer = buf;
+            src.connect(this.ctx.destination);
+            src.start(0);
+        } catch(e) {}
     }
     play(type) {
-        if (this.muted || !this.ctx) return;
+        if (this.muted || !this.initialized) return;
+        if (this.ctx.state === 'suspended') this.ctx.resume();
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(this.masterGain || this.ctx.destination);
 
         switch(type) {
             case 'eat':
@@ -191,7 +223,7 @@ class SFX {
                 osc.start(now); osc.stop(now + 0.25);
                 const o2 = this.ctx.createOscillator();
                 const g2 = this.ctx.createGain();
-                o2.connect(g2); g2.connect(this.ctx.destination);
+                o2.connect(g2); g2.connect(this.masterGain || this.ctx.destination);
                 o2.type = 'sine';
                 o2.frequency.setValueAtTime(659, now + 0.08);
                 o2.frequency.exponentialRampToValueAtTime(1319, now + 0.2);
@@ -512,19 +544,28 @@ document.addEventListener('keydown', e => {
         return;
     }
     if (state === STATE.GAMEOVER) {
-        if (e.key === 'Enter' || e.key === ' ') {
-            state = STATE.PLAYING;
-            initGame();
-            sfx.play('coin');
+        if (e.key === 'Backspace') { playerName = playerName.slice(0, -1); e.preventDefault(); return; }
+        if (e.key === 'Enter') {
+            if (playerName.length > 0) submitScore();
+            else if (isTouchDevice) focusMobileInput();
+            return;
         }
         if (e.key === 'l' || e.key === 'L') {
-            showLeaderboard();
+            if (playerName.length === 0) { showLeaderboard(); return; }
+        }
+        if (e.key.length === 1 && /[a-zA-Z0-9 ]/.test(e.key) && playerName.length < 8) {
+            playerName += e.key.toUpperCase();
         }
         return;
     }
     if (state === STATE.LEADERBOARD) {
-        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
-            state = STATE.GAMEOVER;
+        if (e.key === 'Enter' || e.key === ' ') {
+            sfx.init();
+            state = STATE.PLAYING;
+            initGame();
+            sfx.play('coin');
+        } else if (e.key === 'Escape') {
+            state = STATE.TITLE;
         }
         return;
     }
@@ -574,7 +615,8 @@ document.querySelectorAll('.dpad-btn').forEach(btn => {
         sfx.init();
         const d = btn.dataset.dir;
         if (state === STATE.TITLE) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
-        if (state === STATE.GAMEOVER) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
+        if (state === STATE.GAMEOVER) { focusMobileInput(); return; }
+        if (state === STATE.LEADERBOARD) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
         if (state !== STATE.PLAYING) return;
         const dirs = { up: {x:0,y:-1}, down: {x:0,y:1}, left: {x:-1,y:0}, right: {x:1,y:0} };
         if (dirs[d]) queueDirection(dirs[d]);
@@ -583,12 +625,18 @@ document.querySelectorAll('.dpad-btn').forEach(btn => {
     btn.addEventListener('mousedown', handler);
 });
 
+// Unlock audio on first touch anywhere
+document.addEventListener('touchstart', function unlockAudio() {
+    sfx.init();
+}, { once: true });
+
 // Swipe support
 let touchStart = null;
 canvas.addEventListener('touchstart', e => {
     sfx.init();
     if (state === STATE.TITLE) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
-    if (state === STATE.GAMEOVER) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
+    if (state === STATE.GAMEOVER) { focusMobileInput(); return; }
+    if (state === STATE.LEADERBOARD) { sfx.init(); state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
     touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 }, { passive: true });
 canvas.addEventListener('touchmove', e => {
@@ -787,15 +835,19 @@ function moveSnake() {
     }
 }
 
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
 function die() {
     sfx.play('die');
     screenShake.intensity = 12;
     spawnParticles(snake[0].x, snake[0].y, C.hazard, 30);
     deathMessage = randomDeathMsg();
     state = STATE.GAMEOVER;
+    scoreSubmitted = false;
+    playerName = localStorage.getItem('spreadsheetViperName') || '';
     deathCount = (parseInt(localStorage.getItem('spreadsheetViperDeaths') || '0')) + 1;
     localStorage.setItem('spreadsheetViperDeaths', deathCount);
-    submitScore();
+    if (isTouchDevice) focusMobileInput();
 }
 
 // --- POWER-UPS ---
@@ -847,28 +899,62 @@ function activatePower(type) {
 }
 
 // --- LEADERBOARD ---
-async function submitScore() {
-    const entry = { name: 'AAA', score, level, max_combo: maxCombo, max_length: maxLength, timestamp: Date.now() };
-    entry.name = promptName();
+let playerName = '';
+let scoreSubmitted = false;
 
+async function submitScore() {
+    if (scoreSubmitted) return;
+    scoreSubmitted = true;
+    blurMobileInput();
+
+    const name = (playerName || 'ANON').toUpperCase().substring(0, 8);
+    const entry = { name, score, level, max_combo: maxCombo, max_length: maxLength, timestamp: Date.now() };
+
+    // Save name for next time
+    if (playerName.length > 0) localStorage.setItem('spreadsheetViperName', playerName);
+
+    // Local storage
+    try {
+        const local = JSON.parse(localStorage.getItem('spreadsheetViperScores') || '[]');
+        local.push(entry);
+        local.sort((a,b) => b.score - a.score);
+        localStorage.setItem('spreadsheetViperScores', JSON.stringify(local.slice(0, 20)));
+    } catch(e) {}
+
+    // Cloud
     if (cloudReady) {
         try {
-            await sbClient.from(LB_TABLE).insert([entry]);
+            const { error } = await sbClient.from(LB_TABLE).insert([entry]);
+            if (error) throw error;
+            const pending = JSON.parse(localStorage.getItem('spreadsheetViperPending') || '[]');
+            if (pending.length > 0) {
+                const { error: flushErr } = await sbClient.from(LB_TABLE).insert(pending);
+                if (!flushErr) localStorage.removeItem('spreadsheetViperPending');
+            }
         } catch(e) {
+            console.warn('Cloud write failed — queuing:', e);
             const pending = JSON.parse(localStorage.getItem('spreadsheetViperPending') || '[]');
             pending.push(entry);
             localStorage.setItem('spreadsheetViperPending', JSON.stringify(pending));
         }
+    } else {
+        const pending = JSON.parse(localStorage.getItem('spreadsheetViperPending') || '[]');
+        pending.push(entry);
+        localStorage.setItem('spreadsheetViperPending', JSON.stringify(pending));
     }
 
-    const local = JSON.parse(localStorage.getItem('spreadsheetViperScores') || '[]');
-    local.push(entry);
-    local.sort((a,b) => b.score - a.score);
-    localStorage.setItem('spreadsheetViperScores', JSON.stringify(local.slice(0, 20)));
+    await showLeaderboard();
 }
 
-function promptName() {
-    return localStorage.getItem('spreadsheetViperName') || 'AAA';
+function focusMobileInput() {
+    if (isTouchDevice) {
+        const inp = document.getElementById('mobileNameInput');
+        inp.value = playerName;
+        inp.focus();
+    }
+}
+function blurMobileInput() {
+    document.getElementById('mobileNameInput').blur();
 }
 
 async function showLeaderboard() {
@@ -1497,27 +1583,31 @@ function drawGameOver() {
     // Name entry
     ctx.font = '10px "Press Start 2P"';
     ctx.fillStyle = C.hud;
-    ctx.fillText('ENTER NAME:', canvas.width/2, canvas.height/2 + 58);
+    ctx.fillText('ENTER YOUR NAME:', canvas.width/2, canvas.height/2 + 48);
 
-    const name = localStorage.getItem('spreadsheetViperName') || 'AAA';
-    ctx.font = '16px "Press Start 2P"';
-    ctx.fillStyle = C.snake;
-    ctx.fillText(name, canvas.width/2, canvas.height/2 + 83);
+    // Name input box
+    ctx.strokeStyle = C.snake; ctx.lineWidth = 2;
+    ctx.strokeRect(canvas.width/2 - 80, canvas.height/2 + 56, 160, 30);
+    ctx.fillStyle = 'rgba(0,179,54,0.1)';
+    ctx.fillRect(canvas.width/2 - 80, canvas.height/2 + 56, 160, 30);
+
+    const displayName = playerName + (Math.floor(time * 2) % 2 === 0 ? '_' : '');
+    ctx.font = '12px "Press Start 2P"';
+    ctx.fillStyle = C.white;
+    ctx.fillText(displayName, canvas.width/2, canvas.height/2 + 77);
 
     // Prompt
-    if (Math.sin(time * 3) > 0) {
-        ctx.font = '9px "Press Start 2P"';
-        ctx.fillStyle = C.snake;
-        ctx.fillText('PRESS ENTER TO RETRY', canvas.width/2, canvas.height/2 + 115);
-    }
-    ctx.font = '9px "Share Tech Mono"';
     ctx.fillStyle = C.hudDim;
-    ctx.fillText('L = LEADERBOARD', canvas.width/2, canvas.height/2 + 138);
+    ctx.font = '7px "Press Start 2P"';
+    if (playerName.length > 0 && Math.floor(time * 2) % 2 === 0) {
+        ctx.fillText('PRESS ENTER TO SUBMIT', canvas.width/2, canvas.height/2 + 103);
+    }
+    ctx.fillText(isTouchDevice ? 'TAP HERE TO TYPE (8 MAX)' : 'TYPE YOUR NAME (8 CHARS MAX)', canvas.width/2, canvas.height/2 + 118);
 
     // Flavor text
     ctx.font = '8px "Share Tech Mono"';
     ctx.fillStyle = 'rgba(0,179,54,0.3)';
-    ctx.fillText('"There is no cloud. It\'s just someone else\'s spreadsheet."', canvas.width/2, canvas.height/2 + 165);
+    ctx.fillText('"There is no cloud. It\'s just someone else\'s spreadsheet."', canvas.width/2, canvas.height/2 + 148);
 }
 
 function drawLeaderboard() {
@@ -1554,7 +1644,9 @@ function drawLeaderboard() {
     ctx.font = '9px "Press Start 2P"';
     ctx.fillStyle = C.hudDim;
     ctx.textAlign = 'center';
-    ctx.fillText('PRESS ESC TO GO BACK', canvas.width/2, canvas.height - 30);
+    ctx.fillText(isTouchDevice ? 'TAP TO PLAY AGAIN' : 'PRESS ENTER TO PLAY AGAIN', canvas.width/2, canvas.height - 50);
+    ctx.font = '7px "Share Tech Mono"';
+    ctx.fillText(isTouchDevice ? '' : 'ESC TO GO BACK', canvas.width/2, canvas.height - 30);
 }
 
 function drawPaused() {
@@ -1591,16 +1683,22 @@ function roundRect(ctx, x, y, w, h, r) {
     ctx.closePath();
 }
 
-// --- NAME INPUT ---
-let nameInput = localStorage.getItem('spreadsheetViperName') || 'AAA';
-document.addEventListener('keydown', e => {
-    if (state !== STATE.GAMEOVER) return;
-    if (e.key === 'Backspace') {
-        nameInput = nameInput.slice(0, -1);
-        localStorage.setItem('spreadsheetViperName', nameInput);
-    } else if (e.key.length === 1 && /[a-zA-Z0-9 ]/.test(e.key) && nameInput.length < 10) {
-        nameInput += e.key.toUpperCase();
-        localStorage.setItem('spreadsheetViperName', nameInput);
+// --- MOBILE NAME INPUT ---
+const mobileNameInput = document.getElementById('mobileNameInput');
+mobileNameInput.addEventListener('input', () => {
+    const val = mobileNameInput.value.replace(/[^a-zA-Z0-9 ]/g, '').toUpperCase().substring(0, 8);
+    mobileNameInput.value = val;
+    playerName = val;
+});
+mobileNameInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && playerName.length > 0) {
+        e.preventDefault();
+        submitScore();
+    }
+});
+mobileNameInput.addEventListener('blur', () => {
+    if (state === STATE.GAMEOVER && isTouchDevice) {
+        setTimeout(() => { if (state === STATE.GAMEOVER && !scoreSubmitted) mobileNameInput.focus(); }, 100);
     }
 });
 
