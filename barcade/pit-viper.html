@@ -777,6 +777,7 @@ function activatePower(type) {
 // --- LEADERBOARD ---
 let playerName = '';
 let scoreSubmitted = false;
+let submitBtn = null; // { x, y, w, h } for canvas-drawn submit button
 
 async function submitScore() {
     if (scoreSubmitted) return;
@@ -1296,10 +1297,22 @@ function drawGameOver() {
     // Prompt
     ctx.fillStyle = C.hudDim;
     ctx.font = '7px "Press Start 2P"';
-    if (playerName.length > 0 && Math.floor(time * 2) % 2 === 0) {
-        ctx.fillText('PRESS ENTER TO SUBMIT', canvas.width/2, canvas.height/2 + 105);
-    }
     ctx.fillText(isTouchDevice ? 'TAP HERE TO TYPE (8 MAX)' : 'TYPE YOUR NAME (8 CHARS MAX)', canvas.width/2, canvas.height/2 + 120);
+
+    // Submit button
+    const btnX = canvas.width/2 - 70;
+    const btnY = canvas.height/2 + 128;
+    const btnW = 140, btnH = 28;
+    submitBtn = { x: btnX, y: btnY, w: btnW, h: btnH };
+    const hasName = playerName.length > 0;
+    ctx.fillStyle = hasName ? 'rgba(180,74,255,0.25)' : 'rgba(100,100,100,0.15)';
+    ctx.fillRect(btnX, btnY, btnW, btnH);
+    ctx.strokeStyle = hasName ? C.snake : C.hudDim;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(btnX, btnY, btnW, btnH);
+    ctx.font = '9px "Press Start 2P"';
+    ctx.fillStyle = hasName ? C.snake : C.hudDim;
+    ctx.fillText('SUBMIT', canvas.width/2, btnY + 19);
 }
 
 function drawLeaderboard() {
@@ -1385,6 +1398,24 @@ mobileNameInput.addEventListener('keydown', e => {
 mobileNameInput.addEventListener('blur', () => {
     if (state === STATE.GAMEOVER && isTouchDevice) {
         setTimeout(() => { if (state === STATE.GAMEOVER && !scoreSubmitted) mobileNameInput.focus(); }, 100);
+    }
+});
+
+// Canvas click handler for SUBMIT button
+function canvasToGame(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: (clientX - rect.left) * (canvas.width / rect.width),
+        y: (clientY - rect.top) * (canvas.height / rect.height)
+    };
+}
+canvas.addEventListener('click', e => {
+    if (state === STATE.GAMEOVER && submitBtn && playerName.length > 0) {
+        const p = canvasToGame(e.clientX, e.clientY);
+        if (p.x >= submitBtn.x && p.x <= submitBtn.x + submitBtn.w &&
+            p.y >= submitBtn.y && p.y <= submitBtn.y + submitBtn.h) {
+            submitScore();
+        }
     }
 });
 
