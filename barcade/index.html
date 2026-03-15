@@ -319,6 +319,31 @@
         box-shadow: 0 0 15px rgba(180,74,255,0.2);
     }
 
+    /* Bar Trivia cabinet */
+    .cabinet-trivia .cabinet-marquee {
+        background: linear-gradient(135deg, rgba(255,225,74,0.15) 0%, rgba(255,140,42,0.05) 100%);
+    }
+    .cabinet-trivia .cabinet-marquee::before {
+        background: linear-gradient(90deg, transparent, #ffe14a, transparent);
+    }
+    .cabinet-trivia .cabinet-game-title {
+        color: #ffe14a;
+        text-shadow: 0 0 15px rgba(255,225,74,0.5);
+    }
+    .cabinet-trivia .cabinet-screen {
+        background: radial-gradient(ellipse, #0a0e1a 0%, #050810 100%);
+    }
+    .cabinet-trivia .insert-coin { color: #ffe14a; }
+    .cabinet-trivia .control-btn { background: rgba(255,225,74,0.3); }
+    .cabinet-trivia .cabinet-play {
+        color: #ffe14a;
+        border: 1px solid rgba(255,225,74,0.3);
+    }
+    .cabinet-trivia:hover .cabinet-play {
+        background: rgba(255,225,74,0.1);
+        box-shadow: 0 0 15px rgba(255,225,74,0.2);
+    }
+
     /* Spreadsheet Viper cabinet */
     .cabinet-spreadsheet .cabinet-marquee {
         background: linear-gradient(135deg, rgba(0,179,54,0.15) 0%, rgba(57,255,20,0.05) 100%);
@@ -510,6 +535,50 @@
                     <span class="cabinet-play">PLAY &rarr;</span>
                 </div>
             </a>
+            <!-- Bar Trivia Cabinet -->
+            <a href="/barcade/bar-trivia.html" class="arcade-cabinet cabinet-trivia">
+                <div class="cabinet-marquee">
+                    <div class="cabinet-game-title">BAR<br>TRIVIA</div>
+                </div>
+                <div class="cabinet-screen">
+                    <div class="screen-art">
+                        <svg viewBox="0 0 120 90" width="200" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;">
+                            <!-- Beer glass -->
+                            <rect x="45" y="20" width="30" height="45" rx="2" fill="none" stroke="#ffe14a" stroke-width="1.5" opacity="0.6"/>
+                            <rect x="47" y="35" width="26" height="28" fill="#f0a830" opacity="0.5" rx="1"/>
+                            <ellipse cx="60" cy="35" rx="13" ry="3" fill="#ffeebb" opacity="0.5"/>
+                            <!-- Handle -->
+                            <path d="M75 30 Q88 30 88 42 Q88 55 75 55" fill="none" stroke="#ffe14a" stroke-width="1.5" opacity="0.4"/>
+                            <!-- Question mark -->
+                            <text x="60" y="52" text-anchor="middle" fill="#ffe14a" font-size="18" font-weight="bold" opacity="0.9">?</text>
+                            <!-- A B C D answer bubbles -->
+                            <circle cx="25" cy="75" r="7" fill="none" stroke="#39ff14" stroke-width="1" opacity="0.5"/>
+                            <text x="25" y="78" text-anchor="middle" fill="#39ff14" font-size="7" opacity="0.6">A</text>
+                            <circle cx="48" cy="75" r="7" fill="none" stroke="#FF8C2A" stroke-width="1" opacity="0.5"/>
+                            <text x="48" y="78" text-anchor="middle" fill="#FF8C2A" font-size="7" opacity="0.6">B</text>
+                            <circle cx="71" cy="75" r="7" fill="none" stroke="#4A90FF" stroke-width="1" opacity="0.5"/>
+                            <text x="71" y="78" text-anchor="middle" fill="#4A90FF" font-size="7" opacity="0.6">C</text>
+                            <circle cx="94" cy="75" r="7" fill="none" stroke="#b44aff" stroke-width="1" opacity="0.5"/>
+                            <text x="94" y="78" text-anchor="middle" fill="#b44aff" font-size="7" opacity="0.6">D</text>
+                            <!-- Timer dots -->
+                            <circle cx="30" cy="12" r="2" fill="#ffe14a" opacity="0.7"/>
+                            <circle cx="40" cy="12" r="2" fill="#ffe14a" opacity="0.5"/>
+                            <circle cx="50" cy="12" r="2" fill="#ffe14a" opacity="0.3"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="insert-coin">INSERT COIN</div>
+                <div class="cabinet-controls">
+                    <div class="control-stick"></div>
+                    <div class="control-btn"></div>
+                    <div class="control-btn"></div>
+                </div>
+                <div class="cabinet-info">
+                    <p class="cabinet-desc">10 questions. 15 seconds each. Data pulled from the articles. How much did you actually read?</p>
+                    <span class="cabinet-play">PLAY &rarr;</span>
+                </div>
+            </a>
+
             <!-- Spreadsheet Viper Cabinet -->
             <a href="/barcade/spreadsheet-viper.html" class="arcade-cabinet cabinet-spreadsheet">
                 <div class="cabinet-marquee">
