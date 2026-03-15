@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bar Trivia Night | Data Dive Bar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Special+Elite&family=IBM+Plex+Mono:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+    --neon-orange: #FF6B0A;
+    --neon-blue: #4A90FF;
+    --neon-amber: #FF8C2A;
+    --neon-green: #39ff14;
+    --neon-purple: #b44aff;
+    --neon-yellow: #ffe14a;
+    --neon-red: #ff2244;
+    --dark-bg: #0E1A2B;
+    --bar-wood: #0D1520;
+    --ui-bg: rgba(6, 12, 22, 0.92);
+    --text-dim: #6b6b7b;
+    --text-light: #c8c8d4;
+    --beer-gold: #f0a830;
+    --beer-foam: #ffeebb;
+    --correct-green: #39ff14;
+    --wrong-red: #ff2244;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: var(--dark-bg);
+    color: var(--text-light);
+    font-family: 'Share Tech Mono', 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* CRT overlay */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+    pointer-events: none;
+    z-index: 1000;
+}
+/* Vignette */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%);
+    pointer-events: none;
+    z-index: 999;
+}
+
+/* Nav bar */
+.nav {
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+    z-index: 10;
+}
+.nav a {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+}
+.nav a:hover { color: var(--neon-amber); }
+
+/* Game container */
+.game-wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+}
+
+/* ---- TITLE SCREEN ---- */
+.screen { display: none; width: 100%; }
+.screen.active { display: flex; flex-direction: column; align-items: center; }
+
+.title-logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    color: var(--neon-yellow);
+    text-shadow: 0 0 10px rgba(255,225,74,0.5), 0 0 40px rgba(255,225,74,0.2);
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+.title-sub {
+    font-family: 'Special Elite', cursive;
+    font-size: 1rem;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 3rem;
+}
+
+/* Difficulty cards */
+.diff-grid {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+.diff-card {
+    flex: 1;
+    min-width: 180px;
+    max-width: 220px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.diff-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--neon-yellow);
+    box-shadow: 0 8px 30px rgba(255,225,74,0.1);
+}
+.diff-card h3 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    margin-bottom: 0.8rem;
+}
+.diff-card p {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+}
+.diff-card.lightweight h3 { color: var(--neon-green); }
+.diff-card.lightweight:hover { border-color: var(--neon-green); box-shadow: 0 8px 30px rgba(57,255,20,0.1); }
+.diff-card.regular h3 { color: var(--neon-amber); }
+.diff-card.regular:hover { border-color: var(--neon-amber); box-shadow: 0 8px 30px rgba(255,140,42,0.1); }
+.diff-card.closing h3 { color: var(--neon-red); }
+.diff-card.closing:hover { border-color: var(--neon-red); box-shadow: 0 8px 30px rgba(255,34,68,0.1); }
+
+.diff-mult {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    margin-top: 0.6rem;
+    opacity: 0.5;
+}
+
+.title-lb-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.3s;
+}
+.title-lb-btn:hover { color: var(--neon-yellow); border-color: var(--neon-yellow); }
+
+/* ---- QUESTION SCREEN ---- */
+.q-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.q-progress {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+.q-score {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    color: var(--neon-yellow);
+    letter-spacing: 1px;
+}
+.q-category {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.75rem;
+    color: var(--neon-amber);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+/* Timer + Beer glass row */
+.timer-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+.timer-text {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 1.2rem;
+    min-width: 50px;
+    text-align: right;
+}
+.timer-text.urgent { color: var(--neon-red); animation: pulse 0.5s ease infinite; }
+.timer-text.normal { color: var(--neon-green); }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+/* Beer glass SVG */
+.beer-glass-wrap {
+    width: 60px;
+    height: 100px;
+    flex-shrink: 0;
+}
+
+/* Question text */
+.q-text {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    text-align: center;
+    color: #eee;
+    margin-bottom: 2rem;
+    min-height: 3.5em;
+    font-weight: 700;
+}
+
+/* Answer buttons */
+.answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    width: 100%;
+    max-width: 600px;
+}
+.answer-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    padding: 1rem;
+    color: var(--text-light);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    line-height: 1.4;
+    position: relative;
+    overflow: hidden;
+}
+.answer-btn:hover:not(.disabled) {
+    border-color: var(--neon-yellow);
+    background: rgba(255,225,74,0.06);
+    transform: translateY(-2px);
+}
+.answer-btn.correct {
+    border-color: var(--correct-green);
+    background: rgba(57,255,20,0.12);
+    color: var(--correct-green);
+}
+.answer-btn.wrong {
+    border-color: var(--wrong-red);
+    background: rgba(255,34,68,0.1);
+    color: var(--wrong-red);
+}
+.answer-btn.reveal-correct {
+    border-color: var(--correct-green);
+    background: rgba(57,255,20,0.08);
+    color: var(--correct-green);
+    opacity: 0.7;
+}
+.answer-btn.disabled { pointer-events: none; opacity: 0.4; }
+
+.answer-label {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.6rem;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.4rem;
+    opacity: 0.4;
+}
+
+/* Bartender roast */
+.roast {
+    margin-top: 1.5rem;
+    font-family: 'Special Elite', cursive;
+    font-size: 0.9rem;
+    color: var(--neon-amber);
+    text-align: center;
+    min-height: 2em;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.roast.visible { opacity: 1; }
+
+/* ---- RESULTS SCREEN (Napkin Stats) ---- */
+.napkin {
+    background: linear-gradient(145deg, #f5e6c8 0%, #e8d5a8 100%);
+    border-radius: 4px;
+    padding: 2.5rem 2rem;
+    max-width: 420px;
+    width: 100%;
+    color: #2a1f0e;
+    position: relative;
+    transform: rotate(-1deg);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+.napkin::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='6' height='6' fill='%23f0dbb0'/%3E%3Crect width='1' height='1' x='3' y='3' fill='%23e8cfa0' opacity='0.3'/%3E%3C/svg%3E");
+    border-radius: 4px;
+    opacity: 0.5;
+    pointer-events: none;
+}
+.napkin-title {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.4rem;
+    text-align: center;
+    margin-bottom: 0.3rem;
+    color: #1a120a;
+    position: relative;
+}
+.napkin-subtitle {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.75rem;
+    text-align: center;
+    color: #8a6d4a;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+.napkin-score {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 2rem;
+    text-align: center;
+    color: #1a120a;
+    margin-bottom: 0.3rem;
+    position: relative;
+}
+.napkin-rank {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+.napkin-divider {
+    border: none;
+    border-top: 1px dashed #c4a878;
+    margin: 1rem 0;
+    position: relative;
+}
+.napkin-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    position: relative;
+}
+.napkin-stat {
+    text-align: center;
+}
+.napkin-stat-val {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.8rem;
+    color: #1a120a;
+}
+.napkin-stat-label {
+    font-family: 'Special Elite', cursive;
+    font-size: 0.7rem;
+    color: #8a6d4a;
+    margin-top: 0.2rem;
+}
+
+.result-buttons {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.result-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    padding: 0.7rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    border: 1px solid;
+}
+.btn-play-again {
+    background: rgba(57,255,20,0.1);
+    color: var(--neon-green);
+    border-color: rgba(57,255,20,0.3);
+}
+.btn-play-again:hover { background: rgba(57,255,20,0.2); box-shadow: 0 0 15px rgba(57,255,20,0.2); }
+.btn-leaderboard {
+    background: rgba(255,225,74,0.1);
+    color: var(--neon-yellow);
+    border-color: rgba(255,225,74,0.3);
+}
+.btn-leaderboard:hover { background: rgba(255,225,74,0.2); box-shadow: 0 0 15px rgba(255,225,74,0.2); }
+
+/* ---- LEADERBOARD ---- */
+.lb-panel {
+    width: 100%;
+    max-width: 500px;
+}
+.lb-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.9rem;
+    color: var(--neon-yellow);
+    text-align: center;
+    margin-bottom: 0.3rem;
+    text-shadow: 0 0 10px rgba(255,225,74,0.3);
+}
+.lb-status {
+    font-size: 0.65rem;
+    text-align: center;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+}
+.lb-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.lb-table th {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.45rem;
+    color: var(--text-dim);
+    text-align: left;
+    padding: 0.5rem 0.3rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    letter-spacing: 1px;
+}
+.lb-table td {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.3rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.lb-table tr.gold td { color: #ffd700; }
+.lb-table tr.silver td { color: #c0c0c0; }
+.lb-table tr.bronze td { color: #cd7f32; }
+.lb-table tr.you td { color: var(--neon-green); }
+
+.lb-name-input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,225,74,0.3);
+    color: var(--neon-yellow);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    width: 100%;
+    max-width: 200px;
+    text-align: center;
+    letter-spacing: 2px;
+    outline: none;
+}
+.lb-name-input:focus { border-color: var(--neon-yellow); box-shadow: 0 0 10px rgba(255,225,74,0.2); }
+
+.lb-submit-row {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+.lb-submit-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: rgba(255,225,74,0.15);
+    color: var(--neon-yellow);
+    border: 1px solid rgba(255,225,74,0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.lb-submit-btn:hover { background: rgba(255,225,74,0.25); }
+
+.lb-back-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: none;
+    color: var(--text-dim);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    transition: all 0.3s;
+}
+.lb-back-btn:hover { color: var(--neon-yellow); border-color: var(--neon-yellow); }
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 500px) {
+    .answers { grid-template-columns: 1fr; }
+    .diff-grid { flex-direction: column; align-items: center; }
+    .diff-card { max-width: 100%; }
+    .napkin { padding: 2rem 1.2rem; }
+    .q-text { font-size: 1rem; }
+    .timer-row { gap: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="nav">
+    <a href="/barcade/">&larr; Back to Barcade</a>
+    <a href="/">Data Dive Bar</a>
+</div>
+
+<div class="game-wrap">
+
+    <!-- TITLE SCREEN -->
+    <div class="screen active" id="screen-title">
+        <div class="title-logo">BAR<br>TRIVIA</div>
+        <div class="title-sub">10 questions. 15 seconds. No Googling.</div>
+
+        <div class="diff-grid">
+            <div class="diff-card lightweight" onclick="startGame('lightweight')">
+                <h3>LIGHTWEIGHT</h3>
+                <p>Easy questions. Big margins. Training wheels on.</p>
+                <div class="diff-mult">1x POINTS</div>
+            </div>
+            <div class="diff-card regular" onclick="startGame('regular')">
+                <h3>REGULAR</h3>
+                <p>Tighter answers. You'll need to actually know stuff.</p>
+                <div class="diff-mult">1.5x POINTS</div>
+            </div>
+            <div class="diff-card closing" onclick="startGame('closing')">
+                <h3>CLOSING TIME</h3>
+                <p>Trick questions. Razor margins. Last call, pal.</p>
+                <div class="diff-mult">2x POINTS</div>
+            </div>
+        </div>
+
+        <button class="title-lb-btn" onclick="showLeaderboard()">LEADERBOARD</button>
+    </div>
+
+    <!-- QUESTION SCREEN -->
+    <div class="screen" id="screen-question">
+        <div class="q-header">
+            <span class="q-progress" id="q-progress">Q1 / 10</span>
+            <span class="q-score" id="q-score">0</span>
+        </div>
+        <div class="q-category" id="q-category"></div>
+
+        <div class="timer-row">
+            <svg class="beer-glass-wrap" id="beer-glass" viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Glass outline -->
+                <path d="M10 15 L8 85 Q8 92 15 92 L45 92 Q52 92 52 85 L50 15 Z" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+                <!-- Beer fill (animated via JS) -->
+                <clipPath id="glass-clip"><path d="M10 15 L8 85 Q8 92 15 92 L45 92 Q52 92 52 85 L50 15 Z"/></clipPath>
+                <rect id="beer-fill" x="5" y="15" width="50" height="80" fill="url(#beer-gradient)" clip-path="url(#glass-clip)"/>
+                <!-- Beer gradient -->
+                <defs>
+                    <linearGradient id="beer-gradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#ffeebb" id="beer-top"/>
+                        <stop offset="8%" stop-color="#f0a830"/>
+                        <stop offset="100%" stop-color="#cc8800"/>
+                    </linearGradient>
+                </defs>
+                <!-- Foam -->
+                <g id="beer-foam" clip-path="url(#glass-clip)">
+                    <ellipse cx="20" cy="15" rx="12" ry="5" fill="#ffeebb" opacity="0.9"/>
+                    <ellipse cx="38" cy="14" rx="14" ry="6" fill="#fff5dd" opacity="0.85"/>
+                    <ellipse cx="30" cy="16" rx="10" ry="4" fill="#ffeebb" opacity="0.8"/>
+                </g>
+                <!-- Handle -->
+                <path d="M52 30 Q68 30 68 50 Q68 70 52 70" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+                <!-- Bubbles -->
+                <circle cx="25" cy="60" r="1.5" fill="rgba(255,238,187,0.3)" id="bubble1"/>
+                <circle cx="35" cy="70" r="1" fill="rgba(255,238,187,0.25)" id="bubble2"/>
+                <circle cx="30" cy="50" r="1.2" fill="rgba(255,238,187,0.2)" id="bubble3"/>
+            </svg>
+            <span class="timer-text normal" id="timer-text">15</span>
+        </div>
+
+        <div class="q-text" id="q-text"></div>
+
+        <div class="answers" id="answers">
+            <button class="answer-btn" onclick="answer(0)"><span class="answer-label">A</span><span id="a0"></span></button>
+            <button class="answer-btn" onclick="answer(1)"><span class="answer-label">B</span><span id="a1"></span></button>
+            <button class="answer-btn" onclick="answer(2)"><span class="answer-label">C</span><span id="a2"></span></button>
+            <button class="answer-btn" onclick="answer(3)"><span class="answer-label">D</span><span id="a3"></span></button>
+        </div>
+
+        <div class="roast" id="roast"></div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div class="screen" id="screen-results">
+        <div class="napkin">
+            <div class="napkin-title">NAPKIN STATS</div>
+            <div class="napkin-subtitle">Bar Trivia Night</div>
+            <div class="napkin-score" id="final-score">0</div>
+            <div class="napkin-rank" id="final-rank"></div>
+            <hr class="napkin-divider">
+            <div class="napkin-stats">
+                <div class="napkin-stat">
+                    <div class="napkin-stat-val" id="stat-correct">0/10</div>
+                    <div class="napkin-stat-label">Correct</div>
+                </div>
+                <div class="napkin-stat">
+                    <div class="napkin-stat-val" id="stat-accuracy">0%</div>
+                    <div class="napkin-stat-label">Accuracy</div>
+                </div>
+                <div class="napkin-stat">
+                    <div class="napkin-stat-val" id="stat-streak">0</div>
+                    <div class="napkin-stat-label">Best Streak</div>
+                </div>
+                <div class="napkin-stat">
+                    <div class="napkin-stat-val" id="stat-speed">0s</div>
+                    <div class="napkin-stat-label">Avg Speed</div>
+                </div>
+            </div>
+            <hr class="napkin-divider">
+            <div class="napkin-stats" id="cat-breakdown" style="margin-top:0.5rem;"></div>
+        </div>
+
+        <div class="result-buttons">
+            <button class="result-btn btn-play-again" onclick="showTitle()">PLAY AGAIN</button>
+            <button class="result-btn btn-leaderboard" onclick="showLeaderboard()">LEADERBOARD</button>
+        </div>
+    </div>
+
+    <!-- LEADERBOARD SCREEN -->
+    <div class="screen" id="screen-leaderboard">
+        <div class="lb-panel">
+            <div class="lb-title">HIGH SCORES</div>
+            <div class="lb-status" id="lb-status">GLOBAL LEADERBOARD</div>
+
+            <div class="lb-submit-row" id="lb-submit-row" style="display:none;">
+                <input class="lb-name-input" id="lb-name" maxlength="8" placeholder="NAME" autocomplete="off" spellcheck="false">
+                <button class="lb-submit-btn" onclick="submitScoreFromInput()">SUBMIT</button>
+            </div>
+
+            <table class="lb-table">
+                <thead>
+                    <tr><th>#</th><th>NAME</th><th>SCORE</th><th>ACC</th><th>DIFF</th></tr>
+                </thead>
+                <tbody id="lb-body"></tbody>
+            </table>
+
+            <div style="text-align:center;">
+                <button class="lb-back-btn" onclick="showTitle()">BACK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========================================
+// QUESTION BANK
+// ========================================
+const QUESTIONS = [
+    // ---- AMERICA'S DEADLIEST ANIMAL ----
+    {
+        q: "Approximately how many Americans are killed by deer each year?",
+        choices: ["~50", "~150", "~300", "~500"],
+        correct: 1,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "lightweight",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "How many times more people do deer kill than sharks, bears, and alligators combined?",
+        choices: ["5 times", "20 times", "50 times", "100 times"],
+        correct: 2,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "regular",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "How many Americans die from bee and wasp stings each year?",
+        choices: ["~25", "~84", "~168", "~250"],
+        correct: 1,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "regular",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "How many people are killed by dogs annually in the U.S.?",
+        choices: ["~30", "~77", "~150", "~200"],
+        correct: 1,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "regular",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "What percentage of fatal animal-vehicle collisions involve deer?",
+        choices: ["45%", "62%", "77%", "90%"],
+        correct: 2,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "closing",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "What percentage of fatal deer-vehicle crashes happen on dark, unlit roads?",
+        choices: ["55%", "68%", "82%", "94%"],
+        correct: 2,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "closing",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "Approximately how many Americans die from venomous snake bites per year?",
+        choices: ["~2", "~7", "~20", "~45"],
+        correct: 1,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "regular",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "By what percentage did fatal animal-vehicle crashes increase in 2023?",
+        choices: ["8%", "15%", "23%", "35%"],
+        correct: 2,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "closing",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "Roughly how many Americans are killed by animals in total each year?",
+        choices: ["~200", "~350", "~470", "~700"],
+        correct: 2,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "lightweight",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "How many Americans were estimated killed in deer-vehicle collisions in 2023?",
+        choices: ["100", "140", "180", "240"],
+        correct: 2,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "closing",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "What's the combined annual death toll from cows and horses in the U.S.?",
+        choices: ["~30", "~74", "~120", "~200"],
+        correct: 1,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "regular",
+        source: "/americas-deadliest-animal/"
+    },
+    {
+        q: "Which animal kills the most Americans per year?",
+        choices: ["Sharks", "Snakes", "Deer", "Bears"],
+        correct: 2,
+        category: "Deadliest Animal",
+        categoryIcon: "\u{1F98C}",
+        difficulty: "lightweight",
+        source: "/americas-deadliest-animal/"
+    },
+
+    // ---- THE BROFESSOR (Baseball / PEDs) ----
+    {
+        q: "How many Americans watched the 1998 home run race?",
+        choices: ["15 million", "28 million", "43 million", "60 million"],
+        correct: 2,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "regular",
+        source: "/brofessor/"
+    },
+    {
+        q: "What was the average viewership for the 2023 World Series?",
+        choices: ["5.2 million", "9.1 million", "14.5 million", "18.3 million"],
+        correct: 1,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "regular",
+        source: "/brofessor/"
+    },
+    {
+        q: "What percentage decline occurred in World Series viewership from 1998 to 2023?",
+        choices: ["38%", "52%", "64%", "78%"],
+        correct: 2,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "closing",
+        source: "/brofessor/"
+    },
+    {
+        q: "How many home runs did Barry Bonds hit in 2001?",
+        choices: ["66", "70", "73", "76"],
+        correct: 2,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "lightweight",
+        source: "/brofessor/"
+    },
+    {
+        q: "How many home runs did Mark McGwire hit in 1998?",
+        choices: ["62", "66", "70", "73"],
+        correct: 2,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "regular",
+        source: "/brofessor/"
+    },
+    {
+        q: "How many home runs did Sammy Sosa hit in 1998?",
+        choices: ["58", "62", "66", "70"],
+        correct: 2,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "regular",
+        source: "/brofessor/"
+    },
+    {
+        q: "What percentage of games did Anthony Rendon play on his $245M contract?",
+        choices: ["15%", "29.5%", "45%", "62%"],
+        correct: 1,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "closing",
+        source: "/brofessor/"
+    },
+    {
+        q: "How many games did Kris Bryant play in the final season of his $182M deal?",
+        choices: ["11", "35", "67", "95"],
+        correct: 0,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "closing",
+        source: "/brofessor/"
+    },
+    {
+        q: "Approximately how many viewers watched Game 7 of the 2016 World Series?",
+        choices: ["25 million", "40 million", "50 million", "65 million"],
+        correct: 2,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "lightweight",
+        source: "/brofessor/"
+    },
+    {
+        q: "How many fans did MLB lose between the steroid era and modern era?",
+        choices: ["5 million", "8 million", "11 million", "16 million"],
+        correct: 2,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "regular",
+        source: "/brofessor/"
+    },
+    {
+        q: "What was Barry Bonds' average home run distance in 2001?",
+        choices: ["390 feet", "400 feet", "415 feet", "430 feet"],
+        correct: 2,
+        category: "The Brofessor",
+        categoryIcon: "\u{26BE}",
+        difficulty: "closing",
+        source: "/brofessor/"
+    },
+
+    // ---- SURVIVAL (Water / Emergency Preparedness) ----
+    {
+        q: "According to FEMA, how many gallons should a family of four store for two weeks?",
+        choices: ["28 gallons", "42 gallons", "56 gallons", "84 gallons"],
+        correct: 2,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "regular",
+        source: "/Survival/"
+    },
+    {
+        q: "What percentage of Americans have NO emergency water stored at all?",
+        choices: ["25%", "40%", "53%", "72%"],
+        correct: 2,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "regular",
+        source: "/Survival/"
+    },
+    {
+        q: "How long can a human typically survive without water?",
+        choices: ["24 hours", "3 days", "5 days", "7 days"],
+        correct: 1,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "lightweight",
+        source: "/Survival/"
+    },
+    {
+        q: "What percentage of Americans lack adequate emergency water storage?",
+        choices: ["45%", "60%", "80%", "95%"],
+        correct: 2,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "lightweight",
+        source: "/Survival/"
+    },
+    {
+        q: "What percentage of Americans have met FEMA's two-week water storage target?",
+        choices: ["2%", "5%", "12%", "20%"],
+        correct: 1,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "closing",
+        source: "/Survival/"
+    },
+    {
+        q: "How much drinking water does a typical home water heater hold?",
+        choices: ["10-20 gallons", "25-35 gallons", "40-80 gallons", "90-120 gallons"],
+        correct: 2,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "regular",
+        source: "/Survival/"
+    },
+    {
+        q: "How long should you boil water at sea level to purify it?",
+        choices: ["30 seconds", "1 rolling minute", "3 minutes", "5 minutes"],
+        correct: 1,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "regular",
+        source: "/Survival/"
+    },
+    {
+        q: "How many drops of bleach per gallon for emergency water treatment?",
+        choices: ["3 drops", "5 drops", "8 drops", "12 drops"],
+        correct: 2,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "closing",
+        source: "/Survival/"
+    },
+    {
+        q: "What percentage of Americans have less than 3 days of water stored?",
+        choices: ["15%", "27%", "40%", "55%"],
+        correct: 1,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "closing",
+        source: "/Survival/"
+    },
+    {
+        q: "What does FEMA recommend as a daily water supply per person?",
+        choices: ["Half a gallon", "1 gallon", "2 gallons", "3 gallons"],
+        correct: 1,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "lightweight",
+        source: "/Survival/"
+    },
+    {
+        q: "What percentage of Americans have 3-7 days of emergency water stored?",
+        choices: ["5%", "13%", "22%", "30%"],
+        correct: 1,
+        category: "Survival",
+        categoryIcon: "\u{1F4A7}",
+        difficulty: "closing",
+        source: "/Survival/"
+    }
+];
+
+const ROASTS = [
+    "That's... not even close. You been drinking already?",
+    "Wrong. I've seen better guesses from the jukebox.",
+    "Buddy, even the dart board knows that one.",
+    "That answer's about as useful as a screen door on a submarine.",
+    "You sure you read the articles? Or just looked at the pictures?",
+    "The guy passed out in booth 3 could've gotten that one.",
+    "Swing and a miss. Have another beer.",
+    "Nope. The bathroom graffiti is smarter than that.",
+    "That was so wrong it set off the smoke alarm.",
+    "I'd give you a hint, but you're past saving.",
+    "Wrong answer. Your tab just went up.",
+    "Did you just guess? Be honest. You guessed.",
+    "The bar's WiFi has a better memory than you.",
+    "That's not it, chief. Not even in the same zip code.",
+    "Even the cockroaches behind the bar knew that one."
+];
+
+const RANK_TITLES = [
+    { min: 0,    title: "Designated Driver", color: "#666" },
+    { min: 300,  title: "One-Beer Wonder", color: "#88aacc" },
+    { min: 600,  title: "Casual Regular", color: "#aaccee" },
+    { min: 900,  title: "Bar Fly", color: var_neon_amber() },
+    { min: 1200, title: "Trivia Shark", color: var_neon_green() },
+    { min: 1500, title: "Quiz Night Legend", color: var_neon_yellow() },
+    { min: 1800, title: "Barkeep's Nightmare", color: var_neon_purple() },
+];
+
+function var_neon_amber() { return '#FF8C2A'; }
+function var_neon_green() { return '#39ff14'; }
+function var_neon_yellow() { return '#ffe14a'; }
+function var_neon_purple() { return '#b44aff'; }
+
+// ========================================
+// SUPABASE
+// ========================================
+const SUPABASE_URL = 'https://lfxfutgrgzygqnwdeyby.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmeGZ1dGdyZ3p5Z3Fud2RleWJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMjQ5MzAsImV4cCI6MjA4NzgwMDkzMH0.xBWGRbrBloOZgUqIpnd-aHC89MgqBAZhZkx57u3FwQo';
+const LB_TABLE = 'bar_trivia_scores';
+
+let sbClient = null, cloudReady = false;
+
+(function loadSupabase() {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    s.async = true;
+    s.onload = function() {
+        try {
+            sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            cloudReady = true;
+            flushPending();
+        } catch(e) { console.warn('Supabase init failed:', e); }
+    };
+    s.onerror = function() { console.warn('Supabase SDK failed to load'); };
+    document.head.appendChild(s);
+})();
+
+function flushPending() {
+    const pending = JSON.parse(localStorage.getItem('barTriviaPending') || '[]');
+    if (pending.length && cloudReady) {
+        sbClient.from(LB_TABLE).insert(pending)
+            .then(({ error }) => { if (!error) localStorage.removeItem('barTriviaPending'); });
+    }
+}
+
+// ========================================
+// GAME STATE
+// ========================================
+let currentDifficulty = 'regular';
+let currentQuestions = [];
+let questionIndex = 0;
+let score = 0;
+let correctCount = 0;
+let currentStreak = 0;
+let bestStreak = 0;
+let totalResponseTime = 0;
+let timerInterval = null;
+let timeLeft = 15;
+let answered = false;
+let scoreSubmitted = false;
+let lastSubmittedName = localStorage.getItem('barTriviaName') || '';
+let categoryCorrect = {};
+let categoryTotal = {};
+
+// ========================================
+// SCREEN MANAGEMENT
+// ========================================
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+}
+
+function showTitle() {
+    showScreen('title');
+}
+
+// ========================================
+// GAME LOGIC
+// ========================================
+function startGame(difficulty) {
+    currentDifficulty = difficulty;
+    score = 0;
+    correctCount = 0;
+    currentStreak = 0;
+    bestStreak = 0;
+    totalResponseTime = 0;
+    questionIndex = 0;
+    scoreSubmitted = false;
+    categoryCorrect = {};
+    categoryTotal = {};
+
+    // Select 10 questions based on difficulty
+    currentQuestions = selectQuestions(difficulty, 10);
+    showScreen('question');
+    loadQuestion();
+}
+
+function selectQuestions(difficulty, count) {
+    let pool;
+    if (difficulty === 'lightweight') {
+        // Lightweight: prefer easy questions, but include some regular
+        pool = QUESTIONS.filter(q => q.difficulty === 'lightweight' || q.difficulty === 'regular');
+    } else if (difficulty === 'closing') {
+        // Closing time: prefer hard questions, include some regular
+        pool = QUESTIONS.filter(q => q.difficulty === 'closing' || q.difficulty === 'regular');
+    } else {
+        // Regular: mix of all
+        pool = [...QUESTIONS];
+    }
+
+    // Shuffle and pick
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+
+    // Ensure category diversity: at least 2 per category if possible
+    const byCategory = {};
+    shuffled.forEach(q => {
+        if (!byCategory[q.category]) byCategory[q.category] = [];
+        byCategory[q.category].push(q);
+    });
+
+    const selected = [];
+    const categories = Object.keys(byCategory);
+
+    // Take 2 from each category first
+    categories.forEach(cat => {
+        const qs = byCategory[cat];
+        selected.push(...qs.splice(0, Math.min(2, qs.length)));
+    });
+
+    // Fill remaining from leftovers
+    const remaining = [];
+    categories.forEach(cat => remaining.push(...byCategory[cat]));
+    remaining.sort(() => Math.random() - 0.5);
+
+    while (selected.length < count && remaining.length > 0) {
+        selected.push(remaining.shift());
+    }
+
+    // Final shuffle
+    return selected.slice(0, count).sort(() => Math.random() - 0.5);
+}
+
+function loadQuestion() {
+    if (questionIndex >= currentQuestions.length) {
+        endGame();
+        return;
+    }
+
+    const q = currentQuestions[questionIndex];
+    answered = false;
+
+    document.getElementById('q-progress').textContent = `Q${questionIndex + 1} / ${currentQuestions.length}`;
+    document.getElementById('q-score').textContent = score.toLocaleString();
+    document.getElementById('q-category').textContent = `${q.categoryIcon} ${q.category}`;
+    document.getElementById('q-text').textContent = q.q;
+
+    // Set answer buttons
+    const btns = document.querySelectorAll('.answer-btn');
+    const labels = ['A', 'B', 'C', 'D'];
+    btns.forEach((btn, i) => {
+        btn.className = 'answer-btn';
+        btn.querySelector('span:last-child').textContent = q.choices[i];
+        btn.querySelector('.answer-label').textContent = labels[i];
+    });
+
+    document.getElementById('roast').classList.remove('visible');
+    document.getElementById('roast').textContent = '';
+
+    // Reset timer
+    timeLeft = 15;
+    updateTimer();
+    updateBeerGlass();
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    const startTime = Date.now();
+    timerInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        timeLeft = Math.max(0, 15 - elapsed);
+        updateTimer();
+        updateBeerGlass();
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            if (!answered) timeUp();
+        }
+    }, 50);
+}
+
+function updateTimer() {
+    const el = document.getElementById('timer-text');
+    el.textContent = Math.ceil(timeLeft);
+    if (timeLeft <= 5) {
+        el.className = 'timer-text urgent';
+    } else {
+        el.className = 'timer-text normal';
+    }
+}
+
+function updateBeerGlass() {
+    const pct = timeLeft / 15; // 1 = full, 0 = empty
+    const fill = document.getElementById('beer-fill');
+    const foam = document.getElementById('beer-foam');
+
+    // Beer drains from top: y goes from 15 (full) to 95 (empty)
+    const yStart = 15 + (1 - pct) * 77;
+    fill.setAttribute('y', yStart);
+    fill.setAttribute('height', 80);
+
+    // Foam follows beer level
+    const foamY = yStart - 3;
+    foam.querySelectorAll('ellipse').forEach((e, i) => {
+        e.setAttribute('cy', foamY + i * 1.5);
+    });
+
+    // Bubble animation
+    const b1 = document.getElementById('bubble1');
+    const b2 = document.getElementById('bubble2');
+    const b3 = document.getElementById('bubble3');
+    if (pct > 0.1) {
+        const t = Date.now() / 1000;
+        b1.setAttribute('cy', yStart + 20 + Math.sin(t * 2) * 8);
+        b2.setAttribute('cy', yStart + 30 + Math.sin(t * 1.5 + 1) * 10);
+        b3.setAttribute('cy', yStart + 15 + Math.sin(t * 2.5 + 2) * 6);
+        b1.setAttribute('opacity', pct * 0.3);
+        b2.setAttribute('opacity', pct * 0.25);
+        b3.setAttribute('opacity', pct * 0.2);
+    } else {
+        [b1, b2, b3].forEach(b => b.setAttribute('opacity', 0));
+    }
+}
+
+function answer(idx) {
+    if (answered) return;
+    answered = true;
+    clearInterval(timerInterval);
+
+    const q = currentQuestions[questionIndex];
+    const responseTime = 15 - timeLeft;
+    totalResponseTime += responseTime;
+
+    // Track category stats
+    if (!categoryTotal[q.category]) categoryTotal[q.category] = 0;
+    if (!categoryCorrect[q.category]) categoryCorrect[q.category] = 0;
+    categoryTotal[q.category]++;
+
+    const btns = document.querySelectorAll('.answer-btn');
+
+    if (idx === q.correct) {
+        // Correct!
+        btns[idx].classList.add('correct');
+        const diffMult = currentDifficulty === 'lightweight' ? 1 : currentDifficulty === 'regular' ? 1.5 : 2;
+        const speedBonus = Math.round(50 * (timeLeft / 15));
+        const points = Math.round((100 + speedBonus) * diffMult);
+        score += points;
+        correctCount++;
+        currentStreak++;
+        if (currentStreak > bestStreak) bestStreak = currentStreak;
+        categoryCorrect[q.category]++;
+
+        // Disable other buttons
+        btns.forEach((btn, i) => { if (i !== idx) btn.classList.add('disabled'); });
+    } else {
+        // Wrong
+        btns[idx].classList.add('wrong');
+        btns[q.correct].classList.add('reveal-correct');
+        btns.forEach((btn, i) => { if (i !== idx && i !== q.correct) btn.classList.add('disabled'); });
+        currentStreak = 0;
+
+        // Show roast
+        const roast = ROASTS[Math.floor(Math.random() * ROASTS.length)];
+        const roastEl = document.getElementById('roast');
+        roastEl.textContent = `"${roast}"`;
+        roastEl.classList.add('visible');
+    }
+
+    document.getElementById('q-score').textContent = score.toLocaleString();
+
+    // Next question after delay
+    setTimeout(() => {
+        questionIndex++;
+        loadQuestion();
+    }, idx === q.correct ? 1200 : 2200);
+}
+
+function timeUp() {
+    answered = true;
+    const q = currentQuestions[questionIndex];
+    totalResponseTime += 15;
+
+    if (!categoryTotal[q.category]) categoryTotal[q.category] = 0;
+    categoryTotal[q.category]++;
+
+    const btns = document.querySelectorAll('.answer-btn');
+    btns[q.correct].classList.add('reveal-correct');
+    btns.forEach((btn, i) => { if (i !== q.correct) btn.classList.add('disabled'); });
+    currentStreak = 0;
+
+    const roastEl = document.getElementById('roast');
+    roastEl.textContent = '"Time\'s up! The beer\'s empty and so is your brain."';
+    roastEl.classList.add('visible');
+
+    setTimeout(() => {
+        questionIndex++;
+        loadQuestion();
+    }, 2200);
+}
+
+function endGame() {
+    clearInterval(timerInterval);
+    showScreen('results');
+
+    const accuracy = currentQuestions.length > 0 ? Math.round((correctCount / currentQuestions.length) * 100) : 0;
+    const avgSpeed = correctCount > 0 ? (totalResponseTime / currentQuestions.length).toFixed(1) : '—';
+
+    document.getElementById('final-score').textContent = score.toLocaleString();
+    document.getElementById('stat-correct').textContent = `${correctCount}/${currentQuestions.length}`;
+    document.getElementById('stat-accuracy').textContent = `${accuracy}%`;
+    document.getElementById('stat-streak').textContent = bestStreak;
+    document.getElementById('stat-speed').textContent = avgSpeed === '—' ? '—' : `${avgSpeed}s`;
+
+    // Rank
+    let rank = RANK_TITLES[0];
+    for (const r of RANK_TITLES) {
+        if (score >= r.min) rank = r;
+    }
+    const rankEl = document.getElementById('final-rank');
+    rankEl.textContent = `"${rank.title}"`;
+    rankEl.style.color = rank.color;
+
+    // Category breakdown
+    const catDiv = document.getElementById('cat-breakdown');
+    catDiv.innerHTML = '';
+    const cats = Object.keys(categoryTotal);
+    cats.forEach(cat => {
+        const c = categoryCorrect[cat] || 0;
+        const t = categoryTotal[cat];
+        const icon = currentQuestions.find(q => q.category === cat)?.categoryIcon || '';
+        catDiv.innerHTML += `
+            <div class="napkin-stat">
+                <div class="napkin-stat-val">${c}/${t}</div>
+                <div class="napkin-stat-label">${icon} ${cat}</div>
+            </div>`;
+    });
+}
+
+// ========================================
+// LEADERBOARD
+// ========================================
+async function showLeaderboard() {
+    showScreen('leaderboard');
+
+    // Show submit row if game just ended and not yet submitted
+    const submitRow = document.getElementById('lb-submit-row');
+    if (score > 0 && !scoreSubmitted) {
+        submitRow.style.display = 'flex';
+        const nameInput = document.getElementById('lb-name');
+        nameInput.value = lastSubmittedName;
+        nameInput.focus();
+    } else {
+        submitRow.style.display = 'none';
+    }
+
+    await renderLeaderboard();
+}
+
+async function renderLeaderboard() {
+    const data = await getLeaderboard();
+    const tbody = document.getElementById('lb-body');
+    tbody.innerHTML = '';
+
+    const status = document.getElementById('lb-status');
+    status.textContent = cloudReady ? 'GLOBAL LEADERBOARD' : 'LOCAL ONLY';
+
+    data.forEach((entry, i) => {
+        const tr = document.createElement('tr');
+        if (i === 0) tr.className = 'gold';
+        else if (i === 1) tr.className = 'silver';
+        else if (i === 2) tr.className = 'bronze';
+
+        const diffLabel = entry.difficulty ? entry.difficulty.charAt(0).toUpperCase() : '?';
+        const acc = entry.accuracy != null ? `${Math.round(entry.accuracy)}%` : '—';
+
+        tr.innerHTML = `
+            <td>${i + 1}</td>
+            <td>${entry.name}</td>
+            <td>${entry.score.toLocaleString()}</td>
+            <td>${acc}</td>
+            <td>${diffLabel}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">No scores yet. Be the first!</td></tr>';
+    }
+}
+
+async function getLeaderboard() {
+    if (cloudReady) {
+        try {
+            const { data, error } = await sbClient
+                .from(LB_TABLE)
+                .select('name, score, accuracy, difficulty, timestamp')
+                .order('score', { ascending: false })
+                .limit(20);
+            if (error) throw error;
+            return data || [];
+        } catch(e) {
+            console.warn('Cloud read failed:', e);
+            return getLocalLeaderboard();
+        }
+    }
+    return getLocalLeaderboard();
+}
+
+function getLocalLeaderboard() {
+    return JSON.parse(localStorage.getItem('barTriviaScores') || '[]');
+}
+
+function saveLocalScore(entry) {
+    const scores = JSON.parse(localStorage.getItem('barTriviaScores') || '[]');
+    scores.push(entry);
+    scores.sort((a, b) => b.score - a.score);
+    localStorage.setItem('barTriviaScores', JSON.stringify(scores.slice(0, 20)));
+}
+
+async function submitScoreFromInput() {
+    const nameInput = document.getElementById('lb-name');
+    const name = nameInput.value.trim();
+    if (!name) { nameInput.focus(); return; }
+
+    const cleanName = name.toUpperCase().substring(0, 8);
+    lastSubmittedName = cleanName;
+    localStorage.setItem('barTriviaName', cleanName);
+
+    const accuracy = currentQuestions.length > 0 ? Math.round((correctCount / currentQuestions.length) * 100) : 0;
+
+    const entry = {
+        name: cleanName,
+        score: score,
+        accuracy: accuracy,
+        difficulty: currentDifficulty,
+        timestamp: Date.now()
+    };
+
+    saveLocalScore(entry);
+
+    if (cloudReady) {
+        try {
+            const { error } = await sbClient.from(LB_TABLE).insert(entry);
+            if (error) throw error;
+            flushPending();
+        } catch(e) {
+            console.warn('Cloud write failed:', e);
+            const pending = JSON.parse(localStorage.getItem('barTriviaPending') || '[]');
+            pending.push(entry);
+            localStorage.setItem('barTriviaPending', JSON.stringify(pending));
+        }
+    } else {
+        const pending = JSON.parse(localStorage.getItem('barTriviaPending') || '[]');
+        pending.push(entry);
+        localStorage.setItem('barTriviaPending', JSON.stringify(pending));
+    }
+
+    scoreSubmitted = true;
+    document.getElementById('lb-submit-row').style.display = 'none';
+    await renderLeaderboard();
+}
+
+// Handle Enter key on name input
+document.getElementById('lb-name').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') submitScoreFromInput();
+});
+
+// Keyboard controls during questions
+document.addEventListener('keydown', function(e) {
+    if (document.getElementById('screen-question').classList.contains('active') && !answered) {
+        if (e.key === '1' || e.key === 'a' || e.key === 'A') answer(0);
+        else if (e.key === '2' || e.key === 'b' || e.key === 'B') answer(1);
+        else if (e.key === '3' || e.key === 'c' || e.key === 'C') answer(2);
+        else if (e.key === '4' || e.key === 'd' || e.key === 'D') answer(3);
+    }
+});
+</script>
+</body>
+</html>
