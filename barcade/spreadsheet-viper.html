@@ -77,7 +77,7 @@
 <div id="scanlines"></div>
 <div id="vignette"></div>
 <audio id="silentAudio" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
-<input type="text" id="mobileNameInput" maxlength="8" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" style="position:fixed;left:-9999px;top:0;opacity:0;width:1px;height:1px;border:none;font-size:16px;" />
+<input type="text" id="mobileNameInput" maxlength="8" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text" enterkeyhint="done" style="position:fixed;top:0;left:0;opacity:0.01;width:1px;height:1px;border:none;font-size:16px;pointer-events:none;z-index:-1;" />
 
 <div id="mobile-controls">
     <div class="dpad">
@@ -951,7 +951,10 @@ function focusMobileInput() {
     if (isTouchDevice) {
         const inp = document.getElementById('mobileNameInput');
         inp.value = playerName;
-        inp.focus();
+        setTimeout(() => {
+            inp.focus();
+            inp.setSelectionRange(inp.value.length, inp.value.length);
+        }, 50);
     }
 }
 function blurMobileInput() {
@@ -1709,13 +1712,13 @@ mobileNameInput.addEventListener('keydown', e => {
         submitScore();
     }
 });
+// Don't aggressively re-focus on blur — let iOS dismiss keyboard gracefully.
+// User can tap the canvas again to re-open keyboard.
 mobileNameInput.addEventListener('blur', () => {
-    if (state === STATE.GAMEOVER && isTouchDevice) {
-        setTimeout(() => { if (state === STATE.GAMEOVER && !scoreSubmitted) mobileNameInput.focus(); }, 100);
-    }
+    // no-op: rely on canvas tap to re-focus
 });
 
-// Canvas click handler for SUBMIT button
+// Canvas click handler for SUBMIT button and name input focus
 function canvasToGame(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     return {
@@ -1724,12 +1727,17 @@ function canvasToGame(clientX, clientY) {
     };
 }
 canvas.addEventListener('click', e => {
-    if (state === STATE.GAMEOVER && submitBtn && playerName.length > 0) {
-        const p = canvasToGame(e.clientX, e.clientY);
-        if (p.x >= submitBtn.x && p.x <= submitBtn.x + submitBtn.w &&
-            p.y >= submitBtn.y && p.y <= submitBtn.y + submitBtn.h) {
-            submitScore();
+    if (state === STATE.GAMEOVER) {
+        if (submitBtn && playerName.length > 0) {
+            const p = canvasToGame(e.clientX, e.clientY);
+            if (p.x >= submitBtn.x && p.x <= submitBtn.x + submitBtn.w &&
+                p.y >= submitBtn.y && p.y <= submitBtn.y + submitBtn.h) {
+                submitScore();
+                return;
+            }
         }
+        // Tap anywhere in gameover to focus the name input on mobile
+        if (isTouchDevice && !scoreSubmitted) focusMobileInput();
     }
 });
 

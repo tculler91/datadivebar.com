@@ -171,13 +171,15 @@
         }
         #mobileNameInput {
             position: fixed;
-            left: -9999px;
             top: 0;
-            opacity: 0;
+            left: 0;
+            opacity: 0.01;
             width: 1px;
             height: 1px;
             border: none;
             font-size: 16px; /* prevent iOS zoom */
+            pointer-events: none;
+            z-index: -1;
         }
         @media (max-width: 768px) {
             #mobileControls { display: flex; }
@@ -228,7 +230,7 @@
                 <button class="action-btn-sm" id="muteBtn">MUTE</button>
             </div>
         </div>
-        <input type="text" id="mobileNameInput" maxlength="8" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
+        <input type="text" id="mobileNameInput" maxlength="8" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text" enterkeyhint="done" />
     </div>
 
 <!-- Supabase SDK -->
@@ -594,19 +596,19 @@ mobileNameInput.addEventListener('keydown', e => {
         submitScore();
     }
 });
-// Prevent the hidden input from losing focus on mobile during GAMEOVER
+// Don't aggressively re-focus on blur — let iOS dismiss keyboard gracefully.
+// User can tap the canvas again to re-open keyboard.
 mobileNameInput.addEventListener('blur', () => {
-    if (state === STATE.GAMEOVER && isTouchDevice) {
-        setTimeout(() => {
-            if (state === STATE.GAMEOVER) mobileNameInput.focus();
-        }, 100);
-    }
+    // no-op: rely on canvas tap to re-focus
 });
 
 function focusMobileInput() {
     if (isTouchDevice) {
         mobileNameInput.value = playerName;
-        mobileNameInput.focus();
+        setTimeout(() => {
+            mobileNameInput.focus();
+            mobileNameInput.setSelectionRange(mobileNameInput.value.length, mobileNameInput.value.length);
+        }, 50);
     }
 }
 function blurMobileInput() {
