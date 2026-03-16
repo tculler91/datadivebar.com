@@ -77,7 +77,7 @@
 <div id="scanlines"></div>
 <div id="vignette"></div>
 <audio id="silentAudio" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
-<input type="text" id="mobileNameInput" maxlength="8" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text" enterkeyhint="done" style="position:fixed;top:0;left:0;opacity:0.01;width:1px;height:1px;border:none;font-size:16px;pointer-events:none;z-index:-1;" />
+<input type="text" id="mobileNameInput" maxlength="8" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text" enterkeyhint="done" style="position:fixed;top:0;left:0;opacity:0.01;width:1px;height:1px;border:none;font-size:16px;z-index:9999;" />
 
 <div id="mobile-controls">
     <div class="dpad">
@@ -615,7 +615,7 @@ document.querySelectorAll('.dpad-btn').forEach(btn => {
         sfx.init();
         const d = btn.dataset.dir;
         if (state === STATE.TITLE) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
-        if (state === STATE.GAMEOVER) { focusMobileInput(); return; }
+        if (state === STATE.GAMEOVER) { return; } // handled by touchend for iOS
         if (state === STATE.LEADERBOARD) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
         if (state !== STATE.PLAYING) return;
         const dirs = { up: {x:0,y:-1}, down: {x:0,y:1}, left: {x:-1,y:0}, right: {x:1,y:0} };
@@ -623,6 +623,10 @@ document.querySelectorAll('.dpad-btn').forEach(btn => {
     };
     btn.addEventListener('touchstart', handler, { passive: false });
     btn.addEventListener('mousedown', handler);
+    // iOS needs focus on touchend to show keyboard
+    btn.addEventListener('touchend', (e) => {
+        if (state === STATE.GAMEOVER && !scoreSubmitted) { focusMobileInput(); }
+    });
 });
 
 // Unlock audio on first touch anywhere
@@ -635,10 +639,14 @@ let touchStart = null;
 canvas.addEventListener('touchstart', e => {
     sfx.init();
     if (state === STATE.TITLE) { state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
-    if (state === STATE.GAMEOVER) { focusMobileInput(); return; }
+    if (state === STATE.GAMEOVER) { return; } // handled on touchend for iOS keyboard focus
     if (state === STATE.LEADERBOARD) { sfx.init(); state = STATE.PLAYING; initGame(); sfx.play('coin'); return; }
     touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 }, { passive: true });
+// Use touchend for gameover input focus — iOS only grants keyboard from touchend, not touchstart
+canvas.addEventListener('touchend', e => {
+    if (state === STATE.GAMEOVER && !scoreSubmitted) { focusMobileInput(); }
+});
 canvas.addEventListener('touchmove', e => {
     if (!touchStart || state !== STATE.PLAYING) return;
     const dx = e.touches[0].clientX - touchStart.x;
@@ -847,7 +855,8 @@ function die() {
     playerName = localStorage.getItem('spreadsheetViperName') || '';
     deathCount = (parseInt(localStorage.getItem('spreadsheetViperDeaths') || '0')) + 1;
     localStorage.setItem('spreadsheetViperDeaths', deathCount);
-    if (isTouchDevice) focusMobileInput();
+    // Sync input value but don't focus — iOS requires user gesture for keyboard
+    if (isTouchDevice) document.getElementById('mobileNameInput').value = playerName;
 }
 
 // --- POWER-UPS ---
@@ -951,10 +960,9 @@ function focusMobileInput() {
     if (isTouchDevice) {
         const inp = document.getElementById('mobileNameInput');
         inp.value = playerName;
-        setTimeout(() => {
-            inp.focus();
-            inp.setSelectionRange(inp.value.length, inp.value.length);
-        }, 50);
+        // Focus synchronously to preserve iOS user activation (keyboard won't show from setTimeout)
+        inp.focus();
+        inp.setSelectionRange(inp.value.length, inp.value.length);
     }
 }
 function blurMobileInput() {
