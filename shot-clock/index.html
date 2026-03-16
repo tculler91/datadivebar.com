@@ -547,25 +547,25 @@
                 <span class="category-line"></span>
             </div>
             <div class="stat-grid">
-                <div class="stat-card red" data-rate="0.0000047565" data-unit="" data-key="deer_deaths" data-decimals="4">
+                <div class="stat-card red" data-rate="0.0000047565" data-unit="" data-key="deer_deaths">
                     <div class="stat-label"><span class="emoji">🦌</span> Deer-vehicle deaths</div>
                     <div class="stat-value" id="deer_deaths">0</div>
                     <div class="stat-rate">~150 per year <em>· CDC WONDER + NHTSA FARS</em></div>
                     <div class="waiting">~1 every 2.4 days. Keep watching.</div>
                 </div>
-                <div class="stat-card red" data-rate="0.0000026630" data-unit="" data-key="bee_deaths" data-decimals="4">
+                <div class="stat-card red" data-rate="0.0000026630" data-unit="" data-key="bee_deaths">
                     <div class="stat-label"><span class="emoji">🐝</span> Bee/wasp sting deaths</div>
                     <div class="stat-value" id="bee_deaths">0</div>
                     <div class="stat-rate">~84 per year <em>· CDC WONDER</em></div>
                     <div class="waiting">~1 every 4.3 days. Still waiting.</div>
                 </div>
-                <div class="stat-card red" data-rate="0.0000006975" data-unit="" data-key="cow_deaths" data-decimals="5">
+                <div class="stat-card red" data-rate="0.0000006975" data-unit="" data-key="cow_deaths">
                     <div class="stat-label"><span class="emoji">🐄</span> Cow-related deaths</div>
                     <div class="stat-value" id="cow_deaths">0</div>
                     <div class="stat-rate">~22 per year <em>· CDC WONDER</em></div>
                     <div class="waiting">~1 every 16.6 days. Don't hold your breath.</div>
                 </div>
-                <div class="stat-card red" data-rate="0.0000001585" data-unit="" data-key="shark_deaths" data-decimals="6">
+                <div class="stat-card red" data-rate="0.0000001585" data-unit="" data-key="shark_deaths">
                     <div class="stat-label"><span class="emoji">🦈</span> Shark attack deaths</div>
                     <div class="stat-value" id="shark_deaths">0</div>
                     <div class="stat-rate">~5 per year <em>· ISAF, Florida Museum</em></div>
@@ -700,7 +700,7 @@
                 const formatted = formatNumber(value, decimals, unit);
 
                 // Detect tick for slow counters
-                if (decimals != null && decimals >= 4) {
+                if (rate < 0.001) {
                     const prev = prevValues[key] || 0;
                     const wholePrev = Math.floor(prev);
                     const wholeCurr = Math.floor(value);
