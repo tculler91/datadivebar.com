@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Visualizer | The Green Room | Data Dive Bar</title>
+    <meta name="description" content="Windows XP Media Player vibes. Upload your music. Watch it melt.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Bowlby+One&family=Tahoma&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --chrome-dark: #1a1a2e;
+            --chrome-mid: #16213e;
+            --chrome-light: #0f3460;
+            --chrome-highlight: #533483;
+            --wmp-blue: #4a90ff;
+            --wmp-green: #39ff14;
+            --neon-orange: #FF6B0A;
+            --neon-pink: #ff2d7b;
+            --neon-purple: #b44aff;
+            --neon-amber: #FF8C2A;
+            --text-dim: #6b7b9e;
+            --text-light: #c8d4e8;
+            --viz-bg: #000008;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+
+        body {
+            background: var(--chrome-dark);
+            color: var(--text-light);
+            font-family: 'IBM Plex Mono', 'Tahoma', monospace;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== WMP CHROME - Title Bar ===== */
+        .title-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 12px;
+            background: linear-gradient(180deg, #2a2a4a 0%, #1a1a2e 40%, #16213e 100%);
+            border-bottom: 1px solid rgba(74, 144, 255, 0.15);
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .title-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wmp-icon {
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, var(--wmp-blue), var(--neon-purple));
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .title-text {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            letter-spacing: 0.5px;
+        }
+
+        .title-text .app-name { color: var(--wmp-blue); }
+
+        .window-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .window-btns a {
+            text-decoration: none;
+        }
+
+        .win-btn {
+            width: 22px;
+            height: 22px;
+            border: 1px solid rgba(74, 144, 255, 0.2);
+            background: rgba(74, 144, 255, 0.05);
+            color: var(--text-dim);
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 2px;
+        }
+
+        .win-btn:hover {
+            background: rgba(74, 144, 255, 0.15);
+            color: var(--wmp-blue);
+            border-color: var(--wmp-blue);
+        }
+
+        /* ===== MENU BAR ===== */
+        .menu-bar {
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            background: linear-gradient(180deg, #1e1e3a 0%, #161630 100%);
+            border-bottom: 1px solid rgba(74, 144, 255, 0.08);
+            flex-shrink: 0;
+            gap: 2px;
+            flex-wrap: wrap;
+        }
+
+        .menu-item {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .menu-item:hover {
+            color: var(--wmp-blue);
+            background: rgba(74, 144, 255, 0.08);
+        }
+
+        .menu-item.active {
+            color: var(--wmp-blue);
+            border-bottom: 1px solid var(--wmp-blue);
+        }
+
+        .menu-spacer { flex: 1; }
+
+        .viz-selector {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .viz-selector label {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .viz-select {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--wmp-blue);
+            border: 1px solid rgba(74, 144, 255, 0.2);
+            padding: 4px 8px;
+            cursor: pointer;
+            outline: none;
+            border-radius: 2px;
+        }
+
+        .viz-select option {
+            background: #1a1a2e;
+            color: var(--text-light);
+        }
+
+        .viz-nav-btn {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-dim);
+            border: 1px solid rgba(74, 144, 255, 0.15);
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 2px;
+        }
+
+        .viz-nav-btn:hover {
+            color: var(--wmp-blue);
+            border-color: var(--wmp-blue);
+        }
+
+        /* ===== VISUALIZATION AREA ===== */
+        .viz-container {
+            flex: 1;
+            position: relative;
+            background: var(--viz-bg);
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        #vizCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Drop zone overlay */
+        .drop-zone {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 8, 0.92);
+            z-index: 10;
+            transition: opacity 0.4s;
+        }
+
+        .drop-zone.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(74, 144, 255, 0.08);
+        }
+
+        .drop-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+
+        .drop-title {
+            font-family: 'Bowlby One', sans-serif;
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            color: var(--wmp-blue);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .drop-sub {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+            text-align: center;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        .upload-btn {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 10px 28px;
+            background: rgba(74, 144, 255, 0.1);
+            border: 1px solid rgba(74, 144, 255, 0.3);
+            color: var(--wmp-blue);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-btn:hover {
+            background: rgba(74, 144, 255, 0.2);
+            box-shadow: 0 0 20px rgba(74, 144, 255, 0.2);
+        }
+
+        #fileInput { display: none; }
+
+        /* Viz mode label overlay */
+        .viz-label {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 0.55rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(74, 144, 255, 0.4);
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 0.5s;
+        }
+
+        /* Fullscreen button */
+        .fullscreen-btn {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(74, 144, 255, 0.2);
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            transition: all 0.2s;
+            border-radius: 2px;
+        }
+
+        .fullscreen-btn:hover {
+            color: var(--wmp-blue);
+            border-color: var(--wmp-blue);
+        }
+
+        /* ===== TRANSPORT / NOW PLAYING BAR ===== */
+        .transport-bar {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: linear-gradient(180deg, #1e1e3a 0%, #12122a 100%);
+            border-top: 1px solid rgba(74, 144, 255, 0.1);
+            gap: 12px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .transport-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .ctrl-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(74, 144, 255, 0.15);
+            background: rgba(74, 144, 255, 0.04);
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 2px;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(74, 144, 255, 0.12);
+            color: var(--wmp-blue);
+            border-color: rgba(74, 144, 255, 0.3);
+        }
+
+        .ctrl-btn.play-main {
+            width: 38px;
+            height: 38px;
+            font-size: 0.9rem;
+            border-color: rgba(74, 144, 255, 0.25);
+        }
+
+        .ctrl-btn.play-main.playing {
+            color: var(--wmp-green);
+            border-color: rgba(57, 255, 20, 0.3);
+            background: rgba(57, 255, 20, 0.06);
+        }
+
+        .ctrl-btn.stop-btn.active {
+            color: var(--neon-orange);
+            border-color: rgba(255, 107, 10, 0.3);
+        }
+
+        /* Progress / seek */
+        .seek-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 100px;
+        }
+
+        .seek-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            cursor: pointer;
+            position: relative;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .seek-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--wmp-blue), var(--neon-purple));
+            transition: width 0.1s linear;
+            border-radius: 3px;
+        }
+
+        .seek-times {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.55rem;
+            color: var(--text-dim);
+        }
+
+        /* Track info */
+        .track-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 120px;
+            flex-shrink: 0;
+        }
+
+        .track-title-display {
+            font-size: 0.75rem;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }
+
+        .track-meta {
+            font-size: 0.55rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        /* Volume */
+        .volume-area {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .vol-icon {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .vol-icon:hover { color: var(--wmp-blue); }
+
+        .vol-slider {
+            width: 70px;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.08);
+            outline: none;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+
+        .vol-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--wmp-blue);
+            border: none;
+        }
+
+        .vol-slider::-moz-range-thumb {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--wmp-blue);
+            border: none;
+        }
+
+        /* ===== STATUS BAR ===== */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 12px;
+            background: #0e0e22;
+            border-top: 1px solid rgba(74, 144, 255, 0.06);
+            font-size: 0.55rem;
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+
+        .status-bar a {
+            color: var(--neon-amber);
+            text-decoration: none;
+        }
+
+        .status-bar a:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 600px) {
+            .menu-bar { padding: 4px; }
+            .menu-item { padding: 4px 6px; font-size: 0.6rem; }
+            .transport-bar { padding: 6px 8px; gap: 8px; }
+            .track-info { display: none; }
+            .volume-area { display: none; }
+            .ctrl-btn { width: 28px; height: 28px; }
+            .ctrl-btn.play-main { width: 34px; height: 34px; }
+        }
+
+        /* ===== PLAYLIST PANEL ===== */
+        .playlist-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100%;
+            background: rgba(10, 10, 30, 0.95);
+            border-left: 1px solid rgba(74, 144, 255, 0.12);
+            z-index: 8;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .playlist-panel.open {
+            transform: translateX(0);
+        }
+
+        .playlist-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(74, 144, 255, 0.1);
+        }
+
+        .playlist-header span {
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--wmp-blue);
+        }
+
+        .playlist-close {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+        }
+
+        .playlist-close:hover { color: var(--wmp-blue); }
+
+        .playlist-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+
+        .playlist-item:hover {
+            background: rgba(74, 144, 255, 0.06);
+        }
+
+        .playlist-item.active {
+            background: rgba(74, 144, 255, 0.1);
+            color: var(--wmp-blue);
+        }
+
+        .playlist-item .pl-num {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            width: 20px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .playlist-item .pl-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .playlist-add-btn {
+            margin: 8px 12px;
+            padding: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: rgba(74, 144, 255, 0.06);
+            border: 1px dashed rgba(74, 144, 255, 0.2);
+            color: var(--text-dim);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .playlist-add-btn:hover {
+            color: var(--wmp-blue);
+            border-color: var(--wmp-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- TITLE BAR -->
+    <div class="title-bar">
+        <div class="title-bar-left">
+            <div class="wmp-icon">&#9835;</div>
+            <span class="title-text"><span class="app-name">Dive Bar Media Player</span> &mdash; The Green Room Visualizer</span>
+        </div>
+        <div class="window-btns">
+            <a href="/music/"><div class="win-btn" title="Back to Green Room">&larr;</div></a>
+            <div class="win-btn" id="minimizeBtn" title="Minimize (toggle UI)">&#8722;</div>
+            <div class="win-btn" id="maximizeBtn" title="Fullscreen">&#9633;</div>
+        </div>
+    </div>
+
+    <!-- MENU BAR -->
+    <div class="menu-bar" id="menuBar">
+        <div class="menu-item active" id="btnNowPlaying">Now Playing</div>
+        <div class="menu-item" id="btnPlaylist">Playlist</div>
+        <div class="menu-spacer"></div>
+        <div class="viz-selector">
+            <label>Viz:</label>
+            <button class="viz-nav-btn" id="vizPrev" title="Previous visualization">&lsaquo;</button>
+            <select class="viz-select" id="vizSelect">
+                <option value="bars">Bars &amp; Waves</option>
+                <option value="scope">Oscilloscope</option>
+                <option value="ambience">Ambience</option>
+                <option value="alchemy">Alchemy</option>
+                <option value="geiss">Geiss Tunnel</option>
+                <option value="milkdrop">Milkdrop</option>
+            </select>
+            <button class="viz-nav-btn" id="vizNext" title="Next visualization">&rsaquo;</button>
+        </div>
+    </div>
+
+    <!-- VISUALIZATION AREA -->
+    <div class="viz-container" id="vizContainer">
+        <canvas id="vizCanvas"></canvas>
+
+        <!-- Drop zone / upload prompt -->
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-icon">&#9835;</div>
+            <div class="drop-title">DROP YOUR TRACKS</div>
+            <div class="drop-sub">
+                Drag &amp; drop audio files here, or click below to upload.<br>
+                WAV, MP3, OGG, FLAC &mdash; whatever you got.
+            </div>
+            <button class="upload-btn" id="uploadBtn">Choose Files</button>
+            <input type="file" id="fileInput" accept="audio/*" multiple>
+        </div>
+
+        <div class="viz-label" id="vizLabel">BARS &amp; WAVES</div>
+
+        <button class="fullscreen-btn" id="fullscreenBtn" title="Fullscreen visualization">&#x26F6;</button>
+
+        <!-- Playlist panel -->
+        <div class="playlist-panel" id="playlistPanel">
+            <div class="playlist-header">
+                <span>Playlist</span>
+                <button class="playlist-close" id="playlistClose">&times;</button>
+            </div>
+            <div class="playlist-items" id="playlistItems"></div>
+            <button class="playlist-add-btn" id="playlistAddBtn">+ Add Files</button>
+            <input type="file" id="playlistFileInput" accept="audio/*" multiple style="display:none;">
+        </div>
+    </div>
+
+    <!-- TRANSPORT BAR -->
+    <div class="transport-bar" id="transportBar">
+        <div class="transport-controls">
+            <button class="ctrl-btn" id="prevBtn" title="Previous">&#9664;&#9664;</button>
+            <button class="ctrl-btn" id="stopBtn" title="Stop">&#9632;</button>
+            <button class="ctrl-btn play-main" id="playPauseBtn" title="Play / Pause">&#9654;</button>
+            <button class="ctrl-btn" id="nextBtn" title="Next">&#9654;&#9654;</button>
+        </div>
+
+        <div class="seek-area">
+            <div class="seek-bar" id="seekBar">
+                <div class="seek-fill" id="seekFill"></div>
+            </div>
+            <div class="seek-times">
+                <span id="elapsedTime">0:00</span>
+                <span id="durationTime">--:--</span>
+            </div>
+        </div>
+
+        <div class="track-info">
+            <div class="track-title-display" id="trackTitleDisplay">No track loaded</div>
+            <div class="track-meta" id="trackMeta">Drop a file to begin</div>
+        </div>
+
+        <div class="volume-area">
+            <span class="vol-icon" id="volIcon">&#128264;</span>
+            <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.02" value="0.75">
+        </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar" id="statusBar">
+        <span id="statusText">Ready</span>
+        <span><a href="/music/">The Green Room</a> &middot; <a href="/">Data Dive Bar</a></span>
+    </div>
+
+    <audio id="audioEl" preload="auto"></audio>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ===== DOM REFS =====
+        const audioEl = document.getElementById('audioEl');
+        const canvas = document.getElementById('vizCanvas');
+        const ctx = canvas.getContext('2d');
+        const vizContainer = document.getElementById('vizContainer');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const vizSelect = document.getElementById('vizSelect');
+        const vizLabel = document.getElementById('vizLabel');
+        const vizPrev = document.getElementById('vizPrev');
+        const vizNext = document.getElementById('vizNext');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const seekBar = document.getElementById('seekBar');
+        const seekFill = document.getElementById('seekFill');
+        const elapsedTime = document.getElementById('elapsedTime');
+        const durationTime = document.getElementById('durationTime');
+        const trackTitleDisplay = document.getElementById('trackTitleDisplay');
+        const trackMeta = document.getElementById('trackMeta');
+        const volSlider = document.getElementById('volSlider');
+        const volIcon = document.getElementById('volIcon');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const minimizeBtn = document.getElementById('minimizeBtn');
+        const maximizeBtn = document.getElementById('maximizeBtn');
+        const statusText = document.getElementById('statusText');
+        const btnPlaylist = document.getElementById('btnPlaylist');
+        const playlistPanel = document.getElementById('playlistPanel');
+        const playlistClose = document.getElementById('playlistClose');
+        const playlistItems = document.getElementById('playlistItems');
+        const playlistAddBtn = document.getElementById('playlistAddBtn');
+        const playlistFileInput = document.getElementById('playlistFileInput');
+        const menuBar = document.getElementById('menuBar');
+        const transportBar = document.getElementById('transportBar');
+        const statusBar = document.getElementById('statusBar');
+        const titleBar = document.querySelector('.title-bar');
+
+        // ===== STATE =====
+        let playlist = [];
+        let currentTrackIndex = -1;
+        let isPlaying = false;
+        let audioCtx = null;
+        let analyser = null;
+        let sourceNode = null;
+        let gainNode = null;
+        let frequencyData = null;
+        let timeDomainData = null;
+        let animFrameId = null;
+        let currentViz = 'bars';
+        let uiMinimized = false;
+
+        // Alchemy state
+        let alchemyParticles = [];
+
+        // Geiss state
+        let geissAngle = 0;
+
+        // Milkdrop state
+        let milkdropTime = 0;
+        let milkdropPreset = 0;
+
+        // ===== AUDIO CONTEXT SETUP =====
+        function initAudioContext() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 2048;
+            analyser.smoothingTimeConstant = 0.82;
+            gainNode = audioCtx.createGain();
+            gainNode.gain.value = parseFloat(volSlider.value);
+
+            sourceNode = audioCtx.createMediaElementSource(audioEl);
+            sourceNode.connect(analyser);
+            analyser.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            frequencyData = new Uint8Array(analyser.frequencyBinCount);
+            timeDomainData = new Uint8Array(analyser.frequencyBinCount);
+        }
+
+        // ===== CANVAS RESIZE =====
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = vizContainer.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // ===== FILE HANDLING =====
+        function handleFiles(files) {
+            const audioFiles = Array.from(files).filter(f => f.type.startsWith('audio/') || /\.(wav|mp3|ogg|flac|m4a|aac|webm)$/i.test(f.name));
+            if (audioFiles.length === 0) return;
+
+            const startIndex = playlist.length;
+            audioFiles.forEach(f => {
+                playlist.push({
+                    name: f.name.replace(/\.[^/.]+$/, ''),
+                    file: f,
+                    url: URL.createObjectURL(f)
+                });
+            });
+
+            updatePlaylistUI();
+            statusText.textContent = audioFiles.length + ' file(s) added';
+
+            if (currentTrackIndex === -1) {
+                loadTrack(startIndex);
+                playTrack();
+            }
+        }
+
+        function loadTrack(index) {
+            if (index < 0 || index >= playlist.length) return;
+            currentTrackIndex = index;
+            const track = playlist[index];
+
+            audioEl.src = track.url;
+            audioEl.load();
+
+            trackTitleDisplay.textContent = track.name;
+            trackMeta.textContent = 'Track ' + (index + 1) + ' of ' + playlist.length;
+            statusText.textContent = 'Loaded: ' + track.name;
+
+            dropZone.classList.add('hidden');
+            updatePlaylistUI();
+        }
+
+        function playTrack() {
+            initAudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            audioEl.play();
+            isPlaying = true;
+            playPauseBtn.innerHTML = '&#9646;&#9646;';
+            playPauseBtn.classList.add('playing');
+            stopBtn.classList.remove('active');
+            startVisualization();
+        }
+
+        function pauseTrack() {
+            audioEl.pause();
+            isPlaying = false;
+            playPauseBtn.innerHTML = '&#9654;';
+            playPauseBtn.classList.remove('playing');
+        }
+
+        function stopTrack() {
+            audioEl.pause();
+            audioEl.currentTime = 0;
+            isPlaying = false;
+            playPauseBtn.innerHTML = '&#9654;';
+            playPauseBtn.classList.remove('playing');
+            stopBtn.classList.add('active');
+            seekFill.style.width = '0%';
+            setTimeout(() => stopBtn.classList.remove('active'), 300);
+        }
+
+        function nextTrack() {
+            if (playlist.length === 0) return;
+            const next = (currentTrackIndex + 1) % playlist.length;
+            loadTrack(next);
+            if (isPlaying) playTrack();
+        }
+
+        function prevTrack() {
+            if (playlist.length === 0) return;
+            if (audioEl.currentTime > 3) {
+                audioEl.currentTime = 0;
+                return;
+            }
+            const prev = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+            loadTrack(prev);
+            if (isPlaying) playTrack();
+        }
+
+        // ===== PLAYLIST UI =====
+        function updatePlaylistUI() {
+            playlistItems.innerHTML = '';
+            playlist.forEach((track, i) => {
+                const el = document.createElement('div');
+                el.className = 'playlist-item' + (i === currentTrackIndex ? ' active' : '');
+                el.innerHTML = '<span class="pl-num">' + (i + 1) + '</span><span class="pl-name">' + track.name + '</span>';
+                el.addEventListener('click', () => {
+                    loadTrack(i);
+                    playTrack();
+                });
+                playlistItems.appendChild(el);
+            });
+        }
+
+        // ===== EVENT LISTENERS =====
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', e => handleFiles(e.target.files));
+        playlistAddBtn.addEventListener('click', () => playlistFileInput.click());
+        playlistFileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+        // Drag and drop
+        vizContainer.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+            if (dropZone.classList.contains('hidden')) {
+                dropZone.classList.remove('hidden');
+            }
+        });
+        vizContainer.addEventListener('dragleave', e => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (playlist.length > 0) dropZone.classList.add('hidden');
+        });
+        vizContainer.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // Transport
+        playPauseBtn.addEventListener('click', () => {
+            if (playlist.length === 0) { fileInput.click(); return; }
+            if (isPlaying) pauseTrack(); else playTrack();
+        });
+        stopBtn.addEventListener('click', stopTrack);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        // Seek
+        seekBar.addEventListener('click', e => {
+            if (!audioEl.duration) return;
+            const rect = seekBar.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            audioEl.currentTime = pct * audioEl.duration;
+        });
+
+        // Time update
+        audioEl.addEventListener('timeupdate', () => {
+            if (!audioEl.duration) return;
+            const pct = (audioEl.currentTime / audioEl.duration) * 100;
+            seekFill.style.width = pct + '%';
+            elapsedTime.textContent = formatTime(audioEl.currentTime);
+        });
+
+        audioEl.addEventListener('loadedmetadata', () => {
+            durationTime.textContent = formatTime(audioEl.duration);
+        });
+
+        audioEl.addEventListener('ended', nextTrack);
+
+        // Volume
+        volSlider.addEventListener('input', () => {
+            const v = parseFloat(volSlider.value);
+            if (gainNode) gainNode.gain.value = v;
+            volIcon.innerHTML = v === 0 ? '&#128263;' : v < 0.4 ? '&#128264;' : '&#128266;';
+        });
+
+        volIcon.addEventListener('click', () => {
+            if (parseFloat(volSlider.value) > 0) {
+                volSlider.dataset.prev = volSlider.value;
+                volSlider.value = 0;
+                if (gainNode) gainNode.gain.value = 0;
+                volIcon.innerHTML = '&#128263;';
+            } else {
+                const prev = volSlider.dataset.prev || 0.75;
+                volSlider.value = prev;
+                if (gainNode) gainNode.gain.value = parseFloat(prev);
+                volIcon.innerHTML = '&#128266;';
+            }
+        });
+
+        // Viz selector
+        vizSelect.addEventListener('change', () => {
+            currentViz = vizSelect.value;
+            vizLabel.textContent = vizSelect.options[vizSelect.selectedIndex].text.toUpperCase();
+            alchemyParticles = [];
+            milkdropPreset = 0;
+        });
+
+        vizPrev.addEventListener('click', () => {
+            vizSelect.selectedIndex = (vizSelect.selectedIndex - 1 + vizSelect.options.length) % vizSelect.options.length;
+            vizSelect.dispatchEvent(new Event('change'));
+        });
+
+        vizNext.addEventListener('click', () => {
+            vizSelect.selectedIndex = (vizSelect.selectedIndex + 1) % vizSelect.options.length;
+            vizSelect.dispatchEvent(new Event('change'));
+        });
+
+        // Playlist toggle
+        btnPlaylist.addEventListener('click', () => {
+            playlistPanel.classList.toggle('open');
+        });
+        playlistClose.addEventListener('click', () => {
+            playlistPanel.classList.remove('open');
+        });
+
+        // Fullscreen
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        maximizeBtn.addEventListener('click', toggleFullscreen);
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Minimize UI
+        minimizeBtn.addEventListener('click', () => {
+            uiMinimized = !uiMinimized;
+            menuBar.style.display = uiMinimized ? 'none' : '';
+            transportBar.style.display = uiMinimized ? 'none' : '';
+            statusBar.style.display = uiMinimized ? 'none' : '';
+            titleBar.style.display = uiMinimized ? 'none' : '';
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space') { e.preventDefault(); playPauseBtn.click(); }
+            if (e.code === 'ArrowRight' && e.ctrlKey) nextTrack();
+            if (e.code === 'ArrowLeft' && e.ctrlKey) prevTrack();
+            if (e.code === 'KeyF') toggleFullscreen();
+            if (e.code === 'KeyV') vizNext.click();
+            if (e.code === 'Escape' && uiMinimized) minimizeBtn.click();
+        });
+
+        // ===== HELPERS =====
+        function formatTime(s) {
+            if (isNaN(s)) return '--:--';
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return m + ':' + (sec < 10 ? '0' : '') + sec;
+        }
+
+        // ===== VISUALIZATION ENGINE =====
+        function startVisualization() {
+            if (animFrameId) return;
+            animate();
+        }
+
+        function animate() {
+            animFrameId = requestAnimationFrame(animate);
+            if (!analyser) return;
+
+            analyser.getByteFrequencyData(frequencyData);
+            analyser.getByteTimeDomainData(timeDomainData);
+
+            const w = vizContainer.clientWidth;
+            const h = vizContainer.clientHeight;
+
+            ctx.clearRect(0, 0, w, h);
+
+            switch (currentViz) {
+                case 'bars': drawBars(w, h); break;
+                case 'scope': drawScope(w, h); break;
+                case 'ambience': drawAmbience(w, h); break;
+                case 'alchemy': drawAlchemy(w, h); break;
+                case 'geiss': drawGeiss(w, h); break;
+                case 'milkdrop': drawMilkdrop(w, h); break;
+            }
+        }
+
+        // Start animation even without audio for idle visuals
+        function startIdleAnimation() {
+            if (animFrameId) return;
+            animateIdle();
+        }
+
+        function animateIdle() {
+            animFrameId = requestAnimationFrame(animateIdle);
+            const w = vizContainer.clientWidth;
+            const h = vizContainer.clientHeight;
+            ctx.clearRect(0, 0, w, h);
+
+            // Subtle idle animation
+            const t = Date.now() / 1000;
+            ctx.save();
+            ctx.globalAlpha = 0.15;
+            for (let i = 0; i < 5; i++) {
+                const x = w / 2 + Math.sin(t * 0.5 + i) * w * 0.3;
+                const y = h / 2 + Math.cos(t * 0.3 + i * 1.5) * h * 0.2;
+                const r = 60 + Math.sin(t + i) * 30;
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                grad.addColorStop(0, 'rgba(74, 144, 255, 0.4)');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        // ===== VIZ: BARS & WAVES (Classic WMP) =====
+        function drawBars(w, h) {
+            const barCount = 64;
+            const step = Math.floor(frequencyData.length / barCount);
+            const barWidth = (w / barCount) - 2;
+            const centerY = h;
+
+            // Reflection
+            ctx.save();
+            for (let i = 0; i < barCount; i++) {
+                let sum = 0;
+                for (let j = 0; j < step; j++) {
+                    sum += frequencyData[i * step + j];
+                }
+                const val = sum / step;
+                const barH = (val / 255) * h * 0.85;
+
+                const x = i * (barWidth + 2);
+                const hue = 200 + (i / barCount) * 160;
+
+                // Main bar
+                const grad = ctx.createLinearGradient(x, centerY, x, centerY - barH);
+                grad.addColorStop(0, 'hsl(' + hue + ', 100%, 30%)');
+                grad.addColorStop(0.5, 'hsl(' + hue + ', 100%, 55%)');
+                grad.addColorStop(1, 'hsl(' + hue + ', 100%, 70%)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(x, centerY - barH, barWidth, barH);
+
+                // Peak line
+                ctx.fillStyle = 'hsl(' + hue + ', 100%, 85%)';
+                ctx.fillRect(x, centerY - barH - 3, barWidth, 2);
+
+                // Reflection
+                ctx.globalAlpha = 0.15;
+                ctx.fillStyle = grad;
+                ctx.fillRect(x, centerY, barWidth, barH * 0.3);
+                ctx.globalAlpha = 1;
+            }
+            ctx.restore();
+
+            // Waveform overlay
+            ctx.save();
+            ctx.globalAlpha = 0.4;
+            ctx.strokeStyle = '#4a90ff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            const sliceWidth = w / timeDomainData.length;
+            let x = 0;
+            for (let i = 0; i < timeDomainData.length; i++) {
+                const v = timeDomainData[i] / 128.0;
+                const y = (v * h) / 2;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // ===== VIZ: OSCILLOSCOPE =====
+        function drawScope(w, h) {
+            const centerY = h / 2;
+
+            // Grid lines
+            ctx.save();
+            ctx.strokeStyle = 'rgba(74, 144, 255, 0.08)';
+            ctx.lineWidth = 1;
+            for (let y = 0; y < h; y += h / 8) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+            for (let x = 0; x < w; x += w / 12) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Center line
+            ctx.strokeStyle = 'rgba(74, 144, 255, 0.15)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(w, centerY);
+            ctx.stroke();
+
+            // Glow layer
+            ctx.save();
+            ctx.shadowColor = '#39ff14';
+            ctx.shadowBlur = 15;
+            ctx.strokeStyle = '#39ff14';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const sliceWidth = w / timeDomainData.length;
+            let x = 0;
+            for (let i = 0; i < timeDomainData.length; i++) {
+                const v = (timeDomainData[i] - 128) / 128;
+                const y = centerY + v * centerY * 0.9;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            ctx.stroke();
+            ctx.restore();
+
+            // Sharp layer
+            ctx.strokeStyle = 'rgba(57, 255, 20, 0.8)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            x = 0;
+            for (let i = 0; i < timeDomainData.length; i++) {
+                const v = (timeDomainData[i] - 128) / 128;
+                const y = centerY + v * centerY * 0.9;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            ctx.stroke();
+
+            // Phosphor persistence (secondary trace)
+            ctx.save();
+            ctx.globalAlpha = 0.12;
+            ctx.strokeStyle = '#39ff14';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            x = 0;
+            for (let i = 0; i < timeDomainData.length; i++) {
+                const v = (timeDomainData[i] - 128) / 128;
+                const y = centerY + v * centerY * 0.9;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // ===== VIZ: AMBIENCE (flowing blobs) =====
+        function drawAmbience(w, h) {
+            const t = Date.now() / 1000;
+
+            // Get overall energy
+            let bassEnergy = 0, midEnergy = 0, highEnergy = 0;
+            const third = Math.floor(frequencyData.length / 3);
+            for (let i = 0; i < third; i++) bassEnergy += frequencyData[i];
+            for (let i = third; i < third * 2; i++) midEnergy += frequencyData[i];
+            for (let i = third * 2; i < frequencyData.length; i++) highEnergy += frequencyData[i];
+            bassEnergy = bassEnergy / third / 255;
+            midEnergy = midEnergy / third / 255;
+            highEnergy = highEnergy / third / 255;
+
+            // Fade background
+            ctx.fillStyle = 'rgba(0, 0, 8, 0.08)';
+            ctx.fillRect(0, 0, w, h);
+
+            // Flowing gradient blobs
+            const blobs = [
+                { cx: 0.3, cy: 0.4, r: 0.35, hue: 240, energy: bassEnergy, speed: 0.7 },
+                { cx: 0.7, cy: 0.6, r: 0.3, hue: 300, energy: midEnergy, speed: 1.1 },
+                { cx: 0.5, cy: 0.3, r: 0.25, hue: 180, energy: highEnergy, speed: 0.9 },
+                { cx: 0.2, cy: 0.7, r: 0.2, hue: 340, energy: (bassEnergy + midEnergy) / 2, speed: 1.3 },
+                { cx: 0.8, cy: 0.3, r: 0.22, hue: 220, energy: (midEnergy + highEnergy) / 2, speed: 0.8 },
+            ];
+
+            blobs.forEach((b, i) => {
+                const x = w * (b.cx + Math.sin(t * b.speed + i * 2) * 0.15);
+                const y = h * (b.cy + Math.cos(t * b.speed * 0.7 + i * 1.5) * 0.15);
+                const r = (w * b.r * 0.5) + b.energy * w * 0.2;
+
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                const alpha = 0.15 + b.energy * 0.4;
+                grad.addColorStop(0, 'hsla(' + b.hue + ', 100%, 60%, ' + alpha + ')');
+                grad.addColorStop(0.5, 'hsla(' + b.hue + ', 80%, 40%, ' + (alpha * 0.5) + ')');
+                grad.addColorStop(1, 'transparent');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Central pulse
+            const pulse = bassEnergy * 0.5 + 0.1;
+            const pGrad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * pulse);
+            pGrad.addColorStop(0, 'rgba(180, 74, 255, ' + (bassEnergy * 0.3) + ')');
+            pGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = pGrad;
+            ctx.fillRect(0, 0, w, h);
+        }
+
+        // ===== VIZ: ALCHEMY (particles) =====
+        function drawAlchemy(w, h) {
+            const t = Date.now() / 1000;
+
+            // Get bass energy for particle spawning
+            let energy = 0;
+            for (let i = 0; i < 32; i++) energy += frequencyData[i];
+            energy = energy / 32 / 255;
+
+            // Spawn particles
+            const spawnCount = Math.floor(energy * 8) + 1;
+            for (let i = 0; i < spawnCount; i++) {
+                if (alchemyParticles.length < 500) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1 + energy * 4 + Math.random() * 2;
+                    const hue = (t * 30 + Math.random() * 60) % 360;
+                    alchemyParticles.push({
+                        x: w / 2,
+                        y: h / 2,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        life: 1,
+                        decay: 0.005 + Math.random() * 0.015,
+                        size: 2 + energy * 4 + Math.random() * 3,
+                        hue: hue,
+                    });
+                }
+            }
+
+            // Fade
+            ctx.fillStyle = 'rgba(0, 0, 8, 0.12)';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw & update particles
+            alchemyParticles = alchemyParticles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.02; // slight gravity
+                p.life -= p.decay;
+                if (p.life <= 0) return false;
+
+                ctx.save();
+                ctx.globalAlpha = p.life * 0.8;
+                ctx.shadowColor = 'hsl(' + p.hue + ', 100%, 60%)';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = 'hsl(' + p.hue + ', 100%, 65%)';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                return true;
+            });
+
+            // Central orb
+            const orbSize = 20 + energy * 60;
+            const orbGrad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, orbSize);
+            const orbHue = (t * 40) % 360;
+            orbGrad.addColorStop(0, 'hsla(' + orbHue + ', 100%, 80%, 0.6)');
+            orbGrad.addColorStop(0.5, 'hsla(' + orbHue + ', 100%, 50%, 0.2)');
+            orbGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = orbGrad;
+            ctx.beginPath();
+            ctx.arc(w / 2, h / 2, orbSize, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Connecting lines between nearby particles
+            ctx.save();
+            ctx.globalAlpha = 0.08;
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < alchemyParticles.length; i += 3) {
+                for (let j = i + 3; j < alchemyParticles.length; j += 3) {
+                    const dx = alchemyParticles[i].x - alchemyParticles[j].x;
+                    const dy = alchemyParticles[i].y - alchemyParticles[j].y;
+                    const dist = dx * dx + dy * dy;
+                    if (dist < 10000) {
+                        ctx.beginPath();
+                        ctx.moveTo(alchemyParticles[i].x, alchemyParticles[i].y);
+                        ctx.lineTo(alchemyParticles[j].x, alchemyParticles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            ctx.restore();
+        }
+
+        // ===== VIZ: GEISS TUNNEL =====
+        function drawGeiss(w, h) {
+            const t = Date.now() / 1000;
+
+            let energy = 0;
+            for (let i = 0; i < 64; i++) energy += frequencyData[i];
+            energy = energy / 64 / 255;
+
+            geissAngle += 0.005 + energy * 0.03;
+
+            // Fade with slight persistence
+            ctx.fillStyle = 'rgba(0, 0, 8, 0.06)';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.save();
+            ctx.translate(w / 2, h / 2);
+
+            const rings = 30;
+            for (let r = 0; r < rings; r++) {
+                const progress = r / rings;
+                const radius = 20 + progress * Math.max(w, h) * 0.6;
+                const segments = 48;
+                const hue = (progress * 200 + t * 60) % 360;
+                const freqIdx = Math.floor(progress * frequencyData.length * 0.5);
+                const freqVal = frequencyData[freqIdx] / 255;
+
+                ctx.save();
+                ctx.rotate(geissAngle * (1 - progress * 0.5));
+
+                ctx.strokeStyle = 'hsla(' + hue + ', 100%, ' + (40 + freqVal * 30) + '%, ' + (0.4 - progress * 0.35) + ')';
+                ctx.lineWidth = 1 + freqVal * 3;
+
+                if (freqVal > 0.1) {
+                    ctx.shadowColor = 'hsl(' + hue + ', 100%, 60%)';
+                    ctx.shadowBlur = freqVal * 15;
+                }
+
+                ctx.beginPath();
+                for (let s = 0; s <= segments; s++) {
+                    const angle = (s / segments) * Math.PI * 2;
+                    const wobble = freqVal * 15 * Math.sin(angle * 6 + t * 3 + r);
+                    const x = Math.cos(angle) * (radius + wobble);
+                    const y = Math.sin(angle) * (radius + wobble);
+                    if (s === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            ctx.restore();
+        }
+
+        // ===== VIZ: MILKDROP (psychedelic feedback) =====
+        function drawMilkdrop(w, h) {
+            milkdropTime += 0.016;
+            const t = milkdropTime;
+
+            let bassEnergy = 0, midEnergy = 0, trebleEnergy = 0;
+            const binSize = Math.floor(frequencyData.length / 3);
+            for (let i = 0; i < binSize; i++) bassEnergy += frequencyData[i];
+            for (let i = binSize; i < binSize * 2; i++) midEnergy += frequencyData[i];
+            for (let i = binSize * 2; i < frequencyData.length; i++) trebleEnergy += frequencyData[i];
+            bassEnergy = bassEnergy / binSize / 255;
+            midEnergy = midEnergy / binSize / 255;
+            trebleEnergy = trebleEnergy / binSize / 255;
+
+            // Slight zoom/rotation feedback effect
+            ctx.save();
+            ctx.globalAlpha = 0.92;
+            const zoomAmt = 1.01 + bassEnergy * 0.02;
+            ctx.translate(w / 2, h / 2);
+            ctx.scale(zoomAmt, zoomAmt);
+            ctx.rotate(0.002 + midEnergy * 0.01);
+            ctx.translate(-w / 2, -h / 2);
+            ctx.drawImage(canvas, 0, 0, w, h);
+            ctx.restore();
+
+            // Darken slightly
+            ctx.fillStyle = 'rgba(0, 0, 8, 0.04)';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.save();
+            ctx.translate(w / 2, h / 2);
+
+            // Waveform as a morphing shape
+            const points = 128;
+            for (let layer = 0; layer < 3; layer++) {
+                const hue = (t * 20 + layer * 120) % 360;
+                const energy = [bassEnergy, midEnergy, trebleEnergy][layer];
+                const alpha = 0.3 + energy * 0.5;
+
+                ctx.strokeStyle = 'hsla(' + hue + ', 100%, 60%, ' + alpha + ')';
+                ctx.lineWidth = 1 + energy * 2;
+                ctx.shadowColor = 'hsl(' + hue + ', 100%, 60%)';
+                ctx.shadowBlur = energy * 20;
+
+                ctx.beginPath();
+                for (let i = 0; i <= points; i++) {
+                    const angle = (i / points) * Math.PI * 2;
+                    const dataIdx = Math.floor((i / points) * timeDomainData.length);
+                    const amplitude = (timeDomainData[dataIdx] - 128) / 128;
+                    const baseR = Math.min(w, h) * (0.15 + layer * 0.08);
+                    const r = baseR + amplitude * baseR * (0.5 + energy) +
+                              Math.sin(angle * 3 + t * (1 + layer * 0.5)) * 10 * energy;
+                    const x = Math.cos(angle + t * 0.1 * (layer + 1)) * r;
+                    const y = Math.sin(angle + t * 0.1 * (layer + 1)) * r;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            // Frequency "starburst" spokes
+            const spokeCount = 32;
+            for (let i = 0; i < spokeCount; i++) {
+                const angle = (i / spokeCount) * Math.PI * 2 + t * 0.05;
+                const idx = Math.floor((i / spokeCount) * frequencyData.length * 0.5);
+                const val = frequencyData[idx] / 255;
+                const len = val * Math.min(w, h) * 0.4;
+                const hue = (i / spokeCount * 360 + t * 30) % 360;
+
+                ctx.strokeStyle = 'hsla(' + hue + ', 100%, 60%, ' + (val * 0.4) + ')';
+                ctx.lineWidth = 1 + val * 2;
+                ctx.beginPath();
+                ctx.moveTo(Math.cos(angle) * 30, Math.sin(angle) * 30);
+                ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        // ===== KICK OFF IDLE ANIMATION =====
+        startIdleAnimation();
+
+    })();
+    </script>
+</body>
+</html>
