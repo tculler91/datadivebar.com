@@ -270,6 +270,57 @@
 
         #fileInput { display: none; }
 
+        .drop-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 200px;
+            margin: 16px 0;
+            color: var(--text-dim);
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .drop-divider::before, .drop-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .jazz-btn {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            padding: 12px 28px;
+            background: rgba(255, 140, 42, 0.06);
+            border: 1px solid rgba(255, 140, 42, 0.25);
+            color: var(--neon-amber);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .jazz-btn:hover {
+            background: rgba(255, 140, 42, 0.15);
+            box-shadow: 0 0 25px rgba(255, 140, 42, 0.15);
+            border-color: var(--neon-amber);
+        }
+
+        .jazz-btn .jazz-icon {
+            font-size: 1.2rem;
+        }
+
+        .jazz-btn .jazz-sub {
+            font-size: 0.5rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
         /* Viz mode label overlay */
         .viz-label {
             position: absolute;
@@ -659,6 +710,14 @@
             </div>
             <button class="upload-btn" id="uploadBtn">Choose Files</button>
             <input type="file" id="fileInput" accept="audio/*" multiple>
+            <div class="drop-divider">
+                <span>or</span>
+            </div>
+            <button class="jazz-btn" id="jazzBtn">
+                <span class="jazz-icon">&#127927;</span>
+                24/7 Jazz Radio
+                <span class="jazz-sub">Jazz24 &middot; KNKX Public Radio</span>
+            </button>
         </div>
 
         <div class="viz-label" id="vizLabel">BARS &amp; WAVES</div>
@@ -758,7 +817,10 @@
         const statusBar = document.getElementById('statusBar');
         const titleBar = document.querySelector('.title-bar');
 
+        const jazzBtn = document.getElementById('jazzBtn');
+
         // ===== STATE =====
+        let isStreamMode = false;
         let playlist = [];
         let currentTrackIndex = -1;
         let isPlaying = false;
@@ -837,9 +899,11 @@
 
         function loadTrack(index) {
             if (index < 0 || index >= playlist.length) return;
+            isStreamMode = false;
             currentTrackIndex = index;
             const track = playlist[index];
 
+            audioEl.crossOrigin = null;
             audioEl.src = track.url;
             audioEl.load();
 
@@ -849,6 +913,64 @@
 
             dropZone.classList.add('hidden');
             updatePlaylistUI();
+        }
+
+        // ===== JAZZ STREAM =====
+        const jazzStreams = [
+            'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',
+            'https://live.amperwave.net/direct/ppm-jazz24aac256-ibc1',
+            'https://knkx-live-a.edge.audiocdn.com/6285_128k',
+            'https://knkx-live-a.edge.audiocdn.com/6285_256k',
+            'https://ais-sa8.cdnstream1.com/3629_128.mp3',
+        ];
+
+        function loadJazzStream(streamIndex) {
+            if (streamIndex >= jazzStreams.length) {
+                statusText.textContent = 'Jazz stream unavailable — try uploading files instead';
+                trackMeta.textContent = 'Stream error';
+                return;
+            }
+
+            isStreamMode = true;
+            currentTrackIndex = -1;
+
+            audioEl.src = jazzStreams[streamIndex];
+            audioEl.crossOrigin = 'anonymous';
+            audioEl.load();
+
+            trackTitleDisplay.textContent = 'Jazz24 — 24/7 Smooth Jazz';
+            trackMeta.textContent = 'KNKX Public Radio — Live Stream';
+            statusText.textContent = 'Connecting to Jazz24...';
+
+            dropZone.classList.add('hidden');
+
+            // Handle stream errors by trying next fallback
+            var errorHandler = function() {
+                audioEl.removeEventListener('error', errorHandler);
+                loadJazzStream(streamIndex + 1);
+            };
+            audioEl.addEventListener('error', errorHandler);
+
+            // Clear error handler on successful play
+            var playHandler = function() {
+                audioEl.removeEventListener('error', errorHandler);
+                audioEl.removeEventListener('playing', playHandler);
+                statusText.textContent = 'Streaming: Jazz24';
+                durationTime.textContent = 'LIVE';
+            };
+            audioEl.addEventListener('playing', playHandler);
+
+            initAudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            audioEl.play().catch(function() {
+                // Autoplay blocked — user will need to hit play
+                statusText.textContent = 'Jazz24 ready — press play';
+            });
+
+            isPlaying = true;
+            playPauseBtn.innerHTML = '&#9646;&#9646;';
+            playPauseBtn.classList.add('playing');
+            startVisualization();
         }
 
         function playTrack() {
@@ -918,6 +1040,7 @@
         fileInput.addEventListener('change', e => handleFiles(e.target.files));
         playlistAddBtn.addEventListener('click', () => playlistFileInput.click());
         playlistFileInput.addEventListener('change', e => handleFiles(e.target.files));
+        jazzBtn.addEventListener('click', () => loadJazzStream(0));
 
         // Drag and drop
         vizContainer.addEventListener('dragover', e => {
@@ -949,7 +1072,7 @@
 
         // Seek
         seekBar.addEventListener('click', e => {
-            if (!audioEl.duration) return;
+            if (isStreamMode || !audioEl.duration) return;
             const rect = seekBar.getBoundingClientRect();
             const pct = (e.clientX - rect.left) / rect.width;
             audioEl.currentTime = pct * audioEl.duration;
@@ -957,6 +1080,10 @@
 
         // Time update
         audioEl.addEventListener('timeupdate', () => {
+            if (isStreamMode) {
+                elapsedTime.textContent = formatTime(audioEl.currentTime);
+                return;
+            }
             if (!audioEl.duration) return;
             const pct = (audioEl.currentTime / audioEl.duration) * 100;
             seekFill.style.width = pct + '%';
@@ -964,10 +1091,14 @@
         });
 
         audioEl.addEventListener('loadedmetadata', () => {
+            if (isStreamMode) return;
             durationTime.textContent = formatTime(audioEl.duration);
         });
 
-        audioEl.addEventListener('ended', nextTrack);
+        audioEl.addEventListener('ended', () => {
+            if (isStreamMode) return;
+            nextTrack();
+        });
 
         // Volume
         volSlider.addEventListener('input', () => {
