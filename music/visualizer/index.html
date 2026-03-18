@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Visualizer | The Green Room | Data Dive Bar</title>
-    <meta name="description" content="Windows XP Media Player vibes. Upload your music. Watch it melt.">
+    <meta name="description" content="Windows XP Media Player vibes meets 24/7 jazz radio. Watch it melt.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Bowlby+One&family=Tahoma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Bowlby+One&display=swap" rel="stylesheet">
     <style>
         :root {
             --chrome-dark: #1a1a2e;
             --chrome-mid: #16213e;
             --chrome-light: #0f3460;
-            --chrome-highlight: #533483;
             --wmp-blue: #4a90ff;
             --wmp-green: #39ff14;
             --neon-orange: #FF6B0A;
@@ -31,12 +30,12 @@
         body {
             background: var(--chrome-dark);
             color: var(--text-light);
-            font-family: 'IBM Plex Mono', 'Tahoma', monospace;
+            font-family: 'IBM Plex Mono', monospace;
             display: flex;
             flex-direction: column;
         }
 
-        /* ===== WMP CHROME - Title Bar ===== */
+        /* ===== TITLE BAR ===== */
         .title-bar {
             display: flex;
             align-items: center;
@@ -80,9 +79,7 @@
             gap: 4px;
         }
 
-        .window-btns a {
-            text-decoration: none;
-        }
+        .window-btns a { text-decoration: none; }
 
         .win-btn {
             width: 22px;
@@ -205,8 +202,8 @@
             height: 100%;
         }
 
-        /* Drop zone overlay */
-        .drop-zone {
+        /* Landing overlay */
+        .landing-overlay {
             position: absolute;
             inset: 0;
             display: flex;
@@ -215,25 +212,21 @@
             justify-content: center;
             background: rgba(0, 0, 8, 0.92);
             z-index: 10;
-            transition: opacity 0.4s;
+            transition: opacity 0.6s;
         }
 
-        .drop-zone.hidden {
+        .landing-overlay.hidden {
             opacity: 0;
             pointer-events: none;
         }
 
-        .drop-zone.drag-over {
-            background: rgba(74, 144, 255, 0.08);
-        }
-
-        .drop-icon {
+        .landing-icon {
             font-size: 3rem;
             margin-bottom: 16px;
             opacity: 0.6;
         }
 
-        .drop-title {
+        .landing-title {
             font-family: 'Bowlby One', sans-serif;
             font-size: clamp(1.2rem, 3vw, 2rem);
             color: var(--wmp-blue);
@@ -241,7 +234,7 @@
             text-align: center;
         }
 
-        .drop-sub {
+        .landing-sub {
             font-size: 0.75rem;
             color: var(--text-dim);
             margin-bottom: 24px;
@@ -250,70 +243,29 @@
             line-height: 1.5;
         }
 
-        .upload-btn {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            padding: 10px 28px;
-            background: rgba(74, 144, 255, 0.1);
-            border: 1px solid rgba(74, 144, 255, 0.3);
-            color: var(--wmp-blue);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .upload-btn:hover {
-            background: rgba(74, 144, 255, 0.2);
-            box-shadow: 0 0 20px rgba(74, 144, 255, 0.2);
-        }
-
-        #fileInput { display: none; }
-
-        .drop-divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 200px;
-            margin: 16px 0;
-            color: var(--text-dim);
-            font-size: 0.6rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .drop-divider::before, .drop-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
         .jazz-btn {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             letter-spacing: 1px;
-            padding: 12px 28px;
-            background: rgba(255, 140, 42, 0.06);
-            border: 1px solid rgba(255, 140, 42, 0.25);
+            padding: 14px 32px;
+            background: rgba(255, 140, 42, 0.08);
+            border: 1px solid rgba(255, 140, 42, 0.3);
             color: var(--neon-amber);
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
         }
 
         .jazz-btn:hover {
-            background: rgba(255, 140, 42, 0.15);
-            box-shadow: 0 0 25px rgba(255, 140, 42, 0.15);
+            background: rgba(255, 140, 42, 0.18);
+            box-shadow: 0 0 30px rgba(255, 140, 42, 0.2);
             border-color: var(--neon-amber);
         }
 
-        .jazz-btn .jazz-icon {
-            font-size: 1.2rem;
-        }
+        .jazz-btn .jazz-icon { font-size: 1.4rem; }
 
         .jazz-btn .jazz-sub {
             font-size: 0.5rem;
@@ -360,7 +312,7 @@
             border-color: var(--wmp-blue);
         }
 
-        /* ===== TRANSPORT / NOW PLAYING BAR ===== */
+        /* ===== TRANSPORT BAR ===== */
         .transport-bar {
             display: flex;
             align-items: center;
@@ -413,43 +365,33 @@
             background: rgba(57, 255, 20, 0.06);
         }
 
-        .ctrl-btn.stop-btn.active {
-            color: var(--neon-orange);
-            border-color: rgba(255, 107, 10, 0.3);
-        }
-
-        /* Progress / seek */
-        .seek-area {
+        /* Seek / stream info area */
+        .stream-info {
             flex: 1;
             display: flex;
-            flex-direction: column;
-            gap: 2px;
+            align-items: center;
+            gap: 12px;
             min-width: 100px;
         }
 
-        .seek-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.06);
-            cursor: pointer;
-            position: relative;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .seek-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--wmp-blue), var(--neon-purple));
-            transition: width 0.1s linear;
-            border-radius: 3px;
-        }
-
-        .seek-times {
-            display: flex;
-            justify-content: space-between;
+        .live-badge {
             font-size: 0.55rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--wmp-green);
+            padding: 2px 8px;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            background: rgba(57, 255, 20, 0.06);
+            flex-shrink: 0;
+            display: none;
+        }
+
+        .live-badge.on { display: block; }
+
+        .stream-elapsed {
+            font-size: 0.6rem;
             color: var(--text-dim);
+            flex-shrink: 0;
         }
 
         /* Track info */
@@ -467,7 +409,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 250px;
+            max-width: 300px;
         }
 
         .track-meta {
@@ -510,7 +452,6 @@
             height: 10px;
             border-radius: 50%;
             background: var(--wmp-blue);
-            border: none;
         }
 
         .vol-slider::-moz-range-thumb {
@@ -539,9 +480,7 @@
             text-decoration: none;
         }
 
-        .status-bar a:hover {
-            text-decoration: underline;
-        }
+        .status-bar a:hover { text-decoration: underline; }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
@@ -553,133 +492,25 @@
             .ctrl-btn { width: 28px; height: 28px; }
             .ctrl-btn.play-main { width: 34px; height: 34px; }
         }
-
-        /* ===== PLAYLIST PANEL ===== */
-        .playlist-panel {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 280px;
-            height: 100%;
-            background: rgba(10, 10, 30, 0.95);
-            border-left: 1px solid rgba(74, 144, 255, 0.12);
-            z-index: 8;
-            display: flex;
-            flex-direction: column;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .playlist-panel.open {
-            transform: translateX(0);
-        }
-
-        .playlist-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            border-bottom: 1px solid rgba(74, 144, 255, 0.1);
-        }
-
-        .playlist-header span {
-            font-size: 0.65rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--wmp-blue);
-        }
-
-        .playlist-close {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            cursor: pointer;
-            font-size: 0.8rem;
-            padding: 2px 6px;
-        }
-
-        .playlist-close:hover { color: var(--wmp-blue); }
-
-        .playlist-items {
-            flex: 1;
-            overflow-y: auto;
-            padding: 4px 0;
-        }
-
-        .playlist-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            gap: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 0.7rem;
-            color: var(--text-light);
-        }
-
-        .playlist-item:hover {
-            background: rgba(74, 144, 255, 0.06);
-        }
-
-        .playlist-item.active {
-            background: rgba(74, 144, 255, 0.1);
-            color: var(--wmp-blue);
-        }
-
-        .playlist-item .pl-num {
-            font-size: 0.6rem;
-            color: var(--text-dim);
-            width: 20px;
-            text-align: right;
-            flex-shrink: 0;
-        }
-
-        .playlist-item .pl-name {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .playlist-add-btn {
-            margin: 8px 12px;
-            padding: 8px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.6rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            background: rgba(74, 144, 255, 0.06);
-            border: 1px dashed rgba(74, 144, 255, 0.2);
-            color: var(--text-dim);
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
-        }
-
-        .playlist-add-btn:hover {
-            color: var(--wmp-blue);
-            border-color: var(--wmp-blue);
-        }
     </style>
 </head>
 <body>
     <!-- TITLE BAR -->
-    <div class="title-bar">
+    <div class="title-bar" id="titleBar">
         <div class="title-bar-left">
             <div class="wmp-icon">&#9835;</div>
             <span class="title-text"><span class="app-name">Dive Bar Media Player</span> &mdash; The Green Room Visualizer</span>
         </div>
         <div class="window-btns">
             <a href="/music/"><div class="win-btn" title="Back to Green Room">&larr;</div></a>
-            <div class="win-btn" id="minimizeBtn" title="Minimize (toggle UI)">&#8722;</div>
+            <div class="win-btn" id="minimizeBtn" title="Toggle UI">&#8722;</div>
             <div class="win-btn" id="maximizeBtn" title="Fullscreen">&#9633;</div>
         </div>
     </div>
 
     <!-- MENU BAR -->
     <div class="menu-bar" id="menuBar">
-        <div class="menu-item active" id="btnNowPlaying">Now Playing</div>
-        <div class="menu-item" id="btnPlaylist">Playlist</div>
+        <div class="menu-item active">Now Playing</div>
         <div class="menu-spacer"></div>
         <div class="viz-selector">
             <label>Viz:</label>
@@ -700,157 +531,126 @@
     <div class="viz-container" id="vizContainer">
         <canvas id="vizCanvas"></canvas>
 
-        <!-- Drop zone / upload prompt -->
-        <div class="drop-zone" id="dropZone">
-            <div class="drop-icon">&#9835;</div>
-            <div class="drop-title">DROP YOUR TRACKS</div>
-            <div class="drop-sub">
-                Drag &amp; drop audio files here, or click below to upload.<br>
-                WAV, MP3, OGG, FLAC &mdash; whatever you got.
-            </div>
-            <button class="upload-btn" id="uploadBtn">Choose Files</button>
-            <input type="file" id="fileInput" accept="audio/*" multiple>
-            <div class="drop-divider">
-                <span>or</span>
+        <!-- Landing overlay -->
+        <div class="landing-overlay" id="landingOverlay">
+            <div class="landing-icon">&#9835;</div>
+            <div class="landing-title">DIVE BAR VISUALIZER</div>
+            <div class="landing-sub">
+                24/7 smooth jazz meets Windows XP nostalgia.<br>
+                Six visualizer modes. Press play.
             </div>
             <button class="jazz-btn" id="jazzBtn">
                 <span class="jazz-icon">&#127927;</span>
-                24/7 Jazz Radio
-                <span class="jazz-sub">Jazz24 &middot; KNKX Public Radio</span>
+                Tune In &mdash; Jazz24 Radio
+                <span class="jazz-sub">KNKX Public Radio &middot; Live Stream</span>
             </button>
         </div>
 
         <div class="viz-label" id="vizLabel">BARS &amp; WAVES</div>
-
         <button class="fullscreen-btn" id="fullscreenBtn" title="Fullscreen visualization">&#x26F6;</button>
-
-        <!-- Playlist panel -->
-        <div class="playlist-panel" id="playlistPanel">
-            <div class="playlist-header">
-                <span>Playlist</span>
-                <button class="playlist-close" id="playlistClose">&times;</button>
-            </div>
-            <div class="playlist-items" id="playlistItems"></div>
-            <button class="playlist-add-btn" id="playlistAddBtn">+ Add Files</button>
-            <input type="file" id="playlistFileInput" accept="audio/*" multiple style="display:none;">
-        </div>
     </div>
 
     <!-- TRANSPORT BAR -->
     <div class="transport-bar" id="transportBar">
         <div class="transport-controls">
-            <button class="ctrl-btn" id="prevBtn" title="Previous">&#9664;&#9664;</button>
-            <button class="ctrl-btn" id="stopBtn" title="Stop">&#9632;</button>
             <button class="ctrl-btn play-main" id="playPauseBtn" title="Play / Pause">&#9654;</button>
-            <button class="ctrl-btn" id="nextBtn" title="Next">&#9654;&#9654;</button>
+            <button class="ctrl-btn" id="stopBtn" title="Stop">&#9632;</button>
         </div>
 
-        <div class="seek-area">
-            <div class="seek-bar" id="seekBar">
-                <div class="seek-fill" id="seekFill"></div>
-            </div>
-            <div class="seek-times">
-                <span id="elapsedTime">0:00</span>
-                <span id="durationTime">--:--</span>
-            </div>
+        <div class="stream-info">
+            <div class="live-badge" id="liveBadge">&#9679; Live</div>
+            <span class="stream-elapsed" id="streamElapsed">0:00</span>
         </div>
 
         <div class="track-info">
-            <div class="track-title-display" id="trackTitleDisplay">No track loaded</div>
-            <div class="track-meta" id="trackMeta">Drop a file to begin</div>
+            <div class="track-title-display" id="trackTitleDisplay">Jazz24 &mdash; 24/7 Smooth Jazz</div>
+            <div class="track-meta" id="trackMeta">KNKX Public Radio</div>
         </div>
 
         <div class="volume-area">
-            <span class="vol-icon" id="volIcon">&#128264;</span>
+            <span class="vol-icon" id="volIcon">&#128266;</span>
             <input type="range" class="vol-slider" id="volSlider" min="0" max="1" step="0.02" value="0.75">
         </div>
     </div>
 
     <!-- STATUS BAR -->
     <div class="status-bar" id="statusBar">
-        <span id="statusText">Ready</span>
+        <span id="statusText">Ready &mdash; press play to connect</span>
         <span><a href="/music/">The Green Room</a> &middot; <a href="/">Data Dive Bar</a></span>
     </div>
 
-    <audio id="audioEl" preload="auto"></audio>
+    <audio id="audioEl" preload="none"></audio>
 
     <script>
     (function() {
         'use strict';
 
-        // ===== DOM REFS =====
-        const audioEl = document.getElementById('audioEl');
-        const canvas = document.getElementById('vizCanvas');
-        const ctx = canvas.getContext('2d');
-        const vizContainer = document.getElementById('vizContainer');
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const vizSelect = document.getElementById('vizSelect');
-        const vizLabel = document.getElementById('vizLabel');
-        const vizPrev = document.getElementById('vizPrev');
-        const vizNext = document.getElementById('vizNext');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const seekBar = document.getElementById('seekBar');
-        const seekFill = document.getElementById('seekFill');
-        const elapsedTime = document.getElementById('elapsedTime');
-        const durationTime = document.getElementById('durationTime');
-        const trackTitleDisplay = document.getElementById('trackTitleDisplay');
-        const trackMeta = document.getElementById('trackMeta');
-        const volSlider = document.getElementById('volSlider');
-        const volIcon = document.getElementById('volIcon');
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
-        const minimizeBtn = document.getElementById('minimizeBtn');
-        const maximizeBtn = document.getElementById('maximizeBtn');
-        const statusText = document.getElementById('statusText');
-        const btnPlaylist = document.getElementById('btnPlaylist');
-        const playlistPanel = document.getElementById('playlistPanel');
-        const playlistClose = document.getElementById('playlistClose');
-        const playlistItems = document.getElementById('playlistItems');
-        const playlistAddBtn = document.getElementById('playlistAddBtn');
-        const playlistFileInput = document.getElementById('playlistFileInput');
-        const menuBar = document.getElementById('menuBar');
-        const transportBar = document.getElementById('transportBar');
-        const statusBar = document.getElementById('statusBar');
-        const titleBar = document.querySelector('.title-bar');
-
-        const jazzBtn = document.getElementById('jazzBtn');
+        // ===== DOM =====
+        var audioEl       = document.getElementById('audioEl');
+        var canvas        = document.getElementById('vizCanvas');
+        var ctx           = canvas.getContext('2d');
+        var vizContainer  = document.getElementById('vizContainer');
+        var landingOverlay = document.getElementById('landingOverlay');
+        var jazzBtn       = document.getElementById('jazzBtn');
+        var vizSelect     = document.getElementById('vizSelect');
+        var vizLabel      = document.getElementById('vizLabel');
+        var vizPrev       = document.getElementById('vizPrev');
+        var vizNext       = document.getElementById('vizNext');
+        var playPauseBtn  = document.getElementById('playPauseBtn');
+        var stopBtn       = document.getElementById('stopBtn');
+        var streamElapsed = document.getElementById('streamElapsed');
+        var liveBadge     = document.getElementById('liveBadge');
+        var trackTitleDisplay = document.getElementById('trackTitleDisplay');
+        var trackMeta     = document.getElementById('trackMeta');
+        var volSlider     = document.getElementById('volSlider');
+        var volIcon       = document.getElementById('volIcon');
+        var fullscreenBtn = document.getElementById('fullscreenBtn');
+        var minimizeBtn   = document.getElementById('minimizeBtn');
+        var maximizeBtn   = document.getElementById('maximizeBtn');
+        var statusText    = document.getElementById('statusText');
+        var menuBar       = document.getElementById('menuBar');
+        var transportBar  = document.getElementById('transportBar');
+        var statusBar     = document.getElementById('statusBar');
+        var titleBar      = document.getElementById('titleBar');
 
         // ===== STATE =====
-        let isStreamMode = false;
-        let playlist = [];
-        let currentTrackIndex = -1;
-        let isPlaying = false;
-        let audioCtx = null;
-        let analyser = null;
-        let sourceNode = null;
-        let gainNode = null;
-        let frequencyData = null;
-        let timeDomainData = null;
-        let animFrameId = null;
-        let currentViz = 'bars';
-        let uiMinimized = false;
+        var isPlaying = false;
+        var audioCtx = null;
+        var analyser = null;
+        var sourceNode = null;
+        var gainNode = null;
+        var frequencyData = null;
+        var timeDomainData = null;
+        var animFrameId = null;
+        var currentViz = 'bars';
+        var uiMinimized = false;
+        var hasAnalyserData = false;
+        var syntheticBass = 0;
+        var syntheticMid = 0;
+        var syntheticHigh = 0;
 
-        // Alchemy state
-        let alchemyParticles = [];
+        // Per-viz state
+        var alchemyParticles = [];
+        var geissAngle = 0;
+        var milkdropTime = 0;
+        var barPeaks = new Float32Array(64);
 
-        // Geiss state
-        let geissAngle = 0;
+        // Jazz24 stream URLs with fallbacks
+        var jazzStreams = [
+            'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',
+            'https://live.amperwave.net/direct/ppm-jazz24aac256-ibc1',
+            'https://knkx-live-a.edge.audiocdn.com/6285_128k',
+            'https://knkx-live-a.edge.audiocdn.com/6285_256k',
+            'https://ais-sa8.cdnstream1.com/3629_128.mp3'
+        ];
 
-        // Milkdrop state
-        let milkdropTime = 0;
-        let milkdropPreset = 0;
-
-        // ===== AUDIO CONTEXT SETUP =====
+        // ===== AUDIO CONTEXT =====
         function initAudioContext() {
             if (audioCtx) return;
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             analyser = audioCtx.createAnalyser();
             analyser.fftSize = 2048;
-            analyser.smoothingTimeConstant = 0.82;
+            analyser.smoothingTimeConstant = 0.8;
             gainNode = audioCtx.createGain();
             gainNode.gain.value = parseFloat(volSlider.value);
 
@@ -865,8 +665,8 @@
 
         // ===== CANVAS RESIZE =====
         function resizeCanvas() {
-            const dpr = window.devicePixelRatio || 1;
-            const rect = vizContainer.getBoundingClientRect();
+            var dpr = window.devicePixelRatio || 1;
+            var rect = vizContainer.getBoundingClientRect();
             canvas.width = rect.width * dpr;
             canvas.height = rect.height * dpr;
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -874,247 +674,194 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // ===== FILE HANDLING =====
-        function handleFiles(files) {
-            const audioFiles = Array.from(files).filter(f => f.type.startsWith('audio/') || /\.(wav|mp3|ogg|flac|m4a|aac|webm)$/i.test(f.name));
-            if (audioFiles.length === 0) return;
-
-            const startIndex = playlist.length;
-            audioFiles.forEach(f => {
-                playlist.push({
-                    name: f.name.replace(/\.[^/.]+$/, ''),
-                    file: f,
-                    url: URL.createObjectURL(f)
-                });
-            });
-
-            updatePlaylistUI();
-            statusText.textContent = audioFiles.length + ' file(s) added';
-
-            if (currentTrackIndex === -1) {
-                loadTrack(startIndex);
-                playTrack();
-            }
-        }
-
-        function loadTrack(index) {
-            if (index < 0 || index >= playlist.length) return;
-            isStreamMode = false;
-            currentTrackIndex = index;
-            const track = playlist[index];
-
-            audioEl.crossOrigin = null;
-            audioEl.src = track.url;
-            audioEl.load();
-
-            trackTitleDisplay.textContent = track.name;
-            trackMeta.textContent = 'Track ' + (index + 1) + ' of ' + playlist.length;
-            statusText.textContent = 'Loaded: ' + track.name;
-
-            dropZone.classList.add('hidden');
-            updatePlaylistUI();
-        }
-
-        // ===== JAZZ STREAM =====
-        const jazzStreams = [
-            'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',
-            'https://live.amperwave.net/direct/ppm-jazz24aac256-ibc1',
-            'https://knkx-live-a.edge.audiocdn.com/6285_128k',
-            'https://knkx-live-a.edge.audiocdn.com/6285_256k',
-            'https://ais-sa8.cdnstream1.com/3629_128.mp3',
-        ];
-
-        function loadJazzStream(streamIndex) {
-            if (streamIndex >= jazzStreams.length) {
-                statusText.textContent = 'Jazz stream unavailable — try uploading files instead';
-                trackMeta.textContent = 'Stream error';
+        // ===== STREAM CONNECT =====
+        function connectStream(index) {
+            if (index >= jazzStreams.length) {
+                statusText.textContent = 'All streams failed \u2014 try refreshing';
+                trackMeta.textContent = 'Connection error';
                 return;
             }
 
-            isStreamMode = true;
-            currentTrackIndex = -1;
+            statusText.textContent = 'Connecting to Jazz24... (stream ' + (index + 1) + ')';
 
-            audioEl.src = jazzStreams[streamIndex];
+            // Set crossOrigin for Web Audio API analyser access
             audioEl.crossOrigin = 'anonymous';
+            audioEl.src = jazzStreams[index];
             audioEl.load();
 
-            trackTitleDisplay.textContent = 'Jazz24 — 24/7 Smooth Jazz';
-            trackMeta.textContent = 'KNKX Public Radio — Live Stream';
-            statusText.textContent = 'Connecting to Jazz24...';
-
-            dropZone.classList.add('hidden');
-
-            // Handle stream errors by trying next fallback
             var errorHandler = function() {
                 audioEl.removeEventListener('error', errorHandler);
-                loadJazzStream(streamIndex + 1);
+                audioEl.removeEventListener('playing', playHandler);
+                // Try without CORS on same URL first, then next stream
+                if (audioEl.crossOrigin === 'anonymous') {
+                    statusText.textContent = 'Retrying without CORS...';
+                    audioEl.crossOrigin = null;
+                    audioEl.src = jazzStreams[index];
+                    audioEl.load();
+                    audioEl.addEventListener('error', function retry() {
+                        audioEl.removeEventListener('error', retry);
+                        connectStream(index + 1);
+                    });
+                    audioEl.addEventListener('playing', function ok() {
+                        audioEl.removeEventListener('playing', ok);
+                        onStreamPlaying();
+                    });
+                    audioEl.play().catch(function() {
+                        connectStream(index + 1);
+                    });
+                } else {
+                    connectStream(index + 1);
+                }
             };
-            audioEl.addEventListener('error', errorHandler);
 
-            // Clear error handler on successful play
             var playHandler = function() {
                 audioEl.removeEventListener('error', errorHandler);
                 audioEl.removeEventListener('playing', playHandler);
-                statusText.textContent = 'Streaming: Jazz24';
-                durationTime.textContent = 'LIVE';
+                onStreamPlaying();
             };
+
+            audioEl.addEventListener('error', errorHandler);
             audioEl.addEventListener('playing', playHandler);
 
             initAudioContext();
             if (audioCtx.state === 'suspended') audioCtx.resume();
+
             audioEl.play().catch(function() {
-                // Autoplay blocked — user will need to hit play
-                statusText.textContent = 'Jazz24 ready — press play';
+                statusText.textContent = 'Jazz24 ready \u2014 press play';
             });
+        }
 
+        function onStreamPlaying() {
             isPlaying = true;
             playPauseBtn.innerHTML = '&#9646;&#9646;';
             playPauseBtn.classList.add('playing');
+            liveBadge.classList.add('on');
+            landingOverlay.classList.add('hidden');
+            statusText.textContent = 'Streaming: Jazz24';
+
+            // Check after a moment if analyser is getting real data
+            setTimeout(checkAnalyserData, 500);
+
+            // Start the real visualization loop
+            cancelAnimationFrame(animFrameId);
+            animFrameId = null;
             startVisualization();
         }
 
-        function playTrack() {
-            initAudioContext();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            audioEl.play();
-            isPlaying = true;
-            playPauseBtn.innerHTML = '&#9646;&#9646;';
-            playPauseBtn.classList.add('playing');
-            stopBtn.classList.remove('active');
-            startVisualization();
+        // Detect if CORS is blocking analyser data (all frequency bins zero)
+        function checkAnalyserData() {
+            if (!analyser || !frequencyData) return;
+            analyser.getByteFrequencyData(frequencyData);
+            var sum = 0;
+            for (var i = 0; i < 64; i++) sum += frequencyData[i];
+            hasAnalyserData = sum > 0;
+            if (!hasAnalyserData) {
+                statusText.textContent = 'Streaming: Jazz24 (synthetic visualization)';
+            }
         }
 
-        function pauseTrack() {
-            audioEl.pause();
-            isPlaying = false;
-            playPauseBtn.innerHTML = '&#9654;';
-            playPauseBtn.classList.remove('playing');
+        // Generate synthetic audio-reactive data when CORS blocks analyser
+        function updateSyntheticData() {
+            var t = Date.now() / 1000;
+            // Create plausible-looking frequency data using layered sine waves
+            for (var i = 0; i < frequencyData.length; i++) {
+                var freq = i / frequencyData.length;
+                // Bass-heavy falloff with rhythmic movement
+                var base = Math.max(0, 1 - freq * 2.5);
+                var rhythm = Math.sin(t * 2.1) * 0.3 + Math.sin(t * 3.7) * 0.15 + Math.sin(t * 0.8) * 0.2;
+                var detail = Math.sin(t * 5.3 + i * 0.3) * 0.1 + Math.sin(t * 8.1 + i * 0.7) * 0.05;
+                var val = (base + rhythm * base + detail) * 180 + Math.random() * 15;
+                frequencyData[i] = Math.max(0, Math.min(255, val));
+            }
+            // Time domain: sine-ish waveform
+            for (var j = 0; j < timeDomainData.length; j++) {
+                var phase = j / timeDomainData.length * Math.PI * 2;
+                var wave = Math.sin(phase * 4 + t * 6) * 40 +
+                           Math.sin(phase * 7 + t * 9) * 15 +
+                           Math.sin(phase * 13 + t * 3) * 8;
+                timeDomainData[j] = 128 + wave;
+            }
         }
 
-        function stopTrack() {
-            audioEl.pause();
-            audioEl.currentTime = 0;
-            isPlaying = false;
-            playPauseBtn.innerHTML = '&#9654;';
-            playPauseBtn.classList.remove('playing');
-            stopBtn.classList.add('active');
-            seekFill.style.width = '0%';
-            setTimeout(() => stopBtn.classList.remove('active'), 300);
-        }
-
-        function nextTrack() {
-            if (playlist.length === 0) return;
-            const next = (currentTrackIndex + 1) % playlist.length;
-            loadTrack(next);
-            if (isPlaying) playTrack();
-        }
-
-        function prevTrack() {
-            if (playlist.length === 0) return;
-            if (audioEl.currentTime > 3) {
-                audioEl.currentTime = 0;
+        // ===== TRANSPORT =====
+        function togglePlay() {
+            if (!audioEl.src || audioEl.src === '') {
+                connectStream(0);
                 return;
             }
-            const prev = (currentTrackIndex - 1 + playlist.length) % playlist.length;
-            loadTrack(prev);
-            if (isPlaying) playTrack();
+            if (isPlaying) {
+                audioEl.pause();
+                isPlaying = false;
+                playPauseBtn.innerHTML = '&#9654;';
+                playPauseBtn.classList.remove('playing');
+                liveBadge.classList.remove('on');
+                statusText.textContent = 'Paused';
+            } else {
+                initAudioContext();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                audioEl.play();
+                isPlaying = true;
+                playPauseBtn.innerHTML = '&#9646;&#9646;';
+                playPauseBtn.classList.add('playing');
+                liveBadge.classList.add('on');
+                statusText.textContent = 'Streaming: Jazz24';
+                // Ensure viz loop is running
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+                startVisualization();
+            }
         }
 
-        // ===== PLAYLIST UI =====
-        function updatePlaylistUI() {
-            playlistItems.innerHTML = '';
-            playlist.forEach((track, i) => {
-                const el = document.createElement('div');
-                el.className = 'playlist-item' + (i === currentTrackIndex ? ' active' : '');
-                el.innerHTML = '<span class="pl-num">' + (i + 1) + '</span><span class="pl-name">' + track.name + '</span>';
-                el.addEventListener('click', () => {
-                    loadTrack(i);
-                    playTrack();
-                });
-                playlistItems.appendChild(el);
-            });
+        function stopStream() {
+            audioEl.pause();
+            audioEl.removeAttribute('src');
+            audioEl.load();
+            isPlaying = false;
+            playPauseBtn.innerHTML = '&#9654;';
+            playPauseBtn.classList.remove('playing');
+            liveBadge.classList.remove('on');
+            statusText.textContent = 'Stopped';
+        }
+
+        // ===== HELPERS =====
+        function formatTime(s) {
+            if (isNaN(s)) return '0:00';
+            var m = Math.floor(s / 60);
+            var sec = Math.floor(s % 60);
+            return m + ':' + (sec < 10 ? '0' : '') + sec;
+        }
+
+        function getEnergy(startBin, endBin) {
+            var sum = 0;
+            for (var i = startBin; i < endBin; i++) sum += frequencyData[i];
+            return sum / (endBin - startBin) / 255;
         }
 
         // ===== EVENT LISTENERS =====
-        uploadBtn.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', e => handleFiles(e.target.files));
-        playlistAddBtn.addEventListener('click', () => playlistFileInput.click());
-        playlistFileInput.addEventListener('change', e => handleFiles(e.target.files));
-        jazzBtn.addEventListener('click', () => loadJazzStream(0));
+        jazzBtn.addEventListener('click', function() { connectStream(0); });
 
-        // Drag and drop
-        vizContainer.addEventListener('dragover', e => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-            if (dropZone.classList.contains('hidden')) {
-                dropZone.classList.remove('hidden');
-            }
-        });
-        vizContainer.addEventListener('dragleave', e => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            if (playlist.length > 0) dropZone.classList.add('hidden');
-        });
-        vizContainer.addEventListener('drop', e => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            handleFiles(e.dataTransfer.files);
-        });
+        playPauseBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopStream);
 
-        // Transport
-        playPauseBtn.addEventListener('click', () => {
-            if (playlist.length === 0) { fileInput.click(); return; }
-            if (isPlaying) pauseTrack(); else playTrack();
-        });
-        stopBtn.addEventListener('click', stopTrack);
-        nextBtn.addEventListener('click', nextTrack);
-        prevBtn.addEventListener('click', prevTrack);
-
-        // Seek
-        seekBar.addEventListener('click', e => {
-            if (isStreamMode || !audioEl.duration) return;
-            const rect = seekBar.getBoundingClientRect();
-            const pct = (e.clientX - rect.left) / rect.width;
-            audioEl.currentTime = pct * audioEl.duration;
-        });
-
-        // Time update
-        audioEl.addEventListener('timeupdate', () => {
-            if (isStreamMode) {
-                elapsedTime.textContent = formatTime(audioEl.currentTime);
-                return;
-            }
-            if (!audioEl.duration) return;
-            const pct = (audioEl.currentTime / audioEl.duration) * 100;
-            seekFill.style.width = pct + '%';
-            elapsedTime.textContent = formatTime(audioEl.currentTime);
-        });
-
-        audioEl.addEventListener('loadedmetadata', () => {
-            if (isStreamMode) return;
-            durationTime.textContent = formatTime(audioEl.duration);
-        });
-
-        audioEl.addEventListener('ended', () => {
-            if (isStreamMode) return;
-            nextTrack();
+        audioEl.addEventListener('timeupdate', function() {
+            streamElapsed.textContent = formatTime(audioEl.currentTime);
         });
 
         // Volume
-        volSlider.addEventListener('input', () => {
-            const v = parseFloat(volSlider.value);
+        volSlider.addEventListener('input', function() {
+            var v = parseFloat(volSlider.value);
             if (gainNode) gainNode.gain.value = v;
             volIcon.innerHTML = v === 0 ? '&#128263;' : v < 0.4 ? '&#128264;' : '&#128266;';
         });
 
-        volIcon.addEventListener('click', () => {
+        volIcon.addEventListener('click', function() {
             if (parseFloat(volSlider.value) > 0) {
                 volSlider.dataset.prev = volSlider.value;
                 volSlider.value = 0;
                 if (gainNode) gainNode.gain.value = 0;
                 volIcon.innerHTML = '&#128263;';
             } else {
-                const prev = volSlider.dataset.prev || 0.75;
+                var prev = volSlider.dataset.prev || 0.75;
                 volSlider.value = prev;
                 if (gainNode) gainNode.gain.value = parseFloat(prev);
                 volIcon.innerHTML = '&#128266;';
@@ -1122,69 +869,57 @@
         });
 
         // Viz selector
-        vizSelect.addEventListener('change', () => {
+        vizSelect.addEventListener('change', function() {
             currentViz = vizSelect.value;
             vizLabel.textContent = vizSelect.options[vizSelect.selectedIndex].text.toUpperCase();
+            // Reset per-viz state
             alchemyParticles = [];
-            milkdropPreset = 0;
+            milkdropTime = 0;
+            barPeaks = new Float32Array(64);
+            // Clear canvas for fresh start
+            var w = vizContainer.clientWidth, h = vizContainer.clientHeight;
+            ctx.clearRect(0, 0, w, h);
         });
 
-        vizPrev.addEventListener('click', () => {
+        vizPrev.addEventListener('click', function() {
             vizSelect.selectedIndex = (vizSelect.selectedIndex - 1 + vizSelect.options.length) % vizSelect.options.length;
             vizSelect.dispatchEvent(new Event('change'));
         });
 
-        vizNext.addEventListener('click', () => {
+        vizNext.addEventListener('click', function() {
             vizSelect.selectedIndex = (vizSelect.selectedIndex + 1) % vizSelect.options.length;
             vizSelect.dispatchEvent(new Event('change'));
         });
 
-        // Playlist toggle
-        btnPlaylist.addEventListener('click', () => {
-            playlistPanel.classList.toggle('open');
-        });
-        playlistClose.addEventListener('click', () => {
-            playlistPanel.classList.remove('open');
-        });
-
         // Fullscreen
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-        maximizeBtn.addEventListener('click', toggleFullscreen);
-
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
+                document.documentElement.requestFullscreen().catch(function() {});
             } else {
                 document.exitFullscreen();
             }
         }
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        maximizeBtn.addEventListener('click', toggleFullscreen);
 
         // Minimize UI
-        minimizeBtn.addEventListener('click', () => {
+        minimizeBtn.addEventListener('click', function() {
             uiMinimized = !uiMinimized;
-            menuBar.style.display = uiMinimized ? 'none' : '';
-            transportBar.style.display = uiMinimized ? 'none' : '';
-            statusBar.style.display = uiMinimized ? 'none' : '';
-            titleBar.style.display = uiMinimized ? 'none' : '';
+            var d = uiMinimized ? 'none' : '';
+            menuBar.style.display = d;
+            transportBar.style.display = d;
+            statusBar.style.display = d;
+            titleBar.style.display = d;
+            resizeCanvas();
         });
 
         // Keyboard shortcuts
-        document.addEventListener('keydown', e => {
-            if (e.code === 'Space') { e.preventDefault(); playPauseBtn.click(); }
-            if (e.code === 'ArrowRight' && e.ctrlKey) nextTrack();
-            if (e.code === 'ArrowLeft' && e.ctrlKey) prevTrack();
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
             if (e.code === 'KeyF') toggleFullscreen();
             if (e.code === 'KeyV') vizNext.click();
             if (e.code === 'Escape' && uiMinimized) minimizeBtn.click();
         });
-
-        // ===== HELPERS =====
-        function formatTime(s) {
-            if (isNaN(s)) return '--:--';
-            const m = Math.floor(s / 60);
-            const sec = Math.floor(s % 60);
-            return m + ':' + (sec < 10 ? '0' : '') + sec;
-        }
 
         // ===== VISUALIZATION ENGINE =====
         function startVisualization() {
@@ -1194,111 +929,117 @@
 
         function animate() {
             animFrameId = requestAnimationFrame(animate);
-            if (!analyser) return;
 
+            if (!analyser || !frequencyData) return;
+
+            // Get real data
             analyser.getByteFrequencyData(frequencyData);
             analyser.getByteTimeDomainData(timeDomainData);
 
-            const w = vizContainer.clientWidth;
-            const h = vizContainer.clientHeight;
-
-            ctx.clearRect(0, 0, w, h);
-
-            switch (currentViz) {
-                case 'bars': drawBars(w, h); break;
-                case 'scope': drawScope(w, h); break;
-                case 'ambience': drawAmbience(w, h); break;
-                case 'alchemy': drawAlchemy(w, h); break;
-                case 'geiss': drawGeiss(w, h); break;
-                case 'milkdrop': drawMilkdrop(w, h); break;
-            }
-        }
-
-        // Start animation even without audio for idle visuals
-        function startIdleAnimation() {
-            if (animFrameId) return;
-            animateIdle();
-        }
-
-        function animateIdle() {
-            animFrameId = requestAnimationFrame(animateIdle);
-            const w = vizContainer.clientWidth;
-            const h = vizContainer.clientHeight;
-            ctx.clearRect(0, 0, w, h);
-
-            // Subtle idle animation
-            const t = Date.now() / 1000;
-            ctx.save();
-            ctx.globalAlpha = 0.15;
-            for (let i = 0; i < 5; i++) {
-                const x = w / 2 + Math.sin(t * 0.5 + i) * w * 0.3;
-                const y = h / 2 + Math.cos(t * 0.3 + i * 1.5) * h * 0.2;
-                const r = 60 + Math.sin(t + i) * 30;
-                const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-                grad.addColorStop(0, 'rgba(74, 144, 255, 0.4)');
-                grad.addColorStop(1, 'transparent');
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                ctx.arc(x, y, r, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.restore();
-        }
-
-        // ===== VIZ: BARS & WAVES (Classic WMP) =====
-        function drawBars(w, h) {
-            const barCount = 64;
-            const step = Math.floor(frequencyData.length / barCount);
-            const barWidth = (w / barCount) - 2;
-            const centerY = h;
-
-            // Reflection
-            ctx.save();
-            for (let i = 0; i < barCount; i++) {
-                let sum = 0;
-                for (let j = 0; j < step; j++) {
-                    sum += frequencyData[i * step + j];
+            // If CORS is blocking, check periodically and use synthetic data
+            if (!hasAnalyserData) {
+                var sum = 0;
+                for (var i = 0; i < 32; i++) sum += frequencyData[i];
+                if (sum > 0) {
+                    hasAnalyserData = true;
+                    statusText.textContent = 'Streaming: Jazz24';
+                } else if (isPlaying) {
+                    updateSyntheticData();
                 }
-                const val = sum / step;
-                const barH = (val / 255) * h * 0.85;
+            }
 
-                const x = i * (barWidth + 2);
-                const hue = 200 + (i / barCount) * 160;
+            var w = vizContainer.clientWidth;
+            var h = vizContainer.clientHeight;
 
-                // Main bar
-                const grad = ctx.createLinearGradient(x, centerY, x, centerY - barH);
-                grad.addColorStop(0, 'hsl(' + hue + ', 100%, 30%)');
-                grad.addColorStop(0.5, 'hsl(' + hue + ', 100%, 55%)');
-                grad.addColorStop(1, 'hsl(' + hue + ', 100%, 70%)');
+            // Only some visualizers need full clear; persistence-based ones handle their own fade
+            switch (currentViz) {
+                case 'bars':
+                    ctx.clearRect(0, 0, w, h);
+                    drawBars(w, h);
+                    break;
+                case 'scope':
+                    ctx.clearRect(0, 0, w, h);
+                    drawScope(w, h);
+                    break;
+                case 'ambience':
+                    drawAmbience(w, h);
+                    break;
+                case 'alchemy':
+                    drawAlchemy(w, h);
+                    break;
+                case 'geiss':
+                    drawGeiss(w, h);
+                    break;
+                case 'milkdrop':
+                    drawMilkdrop(w, h);
+                    break;
+            }
+        }
+
+        // ===== VIZ: BARS & WAVES =====
+        function drawBars(w, h) {
+            var barCount = 64;
+            var step = Math.floor(frequencyData.length / barCount);
+            var gap = 2;
+            var barW = (w / barCount) - gap;
+
+            for (var i = 0; i < barCount; i++) {
+                var sum = 0;
+                for (var j = 0; j < step; j++) sum += frequencyData[i * step + j];
+                var val = sum / step / 255;
+
+                // Smooth peaks with decay
+                if (val > barPeaks[i]) barPeaks[i] = val;
+                else barPeaks[i] *= 0.97;
+
+                var barH = val * h * 0.88;
+                var peakY = h - barPeaks[i] * h * 0.88;
+                var x = i * (barW + gap);
+                var hue = 200 + (i / barCount) * 160;
+
+                // Main bar gradient
+                var grad = ctx.createLinearGradient(x, h, x, h - barH);
+                grad.addColorStop(0, 'hsl(' + hue + ', 100%, 25%)');
+                grad.addColorStop(0.4, 'hsl(' + hue + ', 100%, 55%)');
+                grad.addColorStop(0.8, 'hsl(' + hue + ', 100%, 70%)');
+                grad.addColorStop(1, 'hsl(' + hue + ', 100%, 85%)');
                 ctx.fillStyle = grad;
-                ctx.fillRect(x, centerY - barH, barWidth, barH);
+                ctx.fillRect(x, h - barH, barW, barH);
 
-                // Peak line
-                ctx.fillStyle = 'hsl(' + hue + ', 100%, 85%)';
-                ctx.fillRect(x, centerY - barH - 3, barWidth, 2);
+                // Glow
+                ctx.save();
+                ctx.shadowColor = 'hsl(' + hue + ', 100%, 60%)';
+                ctx.shadowBlur = 8 + val * 12;
+                ctx.fillStyle = 'hsl(' + hue + ', 100%, 70%)';
+                ctx.fillRect(x, h - barH, barW, Math.min(barH, 4));
+                ctx.restore();
+
+                // Floating peak marker
+                ctx.fillStyle = 'hsl(' + hue + ', 100%, 90%)';
+                ctx.fillRect(x, peakY - 2, barW, 2);
 
                 // Reflection
-                ctx.globalAlpha = 0.15;
+                ctx.save();
+                ctx.globalAlpha = 0.12;
                 ctx.fillStyle = grad;
-                ctx.fillRect(x, centerY, barWidth, barH * 0.3);
-                ctx.globalAlpha = 1;
+                ctx.fillRect(x, h, barW, barH * 0.25);
+                ctx.restore();
             }
-            ctx.restore();
 
             // Waveform overlay
             ctx.save();
-            ctx.globalAlpha = 0.4;
-            ctx.strokeStyle = '#4a90ff';
-            ctx.lineWidth = 1.5;
+            ctx.globalAlpha = 0.5;
+            ctx.strokeStyle = 'rgba(74, 144, 255, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = '#4a90ff';
+            ctx.shadowBlur = 8;
             ctx.beginPath();
-            const sliceWidth = w / timeDomainData.length;
-            let x = 0;
-            for (let i = 0; i < timeDomainData.length; i++) {
-                const v = timeDomainData[i] / 128.0;
-                const y = (v * h) / 2;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-                x += sliceWidth;
+            var sliceW = w / timeDomainData.length;
+            for (var k = 0; k < timeDomainData.length; k++) {
+                var v = timeDomainData[k] / 128.0;
+                var y = (v * h) / 2;
+                if (k === 0) ctx.moveTo(0, y);
+                else ctx.lineTo(k * sliceW, y);
             }
             ctx.stroke();
             ctx.restore();
@@ -1306,218 +1047,193 @@
 
         // ===== VIZ: OSCILLOSCOPE =====
         function drawScope(w, h) {
-            const centerY = h / 2;
+            var centerY = h / 2;
 
-            // Grid lines
-            ctx.save();
-            ctx.strokeStyle = 'rgba(74, 144, 255, 0.08)';
+            // Grid
+            ctx.strokeStyle = 'rgba(74, 144, 255, 0.06)';
             ctx.lineWidth = 1;
-            for (let y = 0; y < h; y += h / 8) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(w, y);
-                ctx.stroke();
+            for (var gy = 0; gy < h; gy += h / 8) {
+                ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
             }
-            for (let x = 0; x < w; x += w / 12) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, h);
-                ctx.stroke();
+            for (var gx = 0; gx < w; gx += w / 12) {
+                ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
             }
-            ctx.restore();
 
             // Center line
-            ctx.strokeStyle = 'rgba(74, 144, 255, 0.15)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(0, centerY);
-            ctx.lineTo(w, centerY);
-            ctx.stroke();
+            ctx.strokeStyle = 'rgba(74, 144, 255, 0.12)';
+            ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(w, centerY); ctx.stroke();
 
-            // Glow layer
+            // Wide glow trace
             ctx.save();
-            ctx.shadowColor = '#39ff14';
-            ctx.shadowBlur = 15;
-            ctx.strokeStyle = '#39ff14';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(57, 255, 20, 0.15)';
+            ctx.lineWidth = 12;
             ctx.beginPath();
-            const sliceWidth = w / timeDomainData.length;
-            let x = 0;
-            for (let i = 0; i < timeDomainData.length; i++) {
-                const v = (timeDomainData[i] - 128) / 128;
-                const y = centerY + v * centerY * 0.9;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-                x += sliceWidth;
+            var sw = w / timeDomainData.length;
+            for (var a = 0; a < timeDomainData.length; a++) {
+                var va = (timeDomainData[a] - 128) / 128;
+                var ya = centerY + va * centerY * 0.85;
+                if (a === 0) ctx.moveTo(0, ya); else ctx.lineTo(a * sw, ya);
             }
             ctx.stroke();
             ctx.restore();
 
-            // Sharp layer
-            ctx.strokeStyle = 'rgba(57, 255, 20, 0.8)';
-            ctx.lineWidth = 1;
+            // Main bright trace with shadow glow
+            ctx.save();
+            ctx.shadowColor = '#39ff14';
+            ctx.shadowBlur = 20;
+            ctx.strokeStyle = '#39ff14';
+            ctx.lineWidth = 2.5;
             ctx.beginPath();
-            x = 0;
-            for (let i = 0; i < timeDomainData.length; i++) {
-                const v = (timeDomainData[i] - 128) / 128;
-                const y = centerY + v * centerY * 0.9;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-                x += sliceWidth;
+            for (var b = 0; b < timeDomainData.length; b++) {
+                var vb = (timeDomainData[b] - 128) / 128;
+                var yb = centerY + vb * centerY * 0.85;
+                if (b === 0) ctx.moveTo(0, yb); else ctx.lineTo(b * sw, yb);
             }
             ctx.stroke();
+            ctx.restore();
 
-            // Phosphor persistence (secondary trace)
+            // Bright core
             ctx.save();
-            ctx.globalAlpha = 0.12;
-            ctx.strokeStyle = '#39ff14';
-            ctx.lineWidth = 6;
+            ctx.strokeStyle = 'rgba(180, 255, 180, 0.9)';
+            ctx.lineWidth = 1;
             ctx.beginPath();
-            x = 0;
-            for (let i = 0; i < timeDomainData.length; i++) {
-                const v = (timeDomainData[i] - 128) / 128;
-                const y = centerY + v * centerY * 0.9;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-                x += sliceWidth;
+            for (var c = 0; c < timeDomainData.length; c++) {
+                var vc = (timeDomainData[c] - 128) / 128;
+                var yc = centerY + vc * centerY * 0.85;
+                if (c === 0) ctx.moveTo(0, yc); else ctx.lineTo(c * sw, yc);
             }
             ctx.stroke();
             ctx.restore();
         }
 
-        // ===== VIZ: AMBIENCE (flowing blobs) =====
+        // ===== VIZ: AMBIENCE =====
         function drawAmbience(w, h) {
-            const t = Date.now() / 1000;
+            var t = Date.now() / 1000;
+            var bass = getEnergy(0, 10);
+            var mid = getEnergy(10, 80);
+            var high = getEnergy(80, 200);
 
-            // Get overall energy
-            let bassEnergy = 0, midEnergy = 0, highEnergy = 0;
-            const third = Math.floor(frequencyData.length / 3);
-            for (let i = 0; i < third; i++) bassEnergy += frequencyData[i];
-            for (let i = third; i < third * 2; i++) midEnergy += frequencyData[i];
-            for (let i = third * 2; i < frequencyData.length; i++) highEnergy += frequencyData[i];
-            bassEnergy = bassEnergy / third / 255;
-            midEnergy = midEnergy / third / 255;
-            highEnergy = highEnergy / third / 255;
-
-            // Fade background
-            ctx.fillStyle = 'rgba(0, 0, 8, 0.08)';
+            // Fade — controls trail length
+            ctx.fillStyle = 'rgba(0, 0, 8, 0.06)';
             ctx.fillRect(0, 0, w, h);
 
-            // Flowing gradient blobs
-            const blobs = [
-                { cx: 0.3, cy: 0.4, r: 0.35, hue: 240, energy: bassEnergy, speed: 0.7 },
-                { cx: 0.7, cy: 0.6, r: 0.3, hue: 300, energy: midEnergy, speed: 1.1 },
-                { cx: 0.5, cy: 0.3, r: 0.25, hue: 180, energy: highEnergy, speed: 0.9 },
-                { cx: 0.2, cy: 0.7, r: 0.2, hue: 340, energy: (bassEnergy + midEnergy) / 2, speed: 1.3 },
-                { cx: 0.8, cy: 0.3, r: 0.22, hue: 220, energy: (midEnergy + highEnergy) / 2, speed: 0.8 },
+            // Gradient blobs
+            var blobs = [
+                { cx: 0.3, cy: 0.4, r: 0.4, hue: 240, e: bass, sp: 0.7 },
+                { cx: 0.7, cy: 0.6, r: 0.35, hue: 300, e: mid, sp: 1.1 },
+                { cx: 0.5, cy: 0.3, r: 0.3, hue: 180, e: high, sp: 0.9 },
+                { cx: 0.2, cy: 0.7, r: 0.25, hue: 340, e: (bass + mid) / 2, sp: 1.3 },
+                { cx: 0.8, cy: 0.3, r: 0.28, hue: 60, e: (mid + high) / 2, sp: 0.8 },
+                { cx: 0.5, cy: 0.8, r: 0.22, hue: 120, e: bass, sp: 1.5 },
             ];
 
-            blobs.forEach((b, i) => {
-                const x = w * (b.cx + Math.sin(t * b.speed + i * 2) * 0.15);
-                const y = h * (b.cy + Math.cos(t * b.speed * 0.7 + i * 1.5) * 0.15);
-                const r = (w * b.r * 0.5) + b.energy * w * 0.2;
+            for (var i = 0; i < blobs.length; i++) {
+                var b = blobs[i];
+                var bx = w * (b.cx + Math.sin(t * b.sp + i * 2.1) * 0.18);
+                var by = h * (b.cy + Math.cos(t * b.sp * 0.7 + i * 1.7) * 0.18);
+                var br = w * b.r * 0.4 + b.e * w * 0.25;
 
-                const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-                const alpha = 0.15 + b.energy * 0.4;
-                grad.addColorStop(0, 'hsla(' + b.hue + ', 100%, 60%, ' + alpha + ')');
-                grad.addColorStop(0.5, 'hsla(' + b.hue + ', 80%, 40%, ' + (alpha * 0.5) + ')');
+                var alpha = 0.25 + b.e * 0.55;
+                var grad = ctx.createRadialGradient(bx, by, 0, bx, by, br);
+                grad.addColorStop(0, 'hsla(' + b.hue + ', 100%, 65%, ' + alpha + ')');
+                grad.addColorStop(0.4, 'hsla(' + b.hue + ', 90%, 45%, ' + (alpha * 0.5) + ')');
                 grad.addColorStop(1, 'transparent');
-
                 ctx.fillStyle = grad;
                 ctx.beginPath();
-                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.arc(bx, by, br, 0, Math.PI * 2);
                 ctx.fill();
-            });
+            }
 
             // Central pulse
-            const pulse = bassEnergy * 0.5 + 0.1;
-            const pGrad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * pulse);
-            pGrad.addColorStop(0, 'rgba(180, 74, 255, ' + (bassEnergy * 0.3) + ')');
-            pGrad.addColorStop(1, 'transparent');
-            ctx.fillStyle = pGrad;
+            var pulse = 0.15 + bass * 0.5;
+            var pg = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * pulse);
+            pg.addColorStop(0, 'rgba(180, 74, 255, ' + (0.1 + bass * 0.4) + ')');
+            pg.addColorStop(1, 'transparent');
+            ctx.fillStyle = pg;
             ctx.fillRect(0, 0, w, h);
         }
 
         // ===== VIZ: ALCHEMY (particles) =====
         function drawAlchemy(w, h) {
-            const t = Date.now() / 1000;
+            var t = Date.now() / 1000;
+            var bass = getEnergy(0, 16);
+            var mid = getEnergy(16, 80);
 
-            // Get bass energy for particle spawning
-            let energy = 0;
-            for (let i = 0; i < 32; i++) energy += frequencyData[i];
-            energy = energy / 32 / 255;
-
-            // Spawn particles
-            const spawnCount = Math.floor(energy * 8) + 1;
-            for (let i = 0; i < spawnCount; i++) {
-                if (alchemyParticles.length < 500) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const speed = 1 + energy * 4 + Math.random() * 2;
-                    const hue = (t * 30 + Math.random() * 60) % 360;
-                    alchemyParticles.push({
-                        x: w / 2,
-                        y: h / 2,
-                        vx: Math.cos(angle) * speed,
-                        vy: Math.sin(angle) * speed,
-                        life: 1,
-                        decay: 0.005 + Math.random() * 0.015,
-                        size: 2 + energy * 4 + Math.random() * 3,
-                        hue: hue,
-                    });
-                }
+            // Spawn
+            var count = Math.floor(bass * 12) + 2;
+            for (var s = 0; s < count && alchemyParticles.length < 600; s++) {
+                var angle = Math.random() * Math.PI * 2;
+                var speed = 1.5 + bass * 5 + Math.random() * 2;
+                alchemyParticles.push({
+                    x: w / 2 + (Math.random() - 0.5) * 20,
+                    y: h / 2 + (Math.random() - 0.5) * 20,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1,
+                    decay: 0.004 + Math.random() * 0.012,
+                    size: 2.5 + bass * 5 + Math.random() * 4,
+                    hue: (t * 35 + Math.random() * 80) % 360
+                });
             }
 
             // Fade
-            ctx.fillStyle = 'rgba(0, 0, 8, 0.12)';
+            ctx.fillStyle = 'rgba(0, 0, 8, 0.1)';
             ctx.fillRect(0, 0, w, h);
 
-            // Draw & update particles
-            alchemyParticles = alchemyParticles.filter(p => {
+            // Central orb
+            var orbR = 25 + bass * 80 + mid * 30;
+            var orbHue = (t * 45) % 360;
+            ctx.save();
+            ctx.shadowColor = 'hsl(' + orbHue + ', 100%, 60%)';
+            ctx.shadowBlur = 30 + bass * 40;
+            var og = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, orbR);
+            og.addColorStop(0, 'hsla(' + orbHue + ', 100%, 85%, 0.7)');
+            og.addColorStop(0.3, 'hsla(' + orbHue + ', 100%, 60%, 0.4)');
+            og.addColorStop(0.7, 'hsla(' + orbHue + ', 80%, 40%, 0.15)');
+            og.addColorStop(1, 'transparent');
+            ctx.fillStyle = og;
+            ctx.beginPath();
+            ctx.arc(w / 2, h / 2, orbR, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Particles
+            var alive = [];
+            for (var i = 0; i < alchemyParticles.length; i++) {
+                var p = alchemyParticles[i];
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vy += 0.02; // slight gravity
+                p.vy += 0.015;
                 p.life -= p.decay;
-                if (p.life <= 0) return false;
+                if (p.life <= 0) continue;
 
                 ctx.save();
-                ctx.globalAlpha = p.life * 0.8;
+                ctx.globalAlpha = p.life;
                 ctx.shadowColor = 'hsl(' + p.hue + ', 100%, 60%)';
-                ctx.shadowBlur = 10;
-                ctx.fillStyle = 'hsl(' + p.hue + ', 100%, 65%)';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = 'hsl(' + p.hue + ', 100%, 70%)';
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
 
-                return true;
-            });
+                alive.push(p);
+            }
+            alchemyParticles = alive;
 
-            // Central orb
-            const orbSize = 20 + energy * 60;
-            const orbGrad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, orbSize);
-            const orbHue = (t * 40) % 360;
-            orbGrad.addColorStop(0, 'hsla(' + orbHue + ', 100%, 80%, 0.6)');
-            orbGrad.addColorStop(0.5, 'hsla(' + orbHue + ', 100%, 50%, 0.2)');
-            orbGrad.addColorStop(1, 'transparent');
-            ctx.fillStyle = orbGrad;
-            ctx.beginPath();
-            ctx.arc(w / 2, h / 2, orbSize, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Connecting lines between nearby particles
+            // Connection lines (sample subset for performance)
             ctx.save();
-            ctx.globalAlpha = 0.08;
+            ctx.globalAlpha = 0.06;
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 0.5;
-            for (let i = 0; i < alchemyParticles.length; i += 3) {
-                for (let j = i + 3; j < alchemyParticles.length; j += 3) {
-                    const dx = alchemyParticles[i].x - alchemyParticles[j].x;
-                    const dy = alchemyParticles[i].y - alchemyParticles[j].y;
-                    const dist = dx * dx + dy * dy;
-                    if (dist < 10000) {
+            for (var m = 0; m < alchemyParticles.length; m += 4) {
+                for (var n = m + 4; n < alchemyParticles.length; n += 4) {
+                    var dx = alchemyParticles[m].x - alchemyParticles[n].x;
+                    var dy = alchemyParticles[m].y - alchemyParticles[n].y;
+                    if (dx * dx + dy * dy < 12000) {
                         ctx.beginPath();
-                        ctx.moveTo(alchemyParticles[i].x, alchemyParticles[i].y);
-                        ctx.lineTo(alchemyParticles[j].x, alchemyParticles[j].y);
+                        ctx.moveTo(alchemyParticles[m].x, alchemyParticles[m].y);
+                        ctx.lineTo(alchemyParticles[n].x, alchemyParticles[n].y);
                         ctx.stroke();
                     }
                 }
@@ -1527,51 +1243,145 @@
 
         // ===== VIZ: GEISS TUNNEL =====
         function drawGeiss(w, h) {
-            const t = Date.now() / 1000;
+            var t = Date.now() / 1000;
+            var bass = getEnergy(0, 16);
+            var mid = getEnergy(16, 80);
 
-            let energy = 0;
-            for (let i = 0; i < 64; i++) energy += frequencyData[i];
-            energy = energy / 64 / 255;
+            geissAngle += 0.006 + bass * 0.04;
 
-            geissAngle += 0.005 + energy * 0.03;
-
-            // Fade with slight persistence
-            ctx.fillStyle = 'rgba(0, 0, 8, 0.06)';
+            // Persistence fade
+            ctx.fillStyle = 'rgba(0, 0, 8, 0.05)';
             ctx.fillRect(0, 0, w, h);
 
             ctx.save();
             ctx.translate(w / 2, h / 2);
 
-            const rings = 30;
-            for (let r = 0; r < rings; r++) {
-                const progress = r / rings;
-                const radius = 20 + progress * Math.max(w, h) * 0.6;
-                const segments = 48;
-                const hue = (progress * 200 + t * 60) % 360;
-                const freqIdx = Math.floor(progress * frequencyData.length * 0.5);
-                const freqVal = frequencyData[freqIdx] / 255;
+            var rings = 35;
+            var maxR = Math.max(w, h) * 0.65;
+
+            for (var r = 0; r < rings; r++) {
+                var progress = r / rings;
+                var radius = 15 + progress * maxR;
+                var segments = 64;
+                var hue = (progress * 240 + t * 50) % 360;
+                var freqIdx = Math.floor(progress * frequencyData.length * 0.4);
+                var freqVal = frequencyData[freqIdx] / 255;
+
+                var alpha = (0.6 - progress * 0.5) * (0.3 + freqVal * 0.7);
+                if (alpha <= 0.01) continue;
 
                 ctx.save();
-                ctx.rotate(geissAngle * (1 - progress * 0.5));
+                ctx.rotate(geissAngle * (1 - progress * 0.6) * (r % 2 === 0 ? 1 : -0.5));
 
-                ctx.strokeStyle = 'hsla(' + hue + ', 100%, ' + (40 + freqVal * 30) + '%, ' + (0.4 - progress * 0.35) + ')';
-                ctx.lineWidth = 1 + freqVal * 3;
+                ctx.strokeStyle = 'hsla(' + hue + ', 100%, ' + (45 + freqVal * 35) + '%, ' + alpha + ')';
+                ctx.lineWidth = 1.5 + freqVal * 4;
 
-                if (freqVal > 0.1) {
+                if (freqVal > 0.15) {
                     ctx.shadowColor = 'hsl(' + hue + ', 100%, 60%)';
-                    ctx.shadowBlur = freqVal * 15;
+                    ctx.shadowBlur = freqVal * 20;
                 }
 
                 ctx.beginPath();
-                for (let s = 0; s <= segments; s++) {
-                    const angle = (s / segments) * Math.PI * 2;
-                    const wobble = freqVal * 15 * Math.sin(angle * 6 + t * 3 + r);
-                    const x = Math.cos(angle) * (radius + wobble);
-                    const y = Math.sin(angle) * (radius + wobble);
-                    if (s === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
+                for (var s = 0; s <= segments; s++) {
+                    var a = (s / segments) * Math.PI * 2;
+                    var wobble = freqVal * 20 * Math.sin(a * 5 + t * 3.5 + r * 0.5);
+                    var px = Math.cos(a) * (radius + wobble);
+                    var py = Math.sin(a) * (radius + wobble);
+                    if (s === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
                 }
                 ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Central bright point
+            var cg = ctx.createRadialGradient(0, 0, 0, 0, 0, 30 + bass * 50);
+            cg.addColorStop(0, 'rgba(255, 255, 255, ' + (0.3 + bass * 0.5) + ')');
+            cg.addColorStop(0.5, 'rgba(74, 144, 255, ' + (0.1 + bass * 0.2) + ')');
+            cg.addColorStop(1, 'transparent');
+            ctx.fillStyle = cg;
+            ctx.fillRect(-w / 2, -h / 2, w, h);
+
+            ctx.restore();
+        }
+
+        // ===== VIZ: MILKDROP =====
+        function drawMilkdrop(w, h) {
+            milkdropTime += 0.016;
+            var t = milkdropTime;
+
+            var bass = getEnergy(0, 10);
+            var mid = getEnergy(10, 80);
+            var treble = getEnergy(80, 200);
+
+            // Feedback zoom/rotation — read current canvas, draw it back zoomed
+            ctx.save();
+            ctx.globalAlpha = 0.93;
+            var zoom = 1.012 + bass * 0.025;
+            ctx.translate(w / 2, h / 2);
+            ctx.scale(zoom, zoom);
+            ctx.rotate(0.003 + mid * 0.012);
+            ctx.translate(-w / 2, -h / 2);
+            ctx.drawImage(canvas, 0, 0, w, h);
+            ctx.restore();
+
+            // Slight darken to prevent blow-out
+            ctx.fillStyle = 'rgba(0, 0, 8, 0.03)';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.save();
+            ctx.translate(w / 2, h / 2);
+
+            // Three morphing waveform rings
+            var points = 128;
+            var energies = [bass, mid, treble];
+            for (var layer = 0; layer < 3; layer++) {
+                var hue = (t * 25 + layer * 120) % 360;
+                var e = energies[layer];
+                var alpha = 0.4 + e * 0.6;
+
+                ctx.save();
+                ctx.strokeStyle = 'hsla(' + hue + ', 100%, 65%, ' + alpha + ')';
+                ctx.lineWidth = 1.5 + e * 3;
+                ctx.shadowColor = 'hsl(' + hue + ', 100%, 60%)';
+                ctx.shadowBlur = 10 + e * 25;
+
+                ctx.beginPath();
+                for (var i = 0; i <= points; i++) {
+                    var angle = (i / points) * Math.PI * 2;
+                    var dIdx = Math.floor((i / points) * timeDomainData.length);
+                    var amp = (timeDomainData[dIdx] - 128) / 128;
+                    var baseR = Math.min(w, h) * (0.12 + layer * 0.09);
+                    var rr = baseR + amp * baseR * (0.6 + e) +
+                             Math.sin(angle * 3 + t * (1 + layer * 0.5)) * 12 * e;
+                    var px = Math.cos(angle + t * 0.08 * (layer + 1)) * rr;
+                    var py = Math.sin(angle + t * 0.08 * (layer + 1)) * rr;
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Starburst spokes
+            var spokes = 48;
+            for (var j = 0; j < spokes; j++) {
+                var sa = (j / spokes) * Math.PI * 2 + t * 0.04;
+                var si = Math.floor((j / spokes) * frequencyData.length * 0.4);
+                var sv = frequencyData[si] / 255;
+                var sl = sv * Math.min(w, h) * 0.45;
+                var sh = (j / spokes * 360 + t * 35) % 360;
+
+                if (sv < 0.05) continue;
+
+                ctx.save();
+                ctx.strokeStyle = 'hsla(' + sh + ', 100%, 60%, ' + (sv * 0.5) + ')';
+                ctx.lineWidth = 1 + sv * 2.5;
+                ctx.shadowColor = 'hsl(' + sh + ', 100%, 55%)';
+                ctx.shadowBlur = sv * 10;
+                ctx.beginPath();
+                ctx.moveTo(Math.cos(sa) * 25, Math.sin(sa) * 25);
+                ctx.lineTo(Math.cos(sa) * sl, Math.sin(sa) * sl);
                 ctx.stroke();
                 ctx.restore();
             }
@@ -1579,89 +1389,31 @@
             ctx.restore();
         }
 
-        // ===== VIZ: MILKDROP (psychedelic feedback) =====
-        function drawMilkdrop(w, h) {
-            milkdropTime += 0.016;
-            const t = milkdropTime;
+        // ===== IDLE ANIMATION (before stream starts) =====
+        function animateIdle() {
+            animFrameId = requestAnimationFrame(animateIdle);
+            var w = vizContainer.clientWidth;
+            var h = vizContainer.clientHeight;
+            ctx.clearRect(0, 0, w, h);
 
-            let bassEnergy = 0, midEnergy = 0, trebleEnergy = 0;
-            const binSize = Math.floor(frequencyData.length / 3);
-            for (let i = 0; i < binSize; i++) bassEnergy += frequencyData[i];
-            for (let i = binSize; i < binSize * 2; i++) midEnergy += frequencyData[i];
-            for (let i = binSize * 2; i < frequencyData.length; i++) trebleEnergy += frequencyData[i];
-            bassEnergy = bassEnergy / binSize / 255;
-            midEnergy = midEnergy / binSize / 255;
-            trebleEnergy = trebleEnergy / binSize / 255;
-
-            // Slight zoom/rotation feedback effect
-            ctx.save();
-            ctx.globalAlpha = 0.92;
-            const zoomAmt = 1.01 + bassEnergy * 0.02;
-            ctx.translate(w / 2, h / 2);
-            ctx.scale(zoomAmt, zoomAmt);
-            ctx.rotate(0.002 + midEnergy * 0.01);
-            ctx.translate(-w / 2, -h / 2);
-            ctx.drawImage(canvas, 0, 0, w, h);
-            ctx.restore();
-
-            // Darken slightly
-            ctx.fillStyle = 'rgba(0, 0, 8, 0.04)';
-            ctx.fillRect(0, 0, w, h);
-
-            ctx.save();
-            ctx.translate(w / 2, h / 2);
-
-            // Waveform as a morphing shape
-            const points = 128;
-            for (let layer = 0; layer < 3; layer++) {
-                const hue = (t * 20 + layer * 120) % 360;
-                const energy = [bassEnergy, midEnergy, trebleEnergy][layer];
-                const alpha = 0.3 + energy * 0.5;
-
-                ctx.strokeStyle = 'hsla(' + hue + ', 100%, 60%, ' + alpha + ')';
-                ctx.lineWidth = 1 + energy * 2;
-                ctx.shadowColor = 'hsl(' + hue + ', 100%, 60%)';
-                ctx.shadowBlur = energy * 20;
-
+            var t = Date.now() / 1000;
+            for (var i = 0; i < 6; i++) {
+                var x = w / 2 + Math.sin(t * 0.4 + i * 1.1) * w * 0.25;
+                var y = h / 2 + Math.cos(t * 0.25 + i * 1.7) * h * 0.2;
+                var r = 50 + Math.sin(t * 0.6 + i) * 25;
+                var hue = (i * 60 + t * 15) % 360;
+                var grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                grad.addColorStop(0, 'hsla(' + hue + ', 80%, 55%, 0.2)');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
                 ctx.beginPath();
-                for (let i = 0; i <= points; i++) {
-                    const angle = (i / points) * Math.PI * 2;
-                    const dataIdx = Math.floor((i / points) * timeDomainData.length);
-                    const amplitude = (timeDomainData[dataIdx] - 128) / 128;
-                    const baseR = Math.min(w, h) * (0.15 + layer * 0.08);
-                    const r = baseR + amplitude * baseR * (0.5 + energy) +
-                              Math.sin(angle * 3 + t * (1 + layer * 0.5)) * 10 * energy;
-                    const x = Math.cos(angle + t * 0.1 * (layer + 1)) * r;
-                    const y = Math.sin(angle + t * 0.1 * (layer + 1)) * r;
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.closePath();
-                ctx.stroke();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
             }
-
-            // Frequency "starburst" spokes
-            const spokeCount = 32;
-            for (let i = 0; i < spokeCount; i++) {
-                const angle = (i / spokeCount) * Math.PI * 2 + t * 0.05;
-                const idx = Math.floor((i / spokeCount) * frequencyData.length * 0.5);
-                const val = frequencyData[idx] / 255;
-                const len = val * Math.min(w, h) * 0.4;
-                const hue = (i / spokeCount * 360 + t * 30) % 360;
-
-                ctx.strokeStyle = 'hsla(' + hue + ', 100%, 60%, ' + (val * 0.4) + ')';
-                ctx.lineWidth = 1 + val * 2;
-                ctx.beginPath();
-                ctx.moveTo(Math.cos(angle) * 30, Math.sin(angle) * 30);
-                ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
-                ctx.stroke();
-            }
-
-            ctx.restore();
         }
 
-        // ===== KICK OFF IDLE ANIMATION =====
-        startIdleAnimation();
+        // Start idle loop
+        animateIdle();
 
     })();
     </script>
