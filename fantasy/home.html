@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#070B14">
+  <title>Data Dive Fantasy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/client.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #070B14;
+      --surface:     #0D1520;
+      --surface2:    #111B2E;
+      --border:      #1A2740;
+      --orange:      #FF6B0A;
+      --orange-dim:  rgba(255,107,10,0.12);
+      --orange-glow: rgba(255,107,10,0.4);
+      --green:       #69f0ae;
+      --blue:        #4A90FF;
+      --text:        #E8EDF5;
+      --text-dim:    #8899AA;
+      --text-muted:  #4A5568;
+      --error:       #FF4D6A;
+      --safe-top:    env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --nav-h:       58px;
+      --top-h:       56px;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* ── Loading overlay ──────────────────────────────────────────────────── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 999;
+      transition: opacity 0.3s;
+    }
+
+    #loading.fade {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .load-ball {
+      font-size: 42px;
+      animation: spin 1.2s linear infinite;
+    }
+
+    @keyframes spin    { to { transform: rotate(360deg); } }
+    @keyframes float   {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+    @keyframes fadeUp  {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .load-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+    }
+
+    /* ── App shell ────────────────────────────────────────────────────────── */
+    #app {
+      display: none;
+      flex-direction: column;
+      height: 100dvh;
+    }
+
+    #app.visible { display: flex; }
+
+    /* ── Top bar ──────────────────────────────────────────────────────────── */
+    .top-bar {
+      flex-shrink: 0;
+      height: calc(var(--safe-top) + var(--top-h));
+      padding: calc(var(--safe-top) + 12px) 16px 12px;
+      background: rgba(7,11,20,0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .top-logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--orange);
+      letter-spacing: 0.06em;
+      text-shadow: 0 0 14px var(--orange-glow);
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px 4px 4px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── Scroll area ──────────────────────────────────────────────────────── */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    .scroll-inner {
+      padding-bottom: calc(var(--safe-bottom) + var(--nav-h) + 20px);
+    }
+
+    /* ── Section ──────────────────────────────────────────────────────────── */
+    .section { padding: 20px 16px 0; }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    /* ── Season live banner ───────────────────────────────────────────────── */
+    .live-banner {
+      background: linear-gradient(135deg, rgba(255,107,10,0.1), rgba(74,144,255,0.07));
+      border: 1px solid rgba(255,107,10,0.28);
+      border-radius: 13px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #FF4D4D;
+      box-shadow: 0 0 6px #FF4D4D;
+      animation: pulse 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.6; transform: scale(0.85); }
+    }
+
+    .live-text .title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--orange);
+      letter-spacing: 0.04em;
+    }
+
+    .live-text .sub {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    /* ── No-league card ───────────────────────────────────────────────────── */
+    .no-league-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px 28px;
+      text-align: center;
+      animation: fadeUp 0.4s ease 0.05s both;
+    }
+
+    .no-league-icon {
+      font-size: 56px;
+      line-height: 1;
+      margin-bottom: 14px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .no-league-card h2 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .no-league-card p {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 14px 10px;
+      background: var(--orange);
+      border: none;
+      border-radius: 11px;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.3;
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 14px 10px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.3;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-secondary:active { transform: scale(0.97); background: var(--surface2); }
+
+    /* ── Stats cards row ──────────────────────────────────────────────────── */
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      padding: 0 16px;
+      animation: fadeUp 0.4s ease 0.1s both;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 12px;
+    }
+
+    .stat-card .lbl {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-card .val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--orange);
+      line-height: 1;
+    }
+
+    .stat-card .desc {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    /* ── How it works ─────────────────────────────────────────────────────── */
+    .how-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease 0.15s both;
+    }
+
+    .how-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+    }
+
+    .how-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .how-item:last-child { border-bottom: none; }
+
+    .how-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--orange-dim);
+      border: 1px solid rgba(255,107,10,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--orange);
+      flex-shrink: 0;
+    }
+
+    .how-text .title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .how-text .sub {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* ── Logout ───────────────────────────────────────────────────────────── */
+    .logout-btn {
+      width: 100%;
+      padding: 13px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .logout-btn:active { background: var(--surface2); color: var(--error); }
+
+    /* ── Bottom nav ───────────────────────────────────────────────────────── */
+    .bottom-nav {
+      flex-shrink: 0;
+      height: calc(var(--nav-h) + var(--safe-bottom));
+      padding-bottom: var(--safe-bottom);
+      background: rgba(7,11,20,0.97);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: stretch;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      padding-top: 8px;
+      transition: color 0.15s;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav-item.active { color: var(--orange); }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+    }
+
+    .nav-item .nav-dot {
+      display: none;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--orange);
+      margin-top: 2px;
+    }
+
+    .nav-item.active .nav-dot { display: block; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Loading overlay -->
+  <div id="loading">
+    <div class="load-ball">⚾</div>
+    <div class="load-text">LOADING YOUR SQUAD...</div>
+  </div>
+
+  <!-- App shell -->
+  <div id="app">
+
+    <!-- Top bar -->
+    <header class="top-bar">
+      <span class="top-logo">⚾ DATA DIVE</span>
+      <div class="user-pill" id="user-pill">
+        <div class="avatar" id="user-avatar">?</div>
+        <span class="user-name" id="user-name">—</span>
+      </div>
+    </header>
+
+    <!-- Scrollable content -->
+    <div class="scroll-area">
+      <div class="scroll-inner">
+
+        <!-- Live season banner -->
+        <div class="section">
+          <div class="live-banner">
+            <div class="live-dot"></div>
+            <div class="live-text">
+              <div class="title">2026 MLB SEASON — LIVE</div>
+              <div class="sub">Season underway · Real-time stats scoring</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No-league state (default) -->
+        <div class="section" id="no-league-section">
+          <div class="no-league-card">
+            <div class="no-league-icon">🏟️</div>
+            <h2>NO LEAGUE YET</h2>
+            <p>Start a new league and invite up to 9 friends, or join an existing one with an invite code from your commissioner.</p>
+            <div class="btn-row">
+              <a href="league.html?action=create" class="btn-primary">⚡ CREATE<br>LEAGUE</a>
+              <a href="league.html?action=join"   class="btn-secondary">🎟️ JOIN<br>LEAGUE</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- In-league state (shown after Phase 2) -->
+        <div class="section hidden" id="in-league-section">
+          <div id="league-summary"></div>
+        </div>
+
+        <!-- Quick stats -->
+        <div class="section">
+          <div class="section-label">LEAGUE FORMAT</div>
+        </div>
+        <div class="cards-row">
+          <div class="stat-card">
+            <div class="lbl">TEAMS</div>
+            <div class="val">10</div>
+            <div class="desc">Max size</div>
+          </div>
+          <div class="stat-card">
+            <div class="lbl">FORMAT</div>
+            <div class="val">H2H</div>
+            <div class="desc">Head-to-head</div>
+          </div>
+          <div class="stat-card">
+            <div class="lbl">CATS</div>
+            <div class="val">10</div>
+            <div class="desc">Vibe categories</div>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="section">
+          <div class="section-label">HOW IT WORKS</div>
+          <div class="how-card">
+            <div class="how-item">
+              <div class="how-num">1</div>
+              <div class="how-text">
+                <div class="title">Create or join a league</div>
+                <div class="sub">Up to 10 managers, set your draft date</div>
+              </div>
+            </div>
+            <div class="how-item">
+              <div class="how-num">2</div>
+              <div class="how-text">
+                <div class="title">Live snake draft</div>
+                <div class="sub">Real MLB players, 90-second pick timer</div>
+              </div>
+            </div>
+            <div class="how-item">
+              <div class="how-num">3</div>
+              <div class="how-text">
+                <div class="title">Compete on vibes</div>
+                <div class="sub">SAUCE · BEEF · VAR · DAWG · YOLO and 5 pitching cats</div>
+              </div>
+            </div>
+            <div class="how-item">
+              <div class="how-num">4</div>
+              <div class="how-text">
+                <div class="title">Weekly matchups all season</div>
+                <div class="sub">Add/drop, trades, waivers — full league experience</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logout -->
+        <div class="section" style="padding-top: 28px;">
+          <button class="logout-btn" onclick="FA.signOut()">LOG OUT</button>
+        </div>
+
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+      <button class="nav-item active" onclick="void(0)">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
+          <path d="M9 21V12h6v9"/>
+        </svg>
+        HOME
+        <div class="nav-dot"></div>
+      </button>
+
+      <button class="nav-item" onclick="comingSoon('My Team — Phase 4')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+          <path d="M2 12h20"/>
+        </svg>
+        MY TEAM
+        <div class="nav-dot"></div>
+      </button>
+
+      <button class="nav-item" onclick="comingSoon('Matchups — Phase 5')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+        MATCHUP
+        <div class="nav-dot"></div>
+      </button>
+
+      <button class="nav-item" onclick="comingSoon('Player Pool — Phase 4')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        PLAYERS
+        <div class="nav-dot"></div>
+      </button>
+
+      <button class="nav-item" onclick="comingSoon('League Hub — Phase 6')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9H4.5a2.5 2.5 0 000 5H6"/>
+          <path d="M18 9h1.5a2.5 2.5 0 010 5H18"/>
+          <path d="M8 9h8M8 14h8M12 4v5M12 15v5"/>
+        </svg>
+        LEAGUE
+        <div class="nav-dot"></div>
+      </button>
+    </nav>
+
+  </div><!-- /app -->
+
+  <script>
+    ;(async function () {
+      const session = await FA.requireAuth()
+      if (!session) return
+
+      try {
+        const [profile, leagueData] = await Promise.all([
+          FA.getProfile(session.user.id),
+          FA.getUserLeague(session.user.id),
+        ])
+
+        // Populate user pill
+        const avatar = document.getElementById('user-avatar')
+        avatar.style.background = profile.avatar_color || '#FF6B0A'
+        avatar.textContent      = FA.getInitials(profile.username)
+        document.getElementById('user-name').textContent = profile.username
+
+        // League state
+        if (leagueData) {
+          document.getElementById('no-league-section').classList.add('hidden')
+          document.getElementById('in-league-section').classList.remove('hidden')
+          // Populated in Phase 2
+          document.getElementById('league-summary').innerHTML = `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 16px;">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text-muted);margin-bottom:6px">YOUR LEAGUE</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--orange)">${leagueData.leagues.name}</div>
+              <div style="font-size:12px;color:var(--text-dim);margin-top:4px">Team: ${leagueData.team_name}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Invite code: <span style="color:var(--text);font-family:'JetBrains Mono',monospace">${leagueData.leagues.invite_code}</span></div>
+            </div>
+          `
+        }
+      } catch (err) {
+        console.error('Home init error:', err)
+      }
+
+      // Reveal app
+      const loading = document.getElementById('loading')
+      loading.classList.add('fade')
+      setTimeout(() => {
+        loading.style.display = 'none'
+        const app = document.getElementById('app')
+        app.classList.add('visible')
+      }, 300)
+    })()
+
+    function comingSoon(label) {
+      // Temporary until pages are built
+      const el = document.createElement('div')
+      el.style.cssText = `
+        position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);left:50%;
+        transform:translateX(-50%);background:#1A2740;border:1px solid #243352;
+        border-radius:10px;padding:10px 18px;font-family:'JetBrains Mono',monospace;
+        font-size:11px;color:#8899AA;white-space:nowrap;z-index:500;
+        animation:fadeUp .2s ease both;
+      `
+      el.textContent = `${label} — coming soon`
+      document.body.appendChild(el)
+      setTimeout(() => el.remove(), 2200)
+    }
+  </script>
+</body>
+</html>
