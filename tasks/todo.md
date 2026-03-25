@@ -1,101 +1,113 @@
-# Bar Trivia Night Build Plan
-## datadivebar.com/barcade/bar-trivia.html — Dive Bar Trivia Game
+# Fantasy Baseball Multiplayer Overhaul
+## datadivebar.com/fantasy/ — Sleeper-Style Multiplayer Fantasy Baseball
 
-### Concept
-Timed trivia game pulling questions from existing Data Dive Bar articles. 10 questions per round, 15-second timer visualized as a draining beer glass. Wrong answers get bartender roasts. Three difficulty tiers. Supabase leaderboard. Shareable results screen.
-
-### Success Criteria
-- [ ] 10-question timed trivia rounds with 15-second countdown per question
-- [ ] Beer glass drain animation as timer visual
-- [ ] 30+ questions across 3 article categories (Deadliest Animal, Brofessor, Survival)
-- [ ] 3 difficulty tiers: Lightweight, Regular, Closing Time
-- [ ] Snarky bartender roasts on wrong answers
-- [ ] Supabase leaderboard (same pattern as Bar Invaders / Pit Viper)
-- [ ] "Napkin Stats" results screen with score, accuracy, streak, speed
-- [ ] Arcade cabinet card added to barcade/index.html
-- [ ] Dive bar aesthetic matching existing site design
-- [ ] Mobile responsive
+### Vision
+Full multiplayer fantasy baseball league for up to 10 real players. User accounts with login/password. Sleeper-style mobile-first UI. Complete fantasy experience: drafts, rosters, matchups, waivers, trades, chat.
 
 ---
 
-## Implementation Checklist
+## Master Plan — 10 Steps
 
-### Phase 1: Setup
-- [ ] Create barcade/bar-trivia.html (self-contained, single file)
-- [ ] Update tasks/todo.md with plan
+### Step 1: App Shell & Auth (CURRENT)
+- [x] Mobile-first Sleeper-style UI shell
+- [x] Bottom tab navigation (Home, Matchup, League, Players, More)
+- [x] Auth screens: Login, Register, Forgot Password
+- [x] localStorage-based auth (designed for Supabase upgrade)
+- [x] Home dashboard with league overview
+- [x] Team profile creation (name, avatar/emoji)
+- [x] Sleeper dark theme with green accents
+- [x] PWA-ready viewport and touch optimizations
 
-### Phase 2: Question Bank
-- [ ] Build 36+ trivia questions from article data (12 per article)
-- [ ] Each question: text, 4 choices, correct answer, category, difficulty, source article link
-- [ ] Bartender roast lines for wrong answers (10+ unique roasts)
+### Step 2: League Management
+- [ ] Create League screen (name, size 4-10, scoring type, draft date)
+- [ ] Join League via invite code
+- [ ] League settings (commissioner controls)
+- [ ] League lobby showing all members
+- [ ] Commissioner tools: set draft order, adjust settings
+- [ ] Supabase integration for persistent data
 
-### Phase 3: Core Game Engine
-- [ ] Title screen with difficulty selection
-- [ ] Question display with 4 answer buttons
-- [ ] 15-second countdown timer
-- [ ] Score tracking (points = speed bonus + correctness)
-- [ ] 10-question round flow with transitions
-- [ ] Game over → results screen
+### Step 3: Real-Time Draft Room
+- [ ] Snake draft with real-time multiplayer (Supabase Realtime)
+- [ ] Draft lobby with countdown timer
+- [ ] Player search and filtering in draft
+- [ ] Auto-draft for disconnected/AFK users
+- [ ] Draft pick timer (configurable 30s-120s)
+- [ ] Live draft board showing all picks
+- [ ] Post-draft recap and grades
 
-### Phase 4: Beer Glass Timer
-- [ ] SVG or CSS beer glass that drains over 15 seconds
-- [ ] Color shifts from golden to empty as time runs out
-- [ ] Foam/bubbles animation detail
+### Step 4: Roster & Lineup Management
+- [ ] Full roster view with starting lineup and bench
+- [ ] Roster positions: C, 1B, 2B, 3B, SS, OF×3, UTIL, SP×2, RP×2, BN×3, IL×2
+- [ ] Set/lock lineups before first pitch
+- [ ] Player cards with stats, news, projections
+- [ ] Roster alerts (injured players in lineup, empty slots)
 
-### Phase 5: Visual Design
-- [ ] Dark dive bar background matching site aesthetic
-- [ ] Neon accent colors (orange, green, blue)
-- [ ] Share Tech Mono / Press Start 2P fonts
-- [ ] CRT scanlines + vignette overlay
-- [ ] Correct/wrong answer flash effects
-- [ ] Category badges on questions
+### Step 5: Matchups & Live Scoring
+- [ ] Weekly H2H matchup view
+- [ ] Live scoring pulling from MLB Stats API
+- [ ] Category-by-category comparison
+- [ ] Scoring notifications for big plays
+- [ ] Matchup history and head-to-head records
 
-### Phase 6: Results Screen ("Napkin Stats")
-- [ ] Final score with rank title
-- [ ] Accuracy percentage
-- [ ] Best streak
-- [ ] Average response time
-- [ ] Category breakdown
-- [ ] "Play Again" and "Leaderboard" buttons
+### Step 6: Standings & Schedule
+- [ ] Full season standings with W-L-T record
+- [ ] Playoff bracket (top 4 or 6 teams)
+- [ ] Complete season schedule
+- [ ] Clinching scenarios
+- [ ] Points-for/points-against tracking
 
-### Phase 7: Leaderboard
-- [ ] Supabase integration (same credentials as other games)
-- [ ] Table: bar_trivia_scores (name, score, accuracy, difficulty, timestamp)
-- [ ] Offline queue + local fallback (same pattern)
-- [ ] Name entry (8 char, uppercase)
+### Step 7: Waiver Wire & Free Agency
+- [ ] Waiver priority system (inverse of standings)
+- [ ] FAAB (Free Agent Acquisition Budget) option
+- [ ] Add/Drop interface
+- [ ] Waiver claim queue
+- [ ] Free agent search with filters
 
-### Phase 8: Integration
-- [ ] Add arcade cabinet card to barcade/index.html
-- [ ] Test in browser
-- [ ] Verify leaderboard works
+### Step 8: Trade System
+- [ ] Propose trades (player-for-player, multi-player)
+- [ ] Trade review period (24-48 hrs)
+- [ ] League vote on trades (optional)
+- [ ] Commissioner veto power
+- [ ] Trade history log
 
-### Phase 9: Commit & Push
-- [ ] git add all changed files
-- [ ] git commit with descriptive message
-- [ ] git push -u origin claude/explore-new-features-CnsQk
+### Step 9: Social Features
+- [ ] League chat (real-time messaging)
+- [ ] Activity feed (transactions, scores, trash talk)
+- [ ] @ mentions and reactions
+- [ ] Matchup trash talk thread
+- [ ] Weekly recap / newsletter
+
+### Step 10: Polish & PWA
+- [ ] Service worker for offline support
+- [ ] Push notifications via web push API
+- [ ] Add to Home Screen prompt
+- [ ] Performance optimization
+- [ ] Onboarding tutorial for new users
+- [ ] Season awards and trophies
 
 ---
 
 ## Architecture Notes
 
-### Scoring System
-- Base: 100 points per correct answer
-- Speed bonus: up to +50 points based on time remaining (50 * timeLeft/15)
-- Difficulty multiplier: Lightweight 1x, Regular 1.5x, Closing Time 2x
-- Max possible score per question: 150 * difficulty multiplier
-- Wrong answer: 0 points
+### Tech Stack
+- Vanilla HTML/CSS/JS (no frameworks) per project convention
+- Supabase for auth, database, and realtime (CDN include)
+- MLB Stats API for player data and live scoring
+- localStorage for offline/draft state caching
+- Single self-contained HTML file per project convention
 
-### Question Categories
-- 🦌 "Deadliest Animal" — animal death statistics
-- ⚾ "The Brofessor" — baseball/PED statistics
-- 💧 "Survival" — water/emergency preparedness stats
+### Data Model (Supabase)
+- `users` — id, email, display_name, avatar_emoji, created_at
+- `leagues` — id, name, commissioner_id, size, scoring_type, draft_date, settings_json
+- `league_members` — league_id, user_id, team_name, team_emoji, draft_position
+- `rosters` — id, league_member_id, player_mlb_id, roster_position, is_bench
+- `matchups` — id, league_id, week, team_a_id, team_b_id, scores_json
+- `draft_picks` — id, league_id, round, pick_number, league_member_id, player_mlb_id
+- `transactions` — id, league_id, type (trade/add/drop/waiver), details_json, timestamp
+- `messages` — id, league_id, user_id, content, timestamp
 
-### Difficulty Tiers
-- **Lightweight**: Easier questions, wider answer spread, more obvious wrong answers
-- **Regular**: Medium difficulty, plausible distractors
-- **Closing Time**: Hardest questions, very close answer values, trick questions
-
-### Bartender Roast Examples
-- "That's... not even close. You been drinking already?"
-- "Wrong. I've seen better guesses from the jukebox."
-- "Buddy, even the dart board knows that one."
+### Scoring Options
+- H2H Categories (default): Win categories head-to-head each week
+- H2H Points: Total points head-to-head each week
+- Roto: Season-long rotisserie standings
+- Vibes Mode: The Brofessor's proprietary metrics (SAUCE, BEEF, FILTH, etc.)
