@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#070B14">
+  <title>Data Dive Fantasy — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/client.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #070B14;
+      --surface:     #0D1520;
+      --surface2:    #111B2E;
+      --border:      #1A2740;
+      --border2:     #243352;
+      --orange:      #FF6B0A;
+      --orange-glow: rgba(255,107,10,0.18);
+      --green:       #69f0ae;
+      --blue:        #4A90FF;
+      --text:        #E8EDF5;
+      --text-dim:    #8899AA;
+      --text-muted:  #4A5568;
+      --error:       #FF4D6A;
+      --safe-top:    env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding:
+        calc(var(--safe-top) + 40px)
+        20px
+        calc(var(--safe-bottom) + 32px);
+      gap: 0;
+    }
+
+    /* ── Logo ─────────────────────────────────────────────────────────────── */
+    .auth-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .logo-ball {
+      font-size: 52px;
+      line-height: 1;
+      animation: float 3.2s ease-in-out infinite;
+      filter: drop-shadow(0 0 16px rgba(255,107,10,0.4));
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(-4deg); }
+      50%       { transform: translateY(-8px) rotate(4deg); }
+    }
+
+    .logo-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--orange);
+      text-shadow: 0 0 24px rgba(255,107,10,0.5);
+    }
+
+    .logo-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      color: var(--text-dim);
+      margin-top: -4px;
+    }
+
+    .logo-tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-style: italic;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────────────────── */
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    /* ── Tabs ─────────────────────────────────────────────────────────────── */
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 17px 12px;
+      background: none;
+      border: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.2s;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-btn.active { color: var(--orange); }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 16px;
+      right: 16px;
+      height: 2px;
+      background: var(--orange);
+      border-radius: 2px 2px 0 0;
+      box-shadow: 0 0 8px rgba(255,107,10,0.6);
+    }
+
+    /* ── Form ─────────────────────────────────────────────────────────────── */
+    .auth-form {
+      padding: 22px 22px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .auth-form.hidden { display: none; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    .field label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: var(--text-dim);
+    }
+
+    .field-wrap { position: relative; }
+
+    .field input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px; /* prevents iOS zoom on focus */
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .field input::placeholder { color: var(--text-muted); }
+
+    .field input:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px var(--orange-glow);
+    }
+
+    .field input.err  { border-color: var(--error) !important; box-shadow: none; }
+    .field input.ok   { border-color: var(--green)  !important; box-shadow: none; }
+
+    .field-msg {
+      font-size: 11px;
+      color: var(--text-muted);
+      min-height: 14px;
+      padding-left: 2px;
+    }
+    .field-msg.err { color: var(--error); }
+    .field-msg.ok  { color: var(--green); }
+
+    .pw-toggle {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 17px;
+      padding: 6px;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .input-suffix {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      pointer-events: none;
+    }
+
+    /* ── Color picker ─────────────────────────────────────────────────────── */
+    .color-picker {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 4px 0;
+    }
+
+    .color-swatch {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+
+    .color-swatch:active { transform: scale(0.9); }
+
+    .color-swatch.selected {
+      border-color: #fff;
+      transform: scale(1.18);
+      box-shadow: 0 0 10px rgba(255,255,255,0.25);
+    }
+
+    .color-swatch.selected::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    /* ── Alert banner ─────────────────────────────────────────────────────── */
+    .alert {
+      display: none;
+      padding: 11px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .alert.show { display: block; }
+    .alert.err  { background: rgba(255,77,106,0.1);  border: 1px solid rgba(255,77,106,0.3);  color: var(--error); }
+    .alert.info { background: rgba(105,240,174,0.08); border: 1px solid rgba(105,240,174,0.25); color: var(--green); }
+
+    /* ── Primary button ───────────────────────────────────────────────────── */
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      background: var(--orange);
+      border: none;
+      border-radius: 11px;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      -webkit-appearance: none;
+      appearance: none;
+      margin-top: 4px;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary:active  { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .btn-primary .btn-text { display: block; }
+
+    .btn-primary .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      margin: 0 auto;
+    }
+
+    .btn-primary.loading .btn-text    { display: none; }
+    .btn-primary.loading .spinner     { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ───────────────────────────────────────────────────────────── */
+    .form-footer {
+      padding: 16px 22px 20px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .form-footer a { color: var(--text-dim); text-decoration: underline; }
+
+    /* ── Section divider ──────────────────────────────────────────────────── */
+    .form-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2px 0 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Logo -->
+  <header class="auth-logo">
+    <div class="logo-ball">⚾</div>
+    <div class="logo-title">DATA DIVE</div>
+    <div class="logo-sub">FANTASY BASEBALL</div>
+    <div class="logo-tagline">Where vibes determine value</div>
+  </header>
+
+  <!-- Auth card -->
+  <div class="auth-card">
+
+    <!-- Tab switcher -->
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true"  data-tab="login">LOG IN</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" data-tab="signup">SIGN UP</button>
+    </div>
+
+    <!-- ── LOGIN ──────────────────────────────────────────────────────────── -->
+    <form id="login-form" class="auth-form" autocomplete="on" novalidate>
+
+      <div id="login-alert" class="alert"></div>
+
+      <div class="field">
+        <label for="login-email">EMAIL</label>
+        <input type="email" id="login-email" name="email"
+               placeholder="you@example.com"
+               autocomplete="email" inputmode="email" required>
+      </div>
+
+      <div class="field">
+        <label for="login-pw">PASSWORD</label>
+        <div class="field-wrap">
+          <input type="password" id="login-pw" name="password"
+                 placeholder="••••••••"
+                 autocomplete="current-password" required>
+          <button type="button" class="pw-toggle" data-target="login-pw"
+                  aria-label="Show password">👁</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" id="login-btn">
+        <span class="btn-text">LOG IN</span>
+        <div class="spinner"></div>
+      </button>
+    </form>
+
+    <!-- ── SIGN UP ────────────────────────────────────────────────────────── -->
+    <form id="signup-form" class="auth-form hidden" autocomplete="on" novalidate>
+
+      <div id="signup-alert" class="alert"></div>
+
+      <div class="field">
+        <label for="signup-email">EMAIL</label>
+        <input type="email" id="signup-email" name="email"
+               placeholder="you@example.com"
+               autocomplete="email" inputmode="email" required>
+      </div>
+
+      <div class="field">
+        <label for="signup-username">USERNAME <span style="color:var(--text-muted);font-weight:400;font-family:'DM Sans',sans-serif;letter-spacing:0">(shown to other managers)</span></label>
+        <div class="field-wrap">
+          <input type="text" id="signup-username" name="username"
+                 placeholder="SluggerMike99"
+                 autocomplete="username" autocorrect="off" autocapitalize="none"
+                 maxlength="20" spellcheck="false" required>
+          <span class="input-suffix" id="username-indicator"></span>
+        </div>
+        <span class="field-msg" id="username-msg">Letters, numbers, underscores · 2–20 chars</span>
+      </div>
+
+      <div class="field">
+        <label for="signup-pw">PASSWORD</label>
+        <div class="field-wrap">
+          <input type="password" id="signup-pw" name="password"
+                 placeholder="••••••••"
+                 autocomplete="new-password" minlength="6" required>
+          <button type="button" class="pw-toggle" data-target="signup-pw"
+                  aria-label="Show password">👁</button>
+        </div>
+        <span class="field-msg" id="pw-msg">At least 6 characters</span>
+      </div>
+
+      <div class="field">
+        <label>AVATAR COLOR</label>
+        <div class="color-picker" id="color-picker" role="radiogroup" aria-label="Choose avatar color"></div>
+      </div>
+
+      <button type="submit" class="btn-primary" id="signup-btn">
+        <span class="btn-text">CREATE ACCOUNT</span>
+        <div class="spinner"></div>
+      </button>
+    </form>
+
+    <div class="form-footer">
+      By signing up you agree to have fun and accept losses gracefully.
+    </div>
+  </div>
+
+  <script>
+    // ── Redirect if already logged in ──────────────────────────────────────
+    FA.getSession().then(s => { if (s) window.location.replace('home.html') })
+
+    // ── State ──────────────────────────────────────────────────────────────
+    const COLORS = [
+      '#FF6B0A','#69f0ae','#4A90FF','#FF4081',
+      '#B388FF','#FFD740','#FF5722','#00BCD4',
+    ]
+    let selectedColor = COLORS[0]
+    let usernameOk    = null
+    let usernameTimer = null
+
+    // ── Avatar color picker ────────────────────────────────────────────────
+    const picker = document.getElementById('color-picker')
+    COLORS.forEach((c, i) => {
+      const btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'color-swatch' + (i === 0 ? ' selected' : '')
+      btn.style.background = c
+      btn.setAttribute('aria-label', `Color ${c}`)
+      btn.addEventListener('click', () => {
+        picker.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'))
+        btn.classList.add('selected')
+        selectedColor = c
+      })
+      picker.appendChild(btn)
+    })
+
+    // ── Tab switching ──────────────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.tab === tab)
+          b.setAttribute('aria-selected', b.dataset.tab === tab)
+        })
+        document.getElementById('login-form').classList.toggle('hidden', tab !== 'login')
+        document.getElementById('signup-form').classList.toggle('hidden', tab !== 'signup')
+        clearAlerts()
+      })
+    })
+
+    // ── Password visibility toggles ────────────────────────────────────────
+    document.querySelectorAll('.pw-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.target)
+        const show  = input.type === 'password'
+        input.type  = show ? 'text' : 'password'
+        btn.textContent = show ? '🙈' : '👁'
+      })
+    })
+
+    // ── Username availability (debounced) ──────────────────────────────────
+    document.getElementById('signup-username').addEventListener('input', function () {
+      const val  = this.value.trim()
+      const msg  = document.getElementById('username-msg')
+      const icon = document.getElementById('username-indicator')
+
+      clearTimeout(usernameTimer)
+      usernameOk = null
+
+      if (!val) {
+        setField(this, msg, icon, '', '', 'Letters, numbers, underscores · 2–20 chars')
+        return
+      }
+      if (!/^[a-zA-Z0-9_]{2,20}$/.test(val)) {
+        setField(this, msg, icon, 'err', '✗', 'Letters, numbers, and underscores only (2–20 chars)')
+        usernameOk = false
+        return
+      }
+
+      setField(this, msg, icon, '', '⋯', 'Checking…')
+      usernameTimer = setTimeout(async () => {
+        const available = await FA.checkUsernameAvailable(val)
+        usernameOk = available
+        if (available) {
+          setField(this, msg, icon, 'ok',  '✓', 'Username available!')
+        } else {
+          setField(this, msg, icon, 'err', '✗', 'Username already taken')
+        }
+      }, 550)
+    })
+
+    function setField(input, msg, icon, cls, iconText, msgText) {
+      input.className = cls
+      if (icon) icon.textContent = iconText
+      if (msg)  { msg.textContent = msgText; msg.className = 'field-msg ' + cls }
+    }
+
+    // ── Password strength hint ─────────────────────────────────────────────
+    document.getElementById('signup-pw').addEventListener('input', function () {
+      const msg = document.getElementById('pw-msg')
+      const len = this.value.length
+      if (!len) {
+        msg.textContent = 'At least 6 characters'; msg.className = 'field-msg'
+      } else if (len < 6) {
+        msg.textContent = `${6 - len} more character${len === 5 ? '' : 's'} needed`; msg.className = 'field-msg err'
+      } else {
+        msg.textContent = 'Strong enough!'; msg.className = 'field-msg ok'
+      }
+    })
+
+    // ── Login ──────────────────────────────────────────────────────────────
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+      e.preventDefault()
+      const btn      = document.getElementById('login-btn')
+      const email    = document.getElementById('login-email').value.trim()
+      const password = document.getElementById('login-pw').value
+      if (!email || !password) return
+
+      setLoading(btn, true)
+      clearAlerts()
+
+      try {
+        const { data, error } = await FA.sb.auth.signInWithPassword({ email, password })
+        if (error) throw error
+        window.location.replace('home.html')
+      } catch (err) {
+        showAlert('login', err.message || 'Login failed. Check your credentials.')
+        setLoading(btn, false)
+      }
+    })
+
+    // ── Sign up ────────────────────────────────────────────────────────────
+    document.getElementById('signup-form').addEventListener('submit', async function (e) {
+      e.preventDefault()
+      const btn      = document.getElementById('signup-btn')
+      const email    = document.getElementById('signup-email').value.trim()
+      const username = document.getElementById('signup-username').value.trim()
+      const password = document.getElementById('signup-pw').value
+
+      if (!email || !username || !password) {
+        showAlert('signup', 'Please fill in all fields.'); return
+      }
+      if (!/^[a-zA-Z0-9_]{2,20}$/.test(username)) {
+        showAlert('signup', 'Invalid username format.'); return
+      }
+      if (usernameOk === false) {
+        showAlert('signup', 'That username is already taken.'); return
+      }
+      if (password.length < 6) {
+        showAlert('signup', 'Password must be at least 6 characters.'); return
+      }
+
+      setLoading(btn, true)
+      clearAlerts()
+
+      try {
+        const { data, error } = await FA.sb.auth.signUp({
+          email,
+          password,
+          options: { data: { username } },
+        })
+        if (error) throw error
+
+        // Create profile record immediately (upsert handles race with trigger)
+        if (data.user) {
+          await FA.sb.from('profiles').upsert({
+            id:           data.user.id,
+            username,
+            avatar_color: selectedColor,
+          })
+        }
+
+        if (data.session) {
+          // Email confirmation disabled — go straight to app
+          window.location.replace('home.html')
+        } else {
+          // Email confirmation required
+          showInfo('signup',
+            `✉️ Almost there! Check <strong>${email}</strong> for a confirmation link, then come back and log in.`
+          )
+          setLoading(btn, false)
+        }
+      } catch (err) {
+        showAlert('signup', err.message || 'Sign up failed. Please try again.')
+        setLoading(btn, false)
+      }
+    })
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function setLoading(btn, on) {
+      btn.classList.toggle('loading', on)
+      btn.disabled = on
+    }
+
+    function showAlert(form, msg) {
+      const el = document.getElementById(`${form}-alert`)
+      el.innerHTML = msg
+      el.className = 'alert show err'
+    }
+
+    function showInfo(form, msg) {
+      const el = document.getElementById(`${form}-alert`)
+      el.innerHTML = msg
+      el.className = 'alert show info'
+    }
+
+    function clearAlerts() {
+      document.querySelectorAll('.alert').forEach(el => {
+        el.className = 'alert'
+        el.removeAttribute('style')
+      })
+    }
+  </script>
+</body>
+</html>
