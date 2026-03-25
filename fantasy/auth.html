@@ -331,6 +331,47 @@
 
     .form-footer a { color: var(--text-dim); text-decoration: underline; }
 
+    /* ── Email confirmation overlay ───────────────────────────────────────── */
+    #confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 999;
+      padding: 32px;
+      text-align: center;
+    }
+    #confirm-overlay.show { display: flex; }
+    #confirm-overlay .icon { font-size: 52px; }
+    #confirm-overlay .title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    #confirm-overlay .sub { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+    #confirm-overlay .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--border);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    #confirm-overlay .ok-msg {
+      display: none;
+      padding: 12px 18px;
+      background: rgba(105,240,174,0.08);
+      border: 1px solid rgba(105,240,174,0.25);
+      border-radius: 10px;
+      color: var(--green);
+      font-size: 13px;
+    }
+
     /* ── Section divider ──────────────────────────────────────────────────── */
     .form-divider {
       height: 1px;
@@ -340,6 +381,15 @@
   </style>
 </head>
 <body>
+
+  <!-- Email confirmation overlay (shown when user lands via confirmation link) -->
+  <div id="confirm-overlay">
+    <div class="icon">✉️</div>
+    <div class="title">CONFIRMING YOUR ACCOUNT</div>
+    <div class="sub">Hang tight while we verify your email…</div>
+    <div class="spinner" id="confirm-spinner"></div>
+    <div class="ok-msg" id="confirm-ok">✓ Email confirmed! Redirecting you to the app…</div>
+  </div>
 
   <!-- Logo -->
   <header class="auth-logo">
@@ -440,8 +490,64 @@
   </div>
 
   <script>
-    // ── Redirect if already logged in ──────────────────────────────────────
-    FA.getSession().then(s => { if (s) window.location.replace('home.html') })
+    // ── Handle email confirmation callback ─────────────────────────────────
+    // Supabase redirects here with #access_token=... after email confirmation.
+    // The supabase-js client auto-processes the hash; we just need to detect it
+    // and show a confirming state, then redirect once the session is established.
+    ;(async function handleAuthCallback() {
+      const hash = window.location.hash
+      const isCallback = hash.includes('access_token=') || hash.includes('type=signup') || hash.includes('type=recovery')
+
+      if (isCallback) {
+        // Show the confirmation overlay immediately
+        document.getElementById('confirm-overlay').classList.add('show')
+
+        // supabase-js v2 processes the hash automatically; poll for the session
+        let attempts = 0
+        const maxAttempts = 20 // 10 seconds
+        const poll = setInterval(async () => {
+          attempts++
+          const session = await FA.getSession()
+          if (session) {
+            clearInterval(poll)
+            // Ensure profile exists (in case trigger didn't fire)
+            try {
+              const existing = await FA.sb.from('profiles').select('id').eq('id', session.user.id).maybeSingle()
+              if (!existing.data) {
+                const meta = session.user.user_metadata || {}
+                await FA.sb.from('profiles').upsert({
+                  id:           session.user.id,
+                  username:     meta.username || session.user.email.split('@')[0],
+                  avatar_color: meta.avatar_color || '#FF6B0A',
+                })
+              }
+            } catch (e) { /* profile may already exist, that's fine */ }
+
+            document.getElementById('confirm-spinner').style.display = 'none'
+            document.getElementById('confirm-ok').style.display = 'block'
+            setTimeout(() => window.location.replace('home.html'), 1200)
+          } else if (attempts >= maxAttempts) {
+            clearInterval(poll)
+            // Session didn't resolve — show an error and fall back to login
+            document.getElementById('confirm-overlay').innerHTML = `
+              <div class="icon">⚠️</div>
+              <div class="title">LINK EXPIRED OR INVALID</div>
+              <div class="sub">This confirmation link may have already been used or has expired.<br>Please sign in or request a new link.</div>
+              <button onclick="document.getElementById('confirm-overlay').classList.remove('show')"
+                style="margin-top:8px;padding:12px 24px;background:#FF6B0A;border:none;border-radius:10px;
+                       color:#fff;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;
+                       letter-spacing:.08em;cursor:pointer;">
+                BACK TO LOGIN
+              </button>
+            `
+          }
+        }, 500)
+        return // Don't run the rest of the page init while confirming
+      }
+
+      // ── Normal page load: redirect if already logged in ──────────────────
+      FA.getSession().then(s => { if (s) window.location.replace('home.html') })
+    })()
 
     // ── State ──────────────────────────────────────────────────────────────
     const COLORS = [
