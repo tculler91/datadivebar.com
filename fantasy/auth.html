@@ -517,7 +517,7 @@
                 const meta = session.user.user_metadata || {}
                 await FA.sb.from('profiles').upsert({
                   id:           session.user.id,
-                  username:     meta.username || session.user.email.split('@')[0],
+                  username:     meta.username || session.user.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_').slice(0, 20),
                   avatar_color: meta.avatar_color || '#FF6B0A',
                 })
               }
@@ -701,22 +701,20 @@
         })
         if (error) throw error
 
-        // Create profile record immediately (upsert handles race with trigger)
-        if (data.user) {
+        if (data.session) {
+          // Email confirmation disabled — session exists immediately, create profile now
           await FA.sb.from('profiles').upsert({
             id:           data.user.id,
             username,
             avatar_color: selectedColor,
           })
-        }
-
-        if (data.session) {
-          // Email confirmation disabled — go straight to app
           window.location.replace('home.html')
-        } else {
-          // Email confirmation required
+        } else if (data.user) {
+          // Email confirmation required — no session yet so RLS blocks profile insert.
+          // Store avatar color in user metadata so the confirmation handler can use it.
+          await FA.sb.auth.updateUser({ data: { username, avatar_color: selectedColor } })
           showInfo('signup',
-            `✉️ Almost there! Check <strong>${email}</strong> for a confirmation link, then come back and log in.`
+            `✉️ Check <strong>${email}</strong> for a confirmation link. Click it to activate your account.`
           )
           setLoading(btn, false)
         }
