@@ -3,525 +3,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Desk — Data Dive Bar</title>
-    <meta name="description" content="Live Doppler radar and conditions for Ohio. Ambient weather display by Data Dive Bar.">
+    <title>WeatherStar 4000 — Hilliard, OH — Data Dive Bar</title>
+    <meta name="description" content="WeatherStar 4000-style retro weather display for Hilliard, Ohio. Live radar and conditions by Data Dive Bar.">
 
-    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Leaflet.heat for traffic jam heatmap -->
-    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 
-    <!-- Fonts: VT323 for that CRT terminal glow, Playfair for city names -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg:             #0E1A2B;
-            --navy:           #040B1E;
-            --panel:          rgba(4, 10, 30, 0.94);
-            --panel-border:   rgba(48, 148, 220, 0.18);
-            --blue:           #3888c8;
-            --teal:           #30c8d4;
-            --teal-dim:       rgba(48, 200, 212, 0.12);
-            --amber:          #E85D04;
-            --amber-bright:   #FF7A2A;
-            --purple:         #8868c0;
-            --text:           #b8d0f0;
-            --text-secondary: #6888b0;
-            --text-dim:       #2e4868;
-            --bar-h:          54px;
-            --chyron-h:       72px;
-            --glow-blue:      0 0 8px rgba(48, 136, 200, 0.6), 0 0 20px rgba(48, 136, 200, 0.2);
-            --glow-teal:      0 0 8px rgba(48, 200, 212, 0.7), 0 0 20px rgba(48, 200, 212, 0.25);
-            --glow-amber:     0 0 8px rgba(232, 93, 4, 0.7), 0 0 24px rgba(232, 93, 4, 0.2);
-            --timeline-h:     0px;
-            --forecast-w:     76px;
+            --ws-yellow: #ffff00;
+            --ws-white: #ffffff;
+            --ws-orange: #ff8c00;
+            --ws-low-blue: #8080ff;
+            --ws-header-1: #8a6820;
+            --ws-header-2: #c89848;
+            --ws-header-3: #d4a854;
+            --ws-purple-1: #9070c0;
+            --ws-purple-2: #6858a8;
+            --ws-blue-1: #4850a0;
+            --ws-blue-2: #384090;
+            --ws-navy: #283468;
+            --ws-col-header: rgb(32, 0, 87);
+            --ws-dark: #0a0820;
+            --ws-shadow:
+                3px 3px 0 #000,
+                -1.5px -1.5px 0 #000,
+                0 -1.5px 0 #000,
+                1.5px -1.5px 0 #000,
+                1.5px 0 0 #000,
+                1.5px 1.5px 0 #000,
+                0 1.5px 0 #000,
+                -1.5px 1.5px 0 #000,
+                -1.5px 0 0 #000;
+            --ws-shadow-sm:
+                2px 2px 0 #000,
+                -1px -1px 0 #000,
+                0 -1px 0 #000,
+                1px -1px 0 #000,
+                1px 0 0 #000,
+                1px 1px 0 #000,
+                0 1px 0 #000,
+                -1px 1px 0 #000,
+                -1px 0 0 #000;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         html, body {
             width: 100%; height: 100%;
-            background: var(--bg);
+            background: #000;
             overflow: hidden;
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            font-family: 'Roboto Condensed', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ── MAP ─────────────────────────────────────────────── */
-        #map {
+        /* ── WS4K DISPLAY ──────────────────────────────────── */
+        .ws4k-display {
             position: fixed;
             inset: 0;
-            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg,
+                var(--ws-purple-1) 0%,
+                var(--ws-purple-2) 25%,
+                var(--ws-blue-1) 55%,
+                var(--ws-blue-2) 75%,
+                var(--ws-navy) 100%
+            );
         }
 
-        .leaflet-control-zoom,
-        .leaflet-control-attribution { display: none !important; }
+        /* ── DECORATIVE FRAME ──────────────────────────────── */
+        .ws4k-display::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 4px solid rgba(100, 70, 180, 0.6);
+            box-shadow:
+                inset 0 0 0 2px rgba(60, 40, 120, 0.4),
+                inset 0 0 80px rgba(10, 8, 32, 0.3);
+            pointer-events: none;
+            z-index: 10;
+        }
 
-        /* ── CRT SCAN LINES ─────────────────────────────────── */
-        .scanlines {
+        /* ── CRT SCANLINES ─────────────────────────────────── */
+        .ws4k-scanlines {
             position: fixed;
             inset: 0;
             background: repeating-linear-gradient(
                 to bottom,
                 transparent 0px,
-                transparent 3px,
-                rgba(0, 0, 8, 0.10) 3px,
-                rgba(0, 0, 8, 0.10) 4px
+                transparent 2px,
+                rgba(0, 0, 0, 0.15) 2px,
+                rgba(0, 0, 0, 0.15) 4px
             );
             pointer-events: none;
-            z-index: 491;
+            z-index: 900;
         }
 
-        /* ── FILM GRAIN ──────────────────────────────────────── */
-        .grain {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 492;
-            opacity: 0.028;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
-            background-size: 300px 300px;
-            animation: grain-shift 0.8s steps(1) infinite;
-        }
-        @keyframes grain-shift {
-            0%   { background-position: 0 0; }
-            20%  { background-position: -80px -40px; }
-            40%  { background-position: 60px -90px; }
-            60%  { background-position: -30px 70px; }
-            80%  { background-position: 100px 20px; }
-            100% { background-position: -50px -60px; }
-        }
-
-        /* ── VIGNETTE ────────────────────────────────────────── */
-        .vignette {
+        .ws4k-vignette {
             position: fixed;
             inset: 0;
             background: radial-gradient(
                 ellipse at 50% 50%,
-                transparent 38%,
-                rgba(2, 5, 16, 0.45) 65%,
-                rgba(2, 5, 16, 0.82) 100%
+                transparent 55%,
+                rgba(0, 0, 0, 0.35) 100%
             );
             pointer-events: none;
-            z-index: 493;
+            z-index: 901;
         }
 
-        /* subtle CRT corner darkening */
-        .vignette::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 120% 140% at 0% 0%,   rgba(2,5,16,0.35) 0%, transparent 55%),
-                radial-gradient(ellipse 120% 140% at 100% 0%,  rgba(2,5,16,0.35) 0%, transparent 55%),
-                radial-gradient(ellipse 120% 140% at 0% 100%,  rgba(2,5,16,0.35) 0%, transparent 55%),
-                radial-gradient(ellipse 120% 140% at 100% 100%,rgba(2,5,16,0.35) 0%, transparent 55%);
-        }
-
-        /* ── SUBTLE FLICKER ──────────────────────────────────── */
-        .flicker-overlay {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 494;
-            animation: crt-flicker 12s ease-in-out infinite;
-            opacity: 0;
-            background: rgba(180, 220, 255, 0.012);
-        }
-        @keyframes crt-flicker {
-            0%, 92%, 100%   { opacity: 0; }
-            93%             { opacity: 1; }
-            93.5%           { opacity: 0; }
-            94%             { opacity: 0.8; }
-            94.5%           { opacity: 0; }
-        }
-
-        /* ── TOP BAR ─────────────────────────────────────────── */
-        .top-bar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: var(--bar-h);
-            background: linear-gradient(to bottom, rgba(4,8,42,0.97), rgba(4,8,32,0.93));
-            border-bottom: 1px solid rgba(48, 148, 220, 0.22);
-            box-shadow: 0 1px 0 rgba(48, 200, 212, 0.08), 0 4px 24px rgba(2, 5, 16, 0.8);
+        /* ── HEADER BAR ────────────────────────────────────── */
+        .ws4k-header {
+            height: 72px;
+            min-height: 72px;
+            background: linear-gradient(180deg,
+                var(--ws-header-1) 0%,
+                var(--ws-header-2) 50%,
+                var(--ws-header-3) 100%
+            );
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 22px;
-            z-index: 600;
+            padding: 0 24px;
+            z-index: 100;
+            border-bottom: 3px solid rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            position: relative;
         }
 
-        /* left: logo bug */
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .logo-bug {
-            width: 32px; height: 32px;
-            border: 1.5px solid rgba(48, 200, 212, 0.5);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            background: rgba(48, 200, 212, 0.07);
-            box-shadow: var(--glow-teal), inset 0 0 8px rgba(48,200,212,0.05);
+        .ws4k-logo {
+            background: #fff;
+            color: #1a1a6e;
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 6px 8px;
+            line-height: 1.1;
+            border-radius: 2px;
+            text-align: center;
+            letter-spacing: 0.02em;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
             flex-shrink: 0;
         }
-        .logo-text { display: flex; flex-direction: column; gap: 2px; }
-        .logo-title {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 0.92rem;
+        .ws4k-logo-top {
+            font-size: 0.85rem;
             font-weight: 700;
-            color: var(--text);
-            letter-spacing: 0.04em;
-            line-height: 1.1;
-            text-shadow: 0 0 12px rgba(48, 200, 212, 0.3);
+            display: block;
         }
-        .logo-sub {
-            font-family: 'VT323', monospace;
-            font-size: 0.75rem;
-            color: var(--teal);
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            text-shadow: var(--glow-teal);
-            opacity: 0.85;
+        .ws4k-logo-bot {
+            font-size: 0.6rem;
+            font-weight: 700;
+            display: block;
+            letter-spacing: 0.08em;
         }
 
-        /* center: LIVE / LOCAL ON THE 8s */
-        .top-center {
+        .ws4k-header-center {
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
         }
-        .top-center-main {
-            font-family: 'VT323', monospace;
-            font-size: 1.0rem;
-            color: var(--teal);
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-shadow: var(--glow-teal);
-        }
-        .live-dot {
-            width: 7px; height: 7px;
-            background: #FF6B0A;
-            border-radius: 50%;
-            flex-shrink: 0;
-            box-shadow: 0 0 6px rgba(255, 107, 10, 0.8), 0 0 14px rgba(255, 107, 10, 0.4);
-            animation: livepulse 2s ease-in-out infinite;
-        }
-        @keyframes livepulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(255,107,10,0.9), 0 0 14px rgba(255,107,10,0.5); }
-            50%       { opacity: 0.5; box-shadow: 0 0 3px rgba(255,107,10,0.4); }
-        }
-        .top-center-sub {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.50rem;
-            font-weight: 500;
-            color: var(--text-dim);
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            margin-top: 3px;
-        }
 
-        /* right: clock */
-        .clock-area { text-align: right; }
-        #clock {
-            font-family: 'VT323', monospace;
-            font-size: 1.7rem;
-            color: var(--amber-bright);
+        .ws4k-screen-title {
+            font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .ws4k-screen-subtitle {
+            font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+            font-weight: 400;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow-sm);
             letter-spacing: 0.06em;
-            line-height: 1;
-            text-shadow: var(--glow-amber);
+            opacity: 0.9;
         }
-        #date-display {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.50rem;
-            font-weight: 500;
-            color: var(--text-dim);
-            letter-spacing: 0.14em;
+
+        .ws4k-header-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .ws4k-time {
+            font-family: 'Roboto Mono', monospace;
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow);
+            letter-spacing: 0.03em;
+        }
+        .ws4k-date {
+            font-size: clamp(0.65rem, 1.2vw, 0.85rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow-sm);
             text-transform: uppercase;
-            margin-top: 3px;
+            letter-spacing: 0.06em;
         }
 
-        /* ── NOW VIEWING OVERLAY (removed) ──────────────────── */
-        .now-viewing { display: none !important; }
+        /* ── CONTENT AREA ──────────────────────────────────── */
+        .ws4k-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
 
-        /* ── CONTROLS (bottom-left) ──────────────────────────── */
-        .controls {
-            position: fixed;
-            bottom: calc(var(--chyron-h) + var(--timeline-h) + 14px);
-            left: 14px;
+        .ws4k-screen {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            z-index: 600;
+            padding: 20px clamp(20px, 5vw, 64px);
+        }
+        .ws4k-screen.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        .control-group {
+        /* ── FOOTER BAR ────────────────────────────────────── */
+        .ws4k-footer {
+            height: 64px;
+            min-height: 64px;
+            background: linear-gradient(180deg, var(--ws-navy), #1a2450);
+            border-top: 3px solid rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
-            gap: 8px;
+            padding: 0 24px;
+            z-index: 100;
+            gap: 32px;
+            overflow: hidden;
         }
-        .control-label {
-            font-family: 'VT323', monospace;
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            letter-spacing: 0.12em;
+
+        .ws4k-footer-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow-sm);
             text-transform: uppercase;
+            letter-spacing: 0.08em;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
-        .segmented {
-            background: rgba(4, 8, 42, 0.88);
-            border: 1px solid rgba(48, 148, 220, 0.2);
+
+        .ws4k-footer-data {
+            font-size: clamp(0.8rem, 1.8vw, 1.05rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .ws4k-footer-right {
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .ws4k-audio-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
             border-radius: 3px;
-            padding: 3px;
-            display: inline-flex;
-            gap: 2px;
+            color: var(--ws-white);
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            cursor: pointer;
+            text-shadow: var(--ws-shadow-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
-        .seg-btn {
-            background: transparent;
-            border: none;
-            border-radius: 2px;
-            color: var(--text-dim);
-            font-family: 'VT323', monospace;
-            font-size: 0.9rem;
+        .ws4k-audio-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .ws4k-audio-btn.playing {
+            color: var(--ws-yellow);
+            border-color: var(--ws-yellow);
+        }
+
+        /* ── CURRENT CONDITIONS SCREEN ─────────────────────── */
+        .cc-location {
+            font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+            font-weight: 700;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow);
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 4px;
+            letter-spacing: 0.04em;
+        }
+
+        .cc-label {
+            font-size: clamp(0.8rem, 1.6vw, 1rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow-sm);
+            text-align: center;
+            margin-bottom: 16px;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            padding: 3px 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .seg-btn:hover { color: var(--text-secondary); }
-        .seg-btn.active {
-            background: rgba(48, 200, 212, 0.12);
-            color: var(--teal);
-            text-shadow: var(--glow-teal);
         }
 
-        .audio-btn {
-            background: rgba(4, 8, 42, 0.88);
-            border: 1px solid rgba(48, 148, 220, 0.2);
-            border-radius: 3px;
-            color: var(--text-dim);
-            font-family: 'VT323', monospace;
-            font-size: 0.9rem;
-            letter-spacing: 0.1em;
-            padding: 6px 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .audio-btn:hover {
-            color: var(--text-secondary);
-            border-color: rgba(48, 200, 212, 0.3);
-        }
-        .audio-btn.active {
-            color: var(--teal);
-            border-color: rgba(48, 200, 212, 0.35);
-            text-shadow: var(--glow-teal);
+        .cc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 32px;
+            max-width: 700px;
+            margin: 0 auto;
+            width: 100%;
         }
 
-        /* ── RADAR LEGEND (bottom-right) ─────────────────────── */
-        .radar-legend {
-            position: fixed;
-            bottom: calc(var(--chyron-h) + var(--timeline-h) + 14px);
-            right: 14px;
-            z-index: 600;
-            background: rgba(4, 8, 42, 0.88);
-            border: 1px solid rgba(48, 148, 220, 0.2);
-            border-radius: 3px;
-            padding: 9px 13px;
-        }
-        .radar-legend-title {
-            font-family: 'VT323', monospace;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            margin-bottom: 7px;
-        }
-        .radar-legend-bar {
-            width: 140px;
-            height: 6px;
-            border-radius: 3px;
-            background: linear-gradient(to right,
-                #04e9e7 0%,
-                #019ff4 11%,
-                #0300f4 22%,
-                #02fd02 33%,
-                #01c501 44%,
-                #fdf802 55%,
-                #e5bc00 62%,
-                #fd9500 70%,
-                #fd0000 80%,
-                #bc0000 90%,
-                #f800fd 100%
-            );
-        }
-        .radar-legend-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-        }
-        .radar-legend-label {
-            font-family: 'VT323', monospace;
-            font-size: 0.65rem;
-            color: var(--text-dim);
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        /* ── CITY MAP MARKERS ────────────────────────────────── */
-        .city-marker {
-            background: rgba(4, 8, 42, 0.92);
-            border: 1px solid rgba(48, 148, 220, 0.4);
-            border-radius: 3px;
-            padding: 4px 9px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1px;
-            box-shadow: 0 2px 16px rgba(0,0,0,0.7), var(--glow-blue);
-            white-space: nowrap;
-        }
-        .city-marker-name {
-            font-family: 'VT323', monospace;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            line-height: 1;
-        }
-        .city-marker-row {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            line-height: 1;
-        }
-        .city-marker-icon { font-size: 0.72rem; }
-        .city-marker-temp {
-            font-family: 'VT323', monospace;
-            font-size: 1.1rem;
-            font-weight: 400;
-            line-height: 1;
-        }
-
-        /* ── STATIC FORECAST BAR ────────────────────────────── */
-        .forecast-bar {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: var(--chyron-h);
-            background: linear-gradient(to bottom, rgba(3,6,34,0.98), rgba(2,4,26,0.99));
-            border-top: 1.5px solid var(--blue);
-            box-shadow: 0 -1px 0 rgba(48,200,212,0.08), 0 -8px 32px rgba(2,5,16,0.9);
-            display: flex;
-            align-items: stretch;
-            z-index: 600;
-            overflow: hidden;
-        }
-
-        .forecast-bar-label {
-            background: var(--blue);
-            color: #ffffff;
-            font-family: 'VT323', monospace;
-            font-size: 0.85rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            padding: 0 14px;
-            display: flex;
-            align-items: center;
-            flex-shrink: 0;
-            white-space: nowrap;
-            border-right: 1px solid rgba(255,255,255,0.15);
-            box-shadow: 2px 0 12px rgba(56,136,200,0.4);
-        }
-
-        .forecast-bar-hours {
-            flex: 1;
-            display: flex;
-            align-items: stretch;
-            overflow: hidden;
-        }
-
-        .forecast-bar-hour {
-            flex: 1;
+        .cc-main-temp {
+            grid-column: 1;
+            grid-row: 1 / 4;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 1px;
-            border-right: 1px solid rgba(48, 148, 220, 0.08);
-            padding: 4px 2px;
-            min-width: 0;
-        }
-        .forecast-bar-hour:first-child {
-            background: rgba(48, 200, 212, 0.06);
-        }
-        .forecast-bar-hour:last-child {
-            border-right: none;
         }
 
-        .fbh-time {
-            font-family: 'VT323', monospace;
-            font-size: 0.72rem;
-            color: var(--text-dim);
-            letter-spacing: 0.06em;
+        .cc-temp-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: clamp(4rem, 12vw, 8rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow);
             line-height: 1;
         }
-        .fbh-icon { font-size: 0.9rem; line-height: 1.1; }
-        .fbh-temp {
-            font-family: 'VT323', monospace;
-            font-size: 1.05rem;
-            line-height: 1;
-        }
-        .fbh-precip {
-            font-family: 'VT323', monospace;
-            font-size: 0.62rem;
-            color: var(--blue);
-            line-height: 1;
+        .cc-temp-unit {
+            font-size: 0.4em;
+            vertical-align: super;
         }
 
-        .forecast-bar-loading {
-            font-family: 'VT323', monospace;
-            font-size: 1.0rem;
-            color: var(--text-dim);
-            letter-spacing: 0.18em;
-            padding: 0 20px;
-            display: flex;
-            align-items: center;
-            animation: forecast-blink 1.4s ease-in-out infinite;
-        }
-        @keyframes forecast-blink {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 1; }
-        }
-
-        /* ── ALERT BANNER ────────────────────────────────────── */
-        .alert-banner {
-            position: fixed;
-            top: var(--bar-h);
-            left: 0; right: 0;
-            background: rgba(50, 8, 8, 0.95);
-            border-bottom: 1.5px solid rgba(255, 60, 40, 0.35);
-            box-shadow: 0 2px 20px rgba(255, 107, 10, 0.2);
-            color: #FFAA66;
-            font-family: 'VT323', monospace;
-            font-size: 0.9rem;
-            letter-spacing: 0.14em;
+        .cc-condition {
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            font-weight: 700;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow);
             text-transform: uppercase;
-            padding: 7px 22px;
-            z-index: 650;
-            display: none;
+            margin-top: 8px;
+            text-align: center;
         }
 
-        /* ── SPLASH SCREEN ───────────────────────────────────────── */
+        .cc-detail-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .cc-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .cc-detail-label {
+            font-size: clamp(0.8rem, 1.6vw, 1.05rem);
+            font-weight: 700;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow-sm);
+            text-transform: uppercase;
+        }
+
+        .cc-detail-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow-sm);
+        }
+
+        /* ── OBSERVATIONS SCREEN ───────────────────────────── */
+        .obs-table {
+            width: 100%;
+            max-width: 800px;
+            margin: 8px auto 0;
+            border-collapse: collapse;
+        }
+
+        .obs-table thead th {
+            background: var(--ws-col-header);
+            color: var(--ws-yellow);
+            font-size: clamp(0.75rem, 1.5vw, 1rem);
+            font-weight: 700;
+            text-shadow: var(--ws-shadow-sm);
+            text-transform: uppercase;
+            padding: 8px 12px;
+            text-align: left;
+            letter-spacing: 0.06em;
+            border-bottom: 2px solid rgba(0,0,0,0.5);
+        }
+        .obs-table thead th:first-child { text-align: left; }
+        .obs-table thead th:nth-child(2) { text-align: center; }
+        .obs-table thead th:nth-child(3) { text-align: left; }
+        .obs-table thead th:nth-child(4) { text-align: right; }
+
+        .obs-table tbody tr {
+            background: repeating-linear-gradient(180deg,
+                rgba(16, 32, 128, 0.3) 0px,
+                rgba(0, 16, 64, 0.3) 40px
+            );
+            border-bottom: 1px solid rgba(0,0,0,0.2);
+        }
+        .obs-table tbody tr:nth-child(odd) {
+            background: repeating-linear-gradient(180deg,
+                rgba(0, 16, 64, 0.3) 0px,
+                rgba(16, 32, 128, 0.3) 40px
+            );
+        }
+
+        .obs-table td {
+            font-size: clamp(0.85rem, 1.8vw, 1.15rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow-sm);
+            padding: 10px 12px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .obs-table td:first-child { letter-spacing: 0.04em; }
+        .obs-table td:nth-child(2) {
+            text-align: center;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .obs-table td:nth-child(3) { font-size: clamp(0.75rem, 1.5vw, 0.95rem); }
+        .obs-table td:nth-child(4) {
+            text-align: right;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .obs-title {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: 700;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow);
+            text-transform: uppercase;
+            text-align: center;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── FORECAST SCREEN ───────────────────────────────── */
+        .fc-location {
+            font-size: clamp(1rem, 2.5vw, 1.4rem);
+            font-weight: 700;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow);
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 12px;
+            letter-spacing: 0.04em;
+        }
+
+        .fc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .fc-card {
+            background: rgba(16, 20, 80, 0.5);
+            border: 2px solid rgba(100, 70, 180, 0.4);
+            border-radius: 4px;
+            padding: 12px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .fc-day {
+            font-size: clamp(0.8rem, 1.6vw, 1rem);
+            font-weight: 700;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .fc-icon {
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            line-height: 1.2;
+        }
+
+        .fc-temps {
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+        }
+
+        .fc-hi {
+            font-family: 'Roboto Mono', monospace;
+            font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow-sm);
+        }
+        .fc-lo {
+            font-family: 'Roboto Mono', monospace;
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            font-weight: 700;
+            color: var(--ws-low-blue);
+            text-shadow: var(--ws-shadow-sm);
+        }
+
+        .fc-desc {
+            font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow-sm);
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        /* ── RADAR SCREEN ──────────────────────────────────── */
+        .radar-screen {
+            padding: 0 !important;
+        }
+
+        #radar-map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .leaflet-control-zoom,
+        .leaflet-control-attribution { display: none !important; }
+
+        .radar-city-label {
+            font-family: 'Roboto Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow-sm);
+            text-transform: uppercase;
+            white-space: nowrap;
+            letter-spacing: 0.04em;
+        }
+        .radar-city-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--ws-yellow);
+            border-radius: 50%;
+            border: 1px solid #000;
+            box-shadow: 0 0 6px rgba(255, 255, 0, 0.6);
+        }
+
+        /* ── ALERT BANNER ──────────────────────────────────── */
+        .ws4k-alert {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            background: rgb(112, 35, 35);
+            border-bottom: 2px solid #000;
+            color: var(--ws-white);
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-shadow: var(--ws-shadow-sm);
+            text-transform: uppercase;
+            padding: 10px 24px;
+            z-index: 200;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.04em;
+        }
+        .ws4k-alert.visible {
+            display: flex;
+        }
+        .ws4k-alert-icon {
+            color: #ff4444;
+            font-size: 1.2rem;
+            animation: alert-pulse 1s ease-in-out infinite;
+        }
+        @keyframes alert-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ── SPLASH SCREEN ─────────────────────────────────── */
         #splash {
             position: fixed;
             inset: 0;
@@ -530,437 +601,518 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(2, 5, 16, 0.92);
+            background: linear-gradient(180deg, #0a0628, #102080, #001040);
             cursor: pointer;
-            gap: 18px;
-            transition: opacity 0.6s ease;
+            gap: 16px;
+            transition: opacity 0.8s ease;
         }
         #splash.fade-out {
             opacity: 0;
             pointer-events: none;
         }
-        .splash-logo {
-            font-size: 2.8rem;
-            opacity: 0.6;
+
+        .splash-logo-box {
+            background: #fff;
+            color: #1a1a6e;
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 12px 16px;
+            border-radius: 3px;
+            text-align: center;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+            line-height: 1.2;
         }
+        .splash-logo-sm { font-size: 0.8rem; display: block; }
+
         .splash-title {
-            font-family: 'VT323', monospace;
-            font-size: clamp(1.6rem, 5vw, 2.4rem);
-            color: var(--teal);
-            letter-spacing: 0.18em;
+            font-size: clamp(1.4rem, 4vw, 2.2rem);
+            font-weight: 700;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow);
             text-transform: uppercase;
-            text-shadow: var(--glow-teal);
+            letter-spacing: 0.08em;
         }
         .splash-sub {
-            font-family: 'VT323', monospace;
-            font-size: clamp(1rem, 3vw, 1.35rem);
-            color: var(--text-secondary);
-            letter-spacing: 0.1em;
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            font-weight: 700;
+            color: var(--ws-white);
+            text-shadow: var(--ws-shadow-sm);
             text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
         }
         .splash-cta {
             margin-top: 24px;
-            font-family: 'VT323', monospace;
-            font-size: clamp(1.1rem, 3.5vw, 1.5rem);
-            color: var(--amber-bright);
-            letter-spacing: 0.22em;
+            font-size: clamp(1rem, 2.5vw, 1.4rem);
+            font-weight: 700;
+            color: var(--ws-orange);
+            text-shadow: var(--ws-shadow);
             text-transform: uppercase;
-            animation: splash-pulse 1.6s ease-in-out infinite;
-            text-shadow: 0 0 12px rgba(240, 192, 96, 0.7);
+            letter-spacing: 0.15em;
+            animation: cta-blink 1.5s ease-in-out infinite;
         }
-        @keyframes splash-pulse {
+        @keyframes cta-blink {
             0%, 100% { opacity: 1; }
-            50%       { opacity: 0.35; }
-        }
-        .alert-banner.visible { display: flex; align-items: center; gap: 10px; }
-        .alert-icon {
-            color: #ff5050;
-            font-size: 1rem;
-            animation: livepulse 1s ease-in-out infinite;
+            50% { opacity: 0.3; }
         }
 
-        /* ── TRAFFIC MARKERS ─────────────────────────────────── */
-        .traffic-marker {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 1.5px solid rgba(255,255,255,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.72rem;
-            background: rgba(4, 8, 42, 0.9);
-            line-height: 1;
-            cursor: pointer;
-        }
-        .traffic-marker.police   { border-color: #3888c8; box-shadow: 0 0 8px rgba(56,136,200,0.8), 0 0 20px rgba(56,136,200,0.3); }
-        .traffic-marker.accident { border-color: #FF6B0A; box-shadow: 0 0 8px rgba(255,107,10,0.8), 0 0 20px rgba(255,107,10,0.3); }
-        .traffic-marker.hazard   { border-color: #E85D04; box-shadow: 0 0 8px rgba(232,93,4,0.8), 0 0 20px rgba(232,93,4,0.3); }
-        .traffic-marker.closure  { border-color: #E85D04; box-shadow: 0 0 8px rgba(232,112,80,0.8), 0 0 20px rgba(232,112,80,0.3); }
-
-        /* ── LEAFLET POPUP (dark theme) ───────────────────────── */
-        .leaflet-popup-content-wrapper {
-            background: rgba(4, 8, 42, 0.96);
-            border: 1px solid rgba(48, 148, 220, 0.35);
-            border-radius: 3px;
-            padding: 0;
-            box-shadow: 0 2px 16px rgba(0,0,0,0.85), 0 0 12px rgba(48,136,200,0.15);
-            color: var(--text);
-        }
-        .leaflet-popup-content {
-            margin: 8px 12px;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.72rem;
-            line-height: 1.5;
-        }
-        .leaflet-popup-tip-container { display: none; }
-        .leaflet-popup-close-button { display: none; }
-
-        /* ── TRAFFIC LEGEND ──────────────────────────────────── */
-        .traffic-legend {
-            position: fixed;
-            bottom: calc(var(--chyron-h) + var(--timeline-h) + 92px);
-            right: 14px;
-            z-index: 600;
-            background: rgba(4, 8, 42, 0.88);
-            border: 1px solid rgba(48, 148, 220, 0.2);
-            border-radius: 3px;
-            padding: 9px 13px;
-            display: none;
-        }
-        .traffic-legend.visible { display: block; }
-        .traffic-legend-title {
-            font-family: 'VT323', monospace;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            letter-spacing: 0.18em;
+        .splash-powered {
+            margin-top: 32px;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.35);
             text-transform: uppercase;
-            margin-bottom: 7px;
-        }
-        .traffic-legend-items {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-bottom: 7px;
-        }
-        .traffic-legend-item {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-        .traffic-legend-icon { font-size: 0.8rem; width: 16px; text-align: center; }
-        .traffic-legend-label {
-            font-family: 'VT323', monospace;
-            font-size: 0.68rem;
-            color: var(--text-secondary);
             letter-spacing: 0.1em;
+        }
+
+        /* ── LOADING STATE ─────────────────────────────────── */
+        .ws4k-loading {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--ws-yellow);
+            text-shadow: var(--ws-shadow);
             text-transform: uppercase;
-        }
-        #traffic-status {
-            font-family: 'VT323', monospace;
-            font-size: 0.65rem;
-            color: var(--text-dim);
+            text-align: center;
             letter-spacing: 0.1em;
-            border-top: 1px solid rgba(48,148,220,0.12);
-            padding-top: 6px;
-            margin-top: 2px;
+            animation: cta-blink 1.5s ease-in-out infinite;
+            padding: 40px;
         }
 
-        /* ── RESPONSIVE ──────────────────────────────────────── */
-        @media (max-width: 640px) {
-            .top-bar { padding: 0 12px; }
-            .top-center { display: none; }
-            #clock { font-size: 1.4rem; }
-            .controls { bottom: calc(var(--chyron-h) + var(--timeline-h) + 8px); left: 8px; }
-            .radar-legend { display: none; }
-            /* radar-timeline removed */
-            .forecast-bar-hour { padding: 4px 1px; }
-            .fbh-time { font-size: 0.62rem; }
-            .fbh-temp { font-size: 0.9rem; }
+        /* ── RESPONSIVE ────────────────────────────────────── */
+        @media (max-width: 600px) {
+            .ws4k-header { padding: 0 12px; height: 56px; min-height: 56px; }
+            .ws4k-logo { font-size: 0.55rem; padding: 4px 6px; }
+            .ws4k-logo-top { font-size: 0.65rem; }
+            .ws4k-logo-bot { font-size: 0.5rem; }
+            .ws4k-screen { padding: 12px 16px; }
+            .cc-grid { gap: 4px 16px; }
+            .ws4k-footer { padding: 0 12px; height: 48px; min-height: 48px; gap: 16px; }
+            .obs-table td { padding: 6px 8px; }
         }
 
-        /* ── RADAR TIMELINE (removed) ─────────────────────── */
-
-        /* ── HOURLY FORECAST PANEL (removed — now in bottom bar) ── */
-        .forecast-panel { display: none !important; }
-
-        /* ── MUSIC CREDIT ───────────────────────────────────── */
-        .music-credit {
-            font-family: 'VT323', monospace;
-            font-size: 0.65rem;
-            color: var(--text-dim);
-            letter-spacing: 0.06em;
-            margin-top: 4px;
-            opacity: 0.7;
-            line-height: 1.3;
+        @media (max-width: 400px) {
+            .ws4k-header-center { display: none; }
         }
-        .music-credit a {
-            color: var(--text-dim);
-            text-decoration: none;
-            border-bottom: 1px solid rgba(46, 72, 104, 0.4);
-            transition: color 0.2s;
-        }
-        .music-credit a:hover { color: var(--teal); }
     </style>
 </head>
 <body>
 
-    <!-- CRT effects layered bottom to top -->
-    <div class="scanlines"></div>
-    <!-- Splash screen — satisfies browser autoplay gate for audio + animations -->
+    <!-- Splash Screen -->
     <div id="splash">
-        <div class="splash-logo">&#9928;</div>
-        <div class="splash-title">Weather Desk</div>
-        <div class="splash-sub">Ohio Doppler &bull; Data Dive Bar</div>
+        <div class="splash-logo-box">
+            DATA DIVE BAR
+            <span class="splash-logo-sm">WEATHER</span>
+        </div>
+        <div class="splash-title">WeatherStar 4000</div>
+        <div class="splash-sub">Hilliard, Ohio</div>
         <div class="splash-cta">Tap to Tune In</div>
+        <div class="splash-powered">Powered by National Weather Service</div>
     </div>
 
-    <div class="grain"></div>
-    <div class="vignette"></div>
-    <div class="flicker-overlay"></div>
+    <!-- CRT Effects -->
+    <div class="ws4k-scanlines"></div>
+    <div class="ws4k-vignette"></div>
 
-    <div id="map"></div>
-
-    <!-- Alert banner -->
-    <div class="alert-banner" id="alert-banner">
-        <span class="alert-icon">&#9888;</span>
-        <span id="alert-text"></span>
-    </div>
-
-    <!-- Top bar -->
-    <div class="top-bar">
-        <div class="logo">
-            <div class="logo-bug">&#9928;</div>
-            <div class="logo-text">
-                <div class="logo-title">Weather Desk</div>
-                <div class="logo-sub">Ohio Doppler</div>
+    <!-- Main Display -->
+    <div class="ws4k-display">
+        <!-- Header -->
+        <div class="ws4k-header">
+            <div class="ws4k-logo">
+                <span class="ws4k-logo-top">DATA DIVE</span>
+                <span class="ws4k-logo-bot">WEATHER</span>
+            </div>
+            <div class="ws4k-header-center">
+                <div class="ws4k-screen-title" id="screen-title">Current Conditions</div>
+                <div class="ws4k-screen-subtitle" id="screen-subtitle"></div>
+            </div>
+            <div class="ws4k-header-right">
+                <div class="ws4k-time" id="ws-clock">12:00:00 PM</div>
+                <div class="ws4k-date" id="ws-date">SAT AUG 30</div>
             </div>
         </div>
 
-        <div class="top-center">
-            <div class="top-center-main">
-                <span class="live-dot"></span>
-                DATA DIVE BAR &bull; LOCAL ON THE 8s
-            </div>
-            <div class="top-center-sub" id="updated-display">&nbsp;</div>
+        <!-- Alert Banner -->
+        <div class="ws4k-alert" id="alert-banner">
+            <span class="ws4k-alert-icon">&#9888;</span>
+            <span id="alert-text"></span>
         </div>
 
-        <div class="clock-area">
-            <div id="clock">12:00 AM</div>
-            <div id="date-display">Loading&hellip;</div>
+        <!-- Content Screens -->
+        <div class="ws4k-content">
+            <!-- Screen 1: Current Conditions -->
+            <div class="ws4k-screen active" id="screen-current">
+                <div class="ws4k-loading" id="cc-loading">Acquiring Signal&hellip;</div>
+                <div id="cc-content" style="display:none">
+                    <div class="cc-location">Hilliard, Ohio</div>
+                    <div class="cc-label">Current Conditions</div>
+                    <div class="cc-grid">
+                        <div class="cc-main-temp">
+                            <div class="cc-temp-value" id="cc-temp">&mdash;<span class="cc-temp-unit">&deg;F</span></div>
+                            <div class="cc-condition" id="cc-desc">&mdash;</div>
+                        </div>
+                        <div class="cc-detail-block">
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">Humidity</span>
+                                <span class="cc-detail-value" id="cc-humidity">&mdash;</span>
+                            </div>
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">Dewpoint</span>
+                                <span class="cc-detail-value" id="cc-dewpoint">&mdash;</span>
+                            </div>
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">Wind</span>
+                                <span class="cc-detail-value" id="cc-wind">&mdash;</span>
+                            </div>
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">Pressure</span>
+                                <span class="cc-detail-value" id="cc-pressure">&mdash;</span>
+                            </div>
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">Visibility</span>
+                                <span class="cc-detail-value" id="cc-visibility">&mdash;</span>
+                            </div>
+                            <div class="cc-detail-row">
+                                <span class="cc-detail-label">Heat Index</span>
+                                <span class="cc-detail-value" id="cc-heatindex">&mdash;</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 2: Latest Observations -->
+            <div class="ws4k-screen" id="screen-observations">
+                <div class="obs-title">Latest Observations</div>
+                <table class="obs-table">
+                    <thead>
+                        <tr>
+                            <th>City</th>
+                            <th>&deg;F</th>
+                            <th>Weather</th>
+                            <th>Wind</th>
+                        </tr>
+                    </thead>
+                    <tbody id="obs-body">
+                        <tr><td colspan="4" style="text-align:center; color:var(--ws-yellow)">Acquiring Signal&hellip;</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Screen 3: Extended Forecast -->
+            <div class="ws4k-screen" id="screen-forecast">
+                <div class="fc-location">Hilliard, Ohio &mdash; Extended Forecast</div>
+                <div class="fc-grid" id="fc-grid">
+                    <div class="ws4k-loading">Acquiring Signal&hellip;</div>
+                </div>
+            </div>
+
+            <!-- Screen 4: Regional Radar -->
+            <div class="ws4k-screen radar-screen" id="screen-radar">
+                <div id="radar-map"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="ws4k-footer">
+            <div class="ws4k-footer-label">Hilliard, OH</div>
+            <div class="ws4k-footer-data" id="footer-conditions">&mdash;</div>
+            <div class="ws4k-footer-right">
+                <button class="ws4k-audio-btn" id="audio-btn">&#9834; Smooth Jazz</button>
+            </div>
         </div>
     </div>
 
-    <!-- Now Viewing overlay -->
-    <div class="now-viewing" id="now-viewing">
-        <div class="now-viewing-label">Now Viewing</div>
-        <div class="now-viewing-name" id="now-viewing-name">Ohio Overview</div>
-    </div>
-
-    <!-- Controls -->
-    <div class="controls">
-        <div class="control-group">
-            <span class="control-label">Radar</span>
-            <div class="segmented" id="radar-seg">
-                <button class="seg-btn active" data-opacity="0.72">On</button>
-                <button class="seg-btn" data-opacity="0.35">50%</button>
-                <button class="seg-btn" data-opacity="0.10">10%</button>
-                <button class="seg-btn" data-opacity="0">Off</button>
-            </div>
-        </div>
-        <div class="control-group">
-            <span class="control-label">Traffic</span>
-            <div class="segmented" id="traffic-seg">
-                <button class="seg-btn" data-traffic="on">On</button>
-                <button class="seg-btn active" data-traffic="off">Off</button>
-            </div>
-        </div>
-        <button class="audio-btn" id="audio-btn">&#9834; Play Sax</button>
-        <div class="music-credit">Jazz24 &middot; <a href="https://www.knkx.org" target="_blank" rel="noopener">KNKX Public Radio</a></div>
-    </div>
-
-    <!-- Radar legend -->
-    <div class="radar-legend">
-        <div class="radar-legend-title">Radar Intensity</div>
-        <div class="radar-legend-bar"></div>
-        <div class="radar-legend-labels">
-            <span class="radar-legend-label">Light</span>
-            <span class="radar-legend-label">Moderate</span>
-            <span class="radar-legend-label">Heavy</span>
-        </div>
-    </div>
-
-    <!-- Traffic legend -->
-    <div class="traffic-legend" id="traffic-legend">
-        <div class="traffic-legend-title">Traffic Alerts</div>
-        <div class="traffic-legend-items">
-            <div class="traffic-legend-item">
-                <span class="traffic-legend-icon">&#x1F694;</span>
-                <span class="traffic-legend-label">Police</span>
-            </div>
-            <div class="traffic-legend-item">
-                <span class="traffic-legend-icon">&#x1F4A5;</span>
-                <span class="traffic-legend-label">Accident</span>
-            </div>
-            <div class="traffic-legend-item">
-                <span class="traffic-legend-icon">&#x26A0;&#xFE0F;</span>
-                <span class="traffic-legend-label">Hazard</span>
-            </div>
-            <div class="traffic-legend-item">
-                <span class="traffic-legend-icon">&#x1F6A7;</span>
-                <span class="traffic-legend-label">Road Closed</span>
-            </div>
-        </div>
-        <div id="traffic-status">&#x2014; Inactive &#x2014;</div>
-    </div>
-
-    <!-- Hourly Forecast Panel -->
-    <div class="forecast-panel" id="forecast-panel">
-        <div class="forecast-title">12-Hr Forecast</div>
-        <div class="forecast-city" id="forecast-city">Columbus</div>
-        <div class="forecast-scroll" id="forecast-scroll">
-            <div class="forecast-loading">Fetching forecast&hellip;</div>
-        </div>
-    </div>
-
-    <!-- Audio -->
-    <!-- Jazz24 (KNKX Seattle): smooth jazz, free, no key required -->
     <audio id="jazz-audio" preload="none"></audio>
 
-    <!-- Radar Timeline removed for stability -->
-
-    <!-- Static forecast bar -->
-    <div class="forecast-bar">
-        <div class="forecast-bar-label">Forecast</div>
-        <div class="forecast-bar-hours" id="forecast-bar-hours">
-            <div class="forecast-bar-loading">Acquiring signal&hellip;</div>
-        </div>
-    </div>
-
     <script>
-    // ══════════════════════════════════════════════════════════════
-    //  DATA DIVE BAR — WEATHER DESK — OHIO DOPPLER
-    //  90s Weather Channel ASMR Experience
-    // ══════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════
+    //  DATA DIVE BAR — WEATHERSTAR 4000 — HILLIARD, OHIO
+    // ═══════════════════════════════════════════════════════════
 
+    var NWS_UA = 'DataDiveBarWeatherStar/2.0 github.com/datadivebar';
+    var HILLIARD = { lat: 40.0334, lon: -83.1585 };
+    var PRIMARY_STATION = 'KCMH';
+
+    var WEATHER_REFRESH_MS = 10 * 60 * 1000;
+    var ALERT_CHECK_MS     = 5  * 60 * 1000;
     var RADAR_REFRESH_MS   = 2.5 * 60 * 1000;
-    var ALERT_CHECK_MS     = 5   * 60 * 1000;
-    var WEATHER_REFRESH_MS = 10  * 60 * 1000;
-    var NWS_UA = 'DataDiveBarWeatherDesk/1.0 github.com/datadivebar';
+    var SCREEN_DURATION_MS = 12000;
 
-    var WEATHER_STATIONS = [
-        { id: 'KCMH', name: 'Columbus',   lat: 39.9612, lng: -82.9988 },
-        { id: 'KCLE', name: 'Cleveland',  lat: 41.4993, lng: -81.6944 },
-        { id: 'KCVG', name: 'Cincinnati', lat: 39.1031, lng: -84.5120 },
-        { id: 'KTOL', name: 'Toledo',     lat: 41.6528, lng: -83.5379 },
-        { id: 'KAKR', name: 'Akron',      lat: 41.0814, lng: -81.5190 },
+    var OBS_STATIONS = [
+        { id: 'KCMH', name: 'Columbus' },
+        { id: 'KCLE', name: 'Cleveland' },
+        { id: 'KCVG', name: 'Cincinnati' },
+        { id: 'KTOL', name: 'Toledo' },
+        { id: 'KAKR', name: 'Akron' },
+        { id: 'KDAY', name: 'Dayton' },
+        { id: 'KDSM', name: 'Des Moines' },
+        { id: 'KSDF', name: 'Louisville' },
     ];
 
-    // Camera director removed — static view centered on Columbus
+    var RADAR_CITIES = [
+        { name: 'Des Moines', lat: 41.5868, lng: -93.6250 },
+        { name: 'Holland',    lat: 42.7876, lng: -86.1089 },
+        { name: 'Hilliard',   lat: 40.0334, lng: -83.1585 },
+        { name: 'Louisville',  lat: 38.2527, lng: -85.7585 },
+    ];
 
-    // ── MAP ──────────────────────────────────────────────────────
-    var map = L.map('map', {
-        center: [39.9612, -82.9988],
-        zoom: 9,
-        zoomControl: false,
-        attributionControl: false,
-        zoomAnimation: true,
-        fadeAnimation: true,
-    });
+    var SCREEN_TITLES = [
+        { title: 'Current Conditions', sub: '' },
+        { title: 'Latest Observations', sub: '' },
+        { title: 'Extended Forecast', sub: '' },
+        { title: 'Regional Radar', sub: 'Live Doppler' },
+    ];
 
-    // Basemap pane — keep dark map atmospheric, just slightly brighter
-    map.createPane('basemapPane');
-    map.getPane('basemapPane').style.zIndex = 150;
-    map.getPane('basemapPane').style.filter = 'brightness(1.55) contrast(1.08) saturate(0.7) hue-rotate(10deg)';
+    // ── STATE ──────────────────────────────────────────────
+    var currentConditions = null;
+    var observationsData  = [];
+    var forecastPeriods   = [];
+    var screenIndex       = 0;
+    var screenTimer       = null;
+    var radarMap          = null;
+    var radarLayer        = null;
+    var mapInitialized    = false;
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
-        maxZoom: 19,
-        pane: 'basemapPane',
-    }).addTo(map);
+    // ── HELPERS ────────────────────────────────────────────
+    function cToF(c)     { return c != null ? Math.round(c * 9/5 + 32) : null; }
+    function msToMph(ms) { return ms != null ? Math.round(ms * 2.23694) : null; }
+    function paToInHg(pa){ return pa != null ? (pa * 0.00029530).toFixed(2) : null; }
+    function mToMi(m)    { return m != null ? (m / 1609.34).toFixed(1) : null; }
 
-    // Redraw heatmap after pan/zoom so colors stay locked to the correct roads
-    map.on('moveend zoomend', function() {
-        if (trafficHeatLayer) { trafficHeatLayer.redraw(); }
-    });
+    function degToDir(deg) {
+        if (deg == null) return '';
+        var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+        return dirs[Math.round(deg / 22.5) % 16];
+    }
 
-    // ── STATIC LIVE RADAR ──────────────────────────────────────
-    var radarOpacity = 0.72;
-    var radarLayer = L.tileLayer(
-        'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
-        { opacity: radarOpacity, maxNativeZoom: 8, maxZoom: 19 }
-    ).addTo(map);
+    function abbreviateWeather(desc) {
+        if (!desc) return '---';
+        var d = desc.toUpperCase();
+        d = d.replace('PARTLY ', 'P ');
+        d = d.replace('MOSTLY ', 'M ');
+        d = d.replace('CLOUDY', 'CLDY');
+        d = d.replace('THUNDERSTORMS', 'TSTORMS');
+        d = d.replace('THUNDERSTORM', 'TSTORM');
+        d = d.replace('SCATTERED ', 'SCT ');
+        d = d.replace('SHOWERS NEARBY', 'SHWRS NEAR');
+        d = d.replace('SHOWERS', 'SHWRS');
+        d = d.replace('FREEZING', 'FRZG');
+        d = d.replace('DRIZZLE', 'DRZL');
+        d = d.replace('OVERCAST', 'OVCST');
+        if (d.length > 14) d = d.substring(0, 14);
+        return d;
+    }
 
-    // Refresh radar tiles every 2.5 minutes
-    setInterval(function() {
-        if (radarLayer) {
-            map.removeLayer(radarLayer);
-            radarLayer = L.tileLayer(
-                'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
-                { opacity: radarOpacity, maxNativeZoom: 8, maxZoom: 19 }
-            ).addTo(map);
-        }
-    }, RADAR_REFRESH_MS);
+    function getConditionIcon(desc) {
+        if (!desc) return '\u{1F321}️';
+        var d = desc.toLowerCase();
+        if (d.includes('thunder') || d.includes('tstm'))                  return '⛈️';
+        if (d.includes('blizzard'))                                        return '❄️';
+        if (d.includes('snow') || d.includes('flurr'))                    return '\u{1F328}️';
+        if (d.includes('sleet') || d.includes('freezing'))                return '\u{1F327}️';
+        if (d.includes('rain') || d.includes('shower') || d.includes('drizzle')) return '\u{1F327}️';
+        if (d.includes('fog') || d.includes('mist') || d.includes('haze'))       return '\u{1F32B}️';
+        if (d.includes('partly') || d.includes('mostly sunny'))           return '⛅';
+        if (d.includes('cloud') || d.includes('overcast'))                return '☁️';
+        if (d.includes('clear') || d.includes('sunny') || d.includes('fair'))    return '☀️';
+        if (d.includes('wind') || d.includes('breezy') || d.includes('gust'))    return '\u{1F4A8}';
+        return '\u{1F321}️';
+    }
 
-    // ── RADAR OPACITY CONTROLS ────────────────────────────────────
-    document.querySelectorAll('#radar-seg .seg-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#radar-seg .seg-btn').forEach(function(b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            radarOpacity = parseFloat(btn.dataset.opacity);
-            if (radarLayer) radarLayer.setOpacity(radarOpacity);
-        });
-    });
-
-    // Camera director removed — static Columbus view
-
-    // ── CLOCK ────────────────────────────────────────────────────
-    var DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    var MONTHS = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
+    // ── CLOCK ──────────────────────────────────────────────
+    var DAYS_SHORT  = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    var MONTHS_SHORT = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
     function updateClock() {
         var now = new Date();
         var h = now.getHours();
         var m = String(now.getMinutes()).padStart(2, '0');
+        var s = String(now.getSeconds()).padStart(2, '0');
         var ampm = h >= 12 ? 'PM' : 'AM';
         h = h % 12 || 12;
-        document.getElementById('clock').textContent = h + ':' + m + ' ' + ampm;
-        document.getElementById('date-display').textContent =
-            DAYS[now.getDay()] + ' \xB7 ' + MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+        document.getElementById('ws-clock').textContent = h + ':' + m + ':' + s + ' ' + ampm;
+        document.getElementById('ws-date').textContent =
+            DAYS_SHORT[now.getDay()] + ' ' + MONTHS_SHORT[now.getMonth()] + ' ' + now.getDate();
     }
     updateClock();
     setInterval(updateClock, 1000);
 
-    // ── CONDITION ICON ───────────────────────────────────────────
-    function getConditionIcon(desc) {
-        if (!desc) return '\uD83C\uDF21\uFE0F';
-        var d = desc.toLowerCase();
-        if (d.includes('thunder') || d.includes('tstm'))              return '\u26C8\uFE0F';
-        if (d.includes('blizzard'))                                    return '\u2744\uFE0F';
-        if (d.includes('snow') || d.includes('flurr'))                return '\uD83C\uDF28\uFE0F';
-        if (d.includes('sleet') || d.includes('freezing'))            return '\uD83C\uDF27\uFE0F';
-        if (d.includes('rain') || d.includes('shower') || d.includes('drizzle')) return '\uD83C\uDF27\uFE0F';
-        if (d.includes('fog') || d.includes('mist') || d.includes('haze'))       return '\uD83C\uDF2B\uFE0F';
-        if (d.includes('partly') || d.includes('mostly sunny'))       return '\u26C5';
-        if (d.includes('cloud') || d.includes('overcast'))            return '\u2601\uFE0F';
-        if (d.includes('clear') || d.includes('sunny') || d.includes('fair'))    return '\u2600\uFE0F';
-        if (d.includes('wind') || d.includes('breezy') || d.includes('gust'))    return '\uD83D\uDCA8';
-        return '\uD83C\uDF21\uFE0F';
+    // ── NWS: CURRENT CONDITIONS ────────────────────────────
+    async function fetchCurrentConditions() {
+        try {
+            var res = await fetch('https://api.weather.gov/stations/' + PRIMARY_STATION + '/observations/latest', {
+                headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' }
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            var obs = (await res.json()).properties;
+
+            currentConditions = {
+                tempF:      cToF(obs.temperature && obs.temperature.value),
+                humidity:   obs.relativeHumidity && obs.relativeHumidity.value != null
+                            ? Math.round(obs.relativeHumidity.value) : null,
+                dewpointF:  cToF(obs.dewpoint && obs.dewpoint.value),
+                windMph:    msToMph(obs.windSpeed && obs.windSpeed.value),
+                windDir:    degToDir(obs.windDirection && obs.windDirection.value),
+                pressure:   paToInHg(obs.barometricPressure && obs.barometricPressure.value),
+                visibility: mToMi(obs.visibility && obs.visibility.value),
+                heatIndex:  cToF(obs.heatIndex && obs.heatIndex.value),
+                windChill:  cToF(obs.windChill && obs.windChill.value),
+                desc:       obs.textDescription || '',
+            };
+
+            renderCurrentConditions();
+            renderFooter();
+        } catch(e) {
+            console.warn('Current conditions failed:', e);
+        }
     }
 
-    // ── TEMPERATURE COLOR ────────────────────────────────────────
-    function getTempColor(tempF) {
-        if (tempF == null) return 'var(--text-dim)';
-        if (tempF < 20)  return '#7ab4f5';
-        if (tempF < 32)  return '#4ab8d8';
-        if (tempF < 50)  return '#5ab8aa';
-        if (tempF < 68)  return '#88c870';
-        if (tempF < 85)  return '#E85D04';
-        return '#E85D04';
+    function renderCurrentConditions() {
+        if (!currentConditions) return;
+        var cc = currentConditions;
+        document.getElementById('cc-loading').style.display = 'none';
+        document.getElementById('cc-content').style.display = '';
+
+        document.getElementById('cc-temp').innerHTML =
+            (cc.tempF != null ? cc.tempF : '&mdash;') + '<span class="cc-temp-unit">&deg;F</span>';
+        document.getElementById('cc-desc').textContent = cc.desc || '—';
+        document.getElementById('cc-humidity').textContent = cc.humidity != null ? cc.humidity + '%' : '—';
+        document.getElementById('cc-dewpoint').textContent = cc.dewpointF != null ? cc.dewpointF + '°F' : '—';
+        document.getElementById('cc-wind').textContent =
+            cc.windDir && cc.windMph != null ? cc.windDir + ' ' + cc.windMph + ' MPH' : '—';
+        document.getElementById('cc-pressure').textContent = cc.pressure != null ? cc.pressure + ' in' : '—';
+        document.getElementById('cc-visibility').textContent = cc.visibility != null ? cc.visibility + ' mi' : '—';
+
+        var feelsLike = cc.heatIndex || cc.windChill;
+        document.getElementById('cc-heatindex').textContent =
+            feelsLike != null ? feelsLike + '°F' : '—';
     }
 
-    // ── NWS ALERTS ───────────────────────────────────────────────
+    function renderFooter() {
+        if (!currentConditions) return;
+        var cc = currentConditions;
+        var parts = [];
+        if (cc.tempF != null) parts.push(cc.tempF + '°F');
+        if (cc.desc) parts.push(abbreviateWeather(cc.desc));
+        if (cc.windDir && cc.windMph != null) parts.push('Wind: ' + cc.windDir + ' ' + cc.windMph + ' MPH');
+        if (cc.humidity != null) parts.push('Humidity: ' + cc.humidity + '%');
+        document.getElementById('footer-conditions').textContent = parts.join('  ·  ');
+    }
+
+    // ── NWS: OBSERVATIONS ──────────────────────────────────
+    async function fetchObservations() {
+        var results = [];
+        for (var i = 0; i < OBS_STATIONS.length; i++) {
+            var s = OBS_STATIONS[i];
+            try {
+                var res = await fetch('https://api.weather.gov/stations/' + s.id + '/observations/latest', {
+                    headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' }
+                });
+                if (!res.ok) throw new Error();
+                var obs = (await res.json()).properties;
+                results.push({
+                    name:    s.name,
+                    tempF:   cToF(obs.temperature && obs.temperature.value),
+                    windMph: msToMph(obs.windSpeed && obs.windSpeed.value),
+                    windDir: degToDir(obs.windDirection && obs.windDirection.value),
+                    desc:    obs.textDescription || '',
+                });
+            } catch(e) {
+                results.push({ name: s.name, tempF: null, windMph: null, windDir: '', desc: '' });
+            }
+        }
+        observationsData = results;
+        renderObservations();
+    }
+
+    function renderObservations() {
+        var tbody = document.getElementById('obs-body');
+        if (!tbody || !observationsData.length) return;
+
+        var html = '';
+        observationsData.forEach(function(d) {
+            var temp = d.tempF != null ? d.tempF : '--';
+            var weather = abbreviateWeather(d.desc);
+            var wind = d.windDir && d.windMph != null ? d.windDir + ' ' + d.windMph : '--';
+            html += '<tr>' +
+                '<td>' + d.name + '</td>' +
+                '<td>' + temp + '</td>' +
+                '<td>' + weather + '</td>' +
+                '<td>' + wind + '</td>' +
+                '</tr>';
+        });
+        tbody.innerHTML = html;
+    }
+
+    // ── NWS: EXTENDED FORECAST ─────────────────────────────
+    async function fetchForecast() {
+        try {
+            var ptRes = await fetch(
+                'https://api.weather.gov/points/' + HILLIARD.lat + ',' + HILLIARD.lon,
+                { headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' } }
+            );
+            if (!ptRes.ok) throw new Error('Points API ' + ptRes.status);
+            var ptData = await ptRes.json();
+            var forecastUrl = ptData.properties.forecast;
+
+            var fcRes = await fetch(forecastUrl, {
+                headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' }
+            });
+            if (!fcRes.ok) throw new Error('Forecast API ' + fcRes.status);
+            var fcData = await fcRes.json();
+
+            forecastPeriods = (fcData.properties.periods || []).slice(0, 10);
+            renderForecast();
+        } catch(e) {
+            console.warn('Forecast failed:', e);
+        }
+    }
+
+    function renderForecast() {
+        var grid = document.getElementById('fc-grid');
+        if (!grid || !forecastPeriods.length) return;
+
+        var paired = [];
+        var i = 0;
+        while (i < forecastPeriods.length && paired.length < 5) {
+            var p = forecastPeriods[i];
+            if (p.isDaytime) {
+                var night = forecastPeriods[i + 1];
+                paired.push({
+                    day: p.name,
+                    hi: p.temperature,
+                    lo: night ? night.temperature : null,
+                    desc: p.shortForecast,
+                    icon: getConditionIcon(p.shortForecast),
+                });
+                i += 2;
+            } else {
+                paired.push({
+                    day: p.name,
+                    hi: null,
+                    lo: p.temperature,
+                    desc: p.shortForecast,
+                    icon: getConditionIcon(p.shortForecast),
+                });
+                i += 1;
+            }
+        }
+
+        var html = '';
+        paired.forEach(function(f) {
+            html += '<div class="fc-card">' +
+                '<div class="fc-day">' + f.day + '</div>' +
+                '<div class="fc-icon">' + f.icon + '</div>' +
+                '<div class="fc-temps">';
+            if (f.hi != null) html += '<span class="fc-hi">' + f.hi + '&deg;</span>';
+            if (f.lo != null) html += '<span class="fc-lo">' + f.lo + '&deg;</span>';
+            html += '</div>' +
+                '<div class="fc-desc">' + abbreviateWeather(f.desc) + '</div>' +
+                '</div>';
+        });
+        grid.innerHTML = html;
+    }
+
+    // ── NWS: ALERTS ────────────────────────────────────────
     async function fetchAlerts() {
         try {
             var res = await fetch('https://api.weather.gov/alerts/active?area=OH', {
@@ -982,154 +1134,136 @@
             }
         } catch(e) {}
     }
-    fetchAlerts();
-    setInterval(fetchAlerts, ALERT_CHECK_MS);
 
-    // ── WEATHER DATA ─────────────────────────────────────────────
-    var weatherData = [];
-    var cityMarkers = [];
-    var lastUpdated = null;
+    // ── RADAR MAP ──────────────────────────────────────────
+    function initRadarMap() {
+        if (mapInitialized) return;
+        mapInitialized = true;
 
-    function cToF(c)    { return c != null ? Math.round(c * 9/5 + 32) : null; }
-    function msToMph(ms){ return ms != null ? Math.round(ms * 2.23694) : null; }
-    function degToDir(deg) {
-        if (deg == null) return '';
-        var dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-        return dirs[Math.round(deg / 22.5) % 16];
-    }
+        radarMap = L.map('radar-map', {
+            center: [40.5, -87.8],
+            zoom: 6,
+            zoomControl: false,
+            attributionControl: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            touchZoom: false,
+        });
 
-    // ── CITY MAP MARKERS ─────────────────────────────────────────
-    function updateMapMarkers(data) {
-        cityMarkers.forEach(function(m) { map.removeLayer(m); });
-        cityMarkers = [];
-        WEATHER_STATIONS.forEach(function(station, i) {
-            var d = data[i];
-            var tempF   = d ? d.tempF : null;
-            var desc    = d ? d.desc  : '';
-            var tempStr = tempF != null ? tempF + '\xB0F' : '\u2014';
-            var icon    = getConditionIcon(desc);
-            var color   = getTempColor(tempF);
-            var marker = L.marker([station.lat, station.lng], {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            subdomains: 'abcd',
+            maxZoom: 19,
+        }).addTo(radarMap);
+
+        radarLayer = L.tileLayer(
+            'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
+            { opacity: 0.72, maxNativeZoom: 8, maxZoom: 19 }
+        ).addTo(radarMap);
+
+        RADAR_CITIES.forEach(function(city) {
+            L.marker([city.lat, city.lng], {
                 icon: L.divIcon({
                     className: '',
-                    html: '<div class="city-marker">' +
-                          '<div class="city-marker-name">' + station.name + '</div>' +
-                          '<div class="city-marker-row">' +
-                          '<span class="city-marker-icon">' + icon + '</span>' +
-                          '<span class="city-marker-temp" style="color:' + color + '">' + tempStr + '</span>' +
-                          '</div></div>',
-                    iconSize: [88, 42],
-                    iconAnchor: [44, 21],
+                    html: '<div style="display:flex;align-items:center;gap:6px;">' +
+                          '<div class="radar-city-dot"></div>' +
+                          '<div class="radar-city-label">' + city.name + '</div>' +
+                          '</div>',
+                    iconSize: [120, 20],
+                    iconAnchor: [4, 10],
                 }),
                 interactive: false,
-            }).addTo(map);
-            cityMarkers.push(marker);
+            }).addTo(radarMap);
         });
-    }
 
-    async function fetchWeather() {
-        var results = [];
-        for (var i = 0; i < WEATHER_STATIONS.length; i++) {
-            var s = WEATHER_STATIONS[i];
-            try {
-                var res = await fetch('https://api.weather.gov/stations/' + s.id + '/observations/latest', {
-                    headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' }
-                });
-                if (!res.ok) throw new Error();
-                var obs = (await res.json()).properties;
-                results.push({
-                    name:    s.name,
-                    tempF:   cToF(obs.temperature && obs.temperature.value),
-                    humid:   obs.relativeHumidity && obs.relativeHumidity.value != null
-                             ? Math.round(obs.relativeHumidity.value) : null,
-                    windMph: msToMph(obs.windSpeed && obs.windSpeed.value),
-                    windDir: degToDir(obs.windDirection && obs.windDirection.value),
-                    desc:    obs.textDescription || '',
-                });
-            } catch(e) {
-                results.push({ name: s.name, tempF: null, humid: null, windMph: null, windDir: '', desc: '' });
+        setInterval(function() {
+            if (radarLayer && radarMap) {
+                radarMap.removeLayer(radarLayer);
+                radarLayer = L.tileLayer(
+                    'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png?_=' + Date.now(),
+                    { opacity: 0.72, maxNativeZoom: 8, maxZoom: 19 }
+                ).addTo(radarMap);
             }
+        }, RADAR_REFRESH_MS);
+    }
+
+    // ── SCREEN CYCLING ─────────────────────────────────────
+    var screens = ['screen-current', 'screen-observations', 'screen-forecast', 'screen-radar'];
+
+    function showScreen(index) {
+        screens.forEach(function(id, i) {
+            var el = document.getElementById(id);
+            if (el) el.classList.toggle('active', i === index);
+        });
+
+        var info = SCREEN_TITLES[index];
+        document.getElementById('screen-title').textContent = info.title;
+        document.getElementById('screen-subtitle').textContent = info.sub;
+
+        if (screens[index] === 'screen-radar') {
+            initRadarMap();
+            setTimeout(function() {
+                if (radarMap) radarMap.invalidateSize();
+            }, 200);
         }
-        weatherData = results;
-        lastUpdated = new Date();
-        updateMapMarkers(results);
-        updateTimestamp();
     }
 
-    // ── LAST UPDATED ─────────────────────────────────────────────
-    function updateTimestamp() {
-        var el = document.getElementById('updated-display');
-        if (!el || !lastUpdated) return;
-        var mins = Math.floor((Date.now() - lastUpdated.getTime()) / 60000);
-        el.textContent = mins < 1 ? 'Conditions updated just now' : 'Updated ' + mins + ' min ago';
+    function nextScreen() {
+        screenIndex = (screenIndex + 1) % screens.length;
+        showScreen(screenIndex);
     }
-    setInterval(updateTimestamp, 30000);
 
-    // Chyron removed — forecast now rendered in static bottom bar
+    function startScreenCycle() {
+        showScreen(0);
+        screenTimer = setInterval(nextScreen, SCREEN_DURATION_MS);
+    }
 
-    // ── SKELETON MARKERS ─────────────────────────────────────────
-    updateMapMarkers(WEATHER_STATIONS.map(function(s) {
-        return { name: s.name, tempF: null, desc: '', humid: null, windMph: null, windDir: '' };
-    }));
-
-    fetchWeather();
-    setInterval(fetchWeather, WEATHER_REFRESH_MS);
-
-    // ── AUDIO ────────────────────────────────────────────────────
+    // ── AUDIO ──────────────────────────────────────────────
     var audio    = document.getElementById('jazz-audio');
     var audioBtn = document.getElementById('audio-btn');
     audio.volume = 0.38;
 
-    // Jazz24 (KNKX Seattle) — smooth jazz, confirmed working CDN URLs
-    // amperwave.net = Jazz24's official streaming CDN (confirmed Oct 2023)
-    // audiocdn.com  = URLs from jazz24.org's own web player
-    // WBGO fallback = Jazz 88.3 Newark (official stream URLs)
     var streams = [
         'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',
         'https://live.amperwave.net/direct/ppm-jazz24aac256-ibc1',
         'https://knkx-live-a.edge.audiocdn.com/6285_128k',
-        'https://knkx-live-a.edge.audiocdn.com/6285_256k',
         'https://ais-sa8.cdnstream1.com/3629_128.mp3',
     ];
     var streamIndex = 0;
     var isPlaying = false;
-    var autoplayBlocked = false;
 
-    function setAudioState(state) {
+    function setAudioLabel(state) {
         var labels = {
-            idle:    '\u266A Play Sax',
-            playing: '\u266A Mute',
-            muted:   '\u266A Unmute',
-            error:   '\u266A No Signal',
-            loading: '\u266A Tuning\u2026',
+            idle:    '♪ Smooth Jazz',
+            playing: '♪ Mute',
+            muted:   '♪ Unmute',
+            error:   '♪ No Signal',
+            loading: '♪ Tuning…',
         };
         audioBtn.textContent = labels[state] || labels.idle;
-        audioBtn.classList.toggle('active', state === 'playing');
+        audioBtn.classList.toggle('playing', state === 'playing');
     }
 
     function tryPlay(index) {
         if (index === undefined) index = 0;
         streamIndex = index;
-        setAudioState('loading');
+        setAudioLabel('loading');
         audio.src = streams[index];
         audio.load();
         audio.play()
             .then(function() {
                 isPlaying = true;
-                autoplayBlocked = false;
-                setAudioState('playing');
+                setAudioLabel('playing');
             })
             .catch(function(e) {
                 isPlaying = false;
                 if (e.name === 'NotAllowedError') {
-                    // Browser blocked autoplay — will retry on first user interaction
-                    autoplayBlocked = true;
                     audio.src = '';
-                    setAudioState('idle');
+                    setAudioLabel('idle');
                 } else if (index + 1 < streams.length) {
                     tryPlay(index + 1);
                 } else {
-                    setAudioState('error');
+                    setAudioLabel('error');
                 }
             });
     }
@@ -1139,255 +1273,49 @@
             tryPlay(streamIndex + 1);
         } else {
             isPlaying = false;
-            setAudioState('error');
+            setAudioLabel('error');
         }
     });
 
     audioBtn.addEventListener('click', function() {
-        autoplayBlocked = false;
         if (!audio.src || audio.readyState === 0) {
             tryPlay(0);
         } else if (audio.paused) {
             audio.play()
-                .then(function() { isPlaying = true; setAudioState('playing'); })
+                .then(function() { isPlaying = true; setAudioLabel('playing'); })
                 .catch(function() { tryPlay(0); });
         } else if (audio.muted) {
             audio.muted = false;
-            setAudioState('playing');
+            setAudioLabel('playing');
         } else {
             audio.muted = true;
-            setAudioState('muted');
+            setAudioLabel('muted');
         }
     });
 
-    // ── TRAFFIC LAYER ────────────────────────────────────────────
-    var trafficEnabled   = false;
-    var trafficMarkers   = [];
-    var trafficHeatLayer = null;
-    var trafficTimer     = null;
-    var TRAFFIC_REFRESH_MS = 5 * 60 * 1000;
-
-    // Waze alert type definitions
-    var WAZE_TYPES = {
-        'POLICE':       { cls: 'police',   emoji: '\uD83D\uDE94', label: 'Police' },
-        'ACCIDENT':     { cls: 'accident', emoji: '\uD83D\uDCA5', label: 'Accident' },
-        'HAZARD':       { cls: 'hazard',   emoji: '\u26A0\uFE0F', label: 'Hazard' },
-        'ROAD_CLOSED':  { cls: 'closure',  emoji: '\uD83D\uDEA7', label: 'Road Closed' },
-        'CONSTRUCTION': { cls: 'closure',  emoji: '\uD83D\uDEA7', label: 'Construction' },
-    };
-
-    function clearTrafficLayers() {
-        trafficMarkers.forEach(function(m) { map.removeLayer(m); });
-        trafficMarkers = [];
-        if (trafficHeatLayer) { map.removeLayer(trafficHeatLayer); trafficHeatLayer = null; }
-    }
-
-    function setTrafficStatus(msg) {
-        var el = document.getElementById('traffic-status');
-        if (el) el.textContent = msg;
-    }
-
-    async function fetchTrafficData() {
-        if (!trafficEnabled) return;
-        setTrafficStatus('Scanning\u2026');
-
-        // Ohio bounding box — enough to cover the whole state
-        var wazeUrl = 'https://www.waze.com/live-map/api/georss' +
-            '?env=na&types=alerts,traffic' +
-            '&top=42.0&bottom=38.4&left=-84.8&right=-80.5';
-
-        // Try two CORS proxies in sequence
-        var proxies = [
-            'https://corsproxy.io/?' + encodeURIComponent(wazeUrl),
-            'https://api.allorigins.win/raw?url=' + encodeURIComponent(wazeUrl),
-        ];
-
-        var data = null;
-        for (var pi = 0; pi < proxies.length; pi++) {
-            try {
-                var controller = new AbortController();
-                var tid = setTimeout(function() { controller.abort(); }, 10000);
-                var res = await fetch(proxies[pi], { signal: controller.signal });
-                clearTimeout(tid);
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                data = await res.json();
-                break;
-            } catch(e) { /* try next proxy */ }
-        }
-
-        if (!data) {
-            setTrafficStatus('No signal — retrying');
-            return;
-        }
-
-        clearTrafficLayers();
-
-        // ── Incident markers ──────────────────────────────────
-        var alerts  = data.alerts || [];
-        var plotted = 0;
-        alerts.forEach(function(alert) {
-            var typeDef = WAZE_TYPES[alert.type] || WAZE_TYPES[alert.subtype];
-            if (!typeDef) return;
-            var lat = alert.location && alert.location.y;
-            var lng = alert.location && alert.location.x;
-            if (!lat || !lng) return;
-
-            var colorMap = { police: '#3888c8', accident: '#FF6B0A', hazard: '#E85D04', closure: '#E85D04' };
-            var labelColor = colorMap[typeDef.cls] || '#b8d0f0';
-
-            var popupHtml =
-                '<strong style="color:' + labelColor + '">' + typeDef.label.toUpperCase() + '</strong>' +
-                (alert.street ? '<br>\u{1F6E3} ' + alert.street : '') +
-                (alert.city   ? ', ' + alert.city : '');
-
-            var m = L.marker([lat, lng], {
-                icon: L.divIcon({
-                    className: '',
-                    html: '<div class="traffic-marker ' + typeDef.cls + '">' + typeDef.emoji + '</div>',
-                    iconSize:   [24, 24],
-                    iconAnchor: [12, 12],
-                }),
-                interactive: true,
-                zIndexOffset: 300,
-            });
-            m.bindPopup(popupHtml, { closeButton: false, offset: [0, -8] });
-            m.addTo(map);
-            trafficMarkers.push(m);
-            plotted++;
-        });
-
-        // ── Traffic jam heatmap ───────────────────────────────
-        var jams = data.jams || [];
-        if (jams.length > 0 && typeof L.heatLayer === 'function') {
-            var heatPoints = [];
-            jams.forEach(function(jam) {
-                var intensity = Math.min(1.0, (jam.delay || 60) / 90);
-                (jam.line || []).forEach(function(pt) {
-                    heatPoints.push([pt.y, pt.x, intensity]);
-                });
-            });
-            if (heatPoints.length > 0) {
-                trafficHeatLayer = L.heatLayer(heatPoints, {
-                    radius:  18,
-                    blur:    12,
-                    maxZoom: 15,
-                    max:     1.0,
-                    gradient: { 0.0: '#1166ff', 0.4: '#66aaff', 0.7: '#ff8800', 1.0: '#ff2200' },
-                }).addTo(map);
-            }
-        }
-
-        var jamCount = jams.length;
-        setTrafficStatus(
-            plotted === 0 && jamCount === 0
-                ? 'Clear roads'
-                : plotted + ' alert' + (plotted !== 1 ? 's' : '') +
-                  ' \u00B7 ' + jamCount + ' jam' + (jamCount !== 1 ? 's' : '')
-        );
-    }
-
-    // Traffic toggle controls
-    document.querySelectorAll('#traffic-seg .seg-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('#traffic-seg .seg-btn').forEach(function(b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            var legend = document.getElementById('traffic-legend');
-            if (btn.dataset.traffic === 'on') {
-                trafficEnabled = true;
-                if (legend) legend.classList.add('visible');
-                fetchTrafficData();
-                clearInterval(trafficTimer);
-                trafficTimer = setInterval(fetchTrafficData, TRAFFIC_REFRESH_MS);
-            } else {
-                trafficEnabled = false;
-                if (legend) legend.classList.remove('visible');
-                clearInterval(trafficTimer);
-                clearTrafficLayers();
-                setTrafficStatus('\u2014 Inactive \u2014');
-            }
-        });
-    });
-
-    // ── HOURLY FORECAST (Columbus, OH — 12 hours) ─────────────────
-    var FORECAST_CITY = { name: 'Columbus', lat: 39.9612, lon: -82.9988 };
-    var forecastPeriods = [];
-
-    async function fetchHourlyForecast() {
-        try {
-            // Step 1: Get gridpoint
-            var ptRes = await fetch(
-                'https://api.weather.gov/points/' + FORECAST_CITY.lat + ',' + FORECAST_CITY.lon,
-                { headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' } }
-            );
-            if (!ptRes.ok) throw new Error('Points API ' + ptRes.status);
-            var ptData = await ptRes.json();
-            var hourlyUrl = ptData.properties.forecastHourly;
-
-            // Step 2: Fetch hourly forecast
-            var fcRes = await fetch(hourlyUrl, {
-                headers: { 'User-Agent': NWS_UA, 'Accept': 'application/geo+json' }
-            });
-            if (!fcRes.ok) throw new Error('Forecast API ' + fcRes.status);
-            var fcData = await fcRes.json();
-
-            forecastPeriods = (fcData.properties.periods || []).slice(0, 10);
-
-            // Render in the static bottom bar
-            renderForecastBar(forecastPeriods);
-
-        } catch(e) {
-            console.warn('Hourly forecast failed:', e);
-            var container = document.getElementById('forecast-bar-hours');
-            if (container) container.innerHTML = '<div class="forecast-bar-loading">Signal lost</div>';
-        }
-    }
-
-    function renderForecastBar(periods) {
-        var container = document.getElementById('forecast-bar-hours');
-        if (!container || !periods.length) return;
-
-        var html = '';
-        periods.forEach(function(p, i) {
-            var dt = new Date(p.startTime);
-            var h = dt.getHours();
-            var ampm = h >= 12 ? 'P' : 'A';
-            var h12 = h % 12 || 12;
-            var timeStr = i === 0 ? 'NOW' : h12 + ampm;
-
-            var tempF = p.temperature;
-            var color = getTempColor(tempF);
-            var icon = getConditionIcon(p.shortForecast);
-            var precip = p.probabilityOfPrecipitation && p.probabilityOfPrecipitation.value;
-            var precipStr = precip != null && precip > 0 ? '\uD83D\uDCA7' + precip + '%' : '';
-
-            html += '<div class="forecast-bar-hour">' +
-                '<span class="fbh-time">' + timeStr + '</span>' +
-                '<span class="fbh-icon">' + icon + '</span>' +
-                '<span class="fbh-temp" style="color:' + color + '">' + tempF + '\u00B0</span>' +
-                (precipStr ? '<span class="fbh-precip">' + precipStr + '</span>' : '') +
-                '</div>';
-        });
-
-        container.innerHTML = html;
-    }
-
-    // Re-fetch hourly forecast every 30 minutes
-    setInterval(fetchHourlyForecast, 30 * 60 * 1000);
-
-    // ── SPLASH DISMISS ───────────────────────────────────────────
-    // The splash screen acts as the user-gesture gate required by browsers
-    // before audio can autoplay. Dismissing it starts both audio and camera.
+    // ── SPLASH DISMISS ─────────────────────────────────────
     var splash = document.getElementById('splash');
+
     function startExperience() {
         splash.classList.add('fade-out');
         splash.addEventListener('transitionend', function() {
             splash.style.display = 'none';
         }, { once: true });
-        tryPlay(0);
 
-        // Init hourly forecast
-        fetchHourlyForecast();
+        tryPlay(0);
+        startScreenCycle();
+
+        fetchCurrentConditions();
+        fetchObservations();
+        fetchForecast();
+        fetchAlerts();
+
+        setInterval(fetchCurrentConditions, WEATHER_REFRESH_MS);
+        setInterval(fetchObservations, WEATHER_REFRESH_MS);
+        setInterval(fetchForecast, 30 * 60 * 1000);
+        setInterval(fetchAlerts, ALERT_CHECK_MS);
     }
+
     splash.addEventListener('click', startExperience, { once: true });
     splash.addEventListener('touchend', startExperience, { once: true });
 
