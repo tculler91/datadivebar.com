@@ -69,3 +69,9 @@
 - Use `opacity` transitions (not `display: none/block`) for smooth crossfades
 - Mark one item `active` at a time; CSS `transition: opacity 0.8s ease` handles the fade
 - Rebuild the DOM cleanly on each data refresh rather than trying to update in place
+
+## Landing page design feedback — 2026-09-08
+
+The owner found the first editorial redesign too basic and requested moody, mysterious, interesting reader appeal. For this publication, use immersive atmospheric imagery, layered lighting and texture, expressive editorial typography, and varied composition. Large type plus a flat grid is insufficient. Keep upcoming content honest and old articles unpublished.
+
+Owner clarified: retain a dark navy and orange palette while adding mood and mystery. Do not replace the requested brand colors with green and gold.

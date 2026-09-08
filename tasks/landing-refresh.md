@@ -13,3 +13,7 @@ Homepage links and fragment targets pass. All archived article files match their
 ## Artwork
 
 Built-in image generation produced `images/deep-cuts-editorial.jpg`. Brief: gritty black-and-white photocopy collage of a floodlit baseball stadium, vinyl turntable and concert amplifier, with one vermilion torn-paper strip; no text, logos or identifiable people.
+
+## Atmospheric revision
+
+Replaced the flat masthead/grid with a full-width cinematic listening-bar hero, navy shadows, orange accents, expressive serif type, fine grain, staggered image-led coverage panels, and a back-room directory. Upcoming stories remain labeled; archives remain excluded. Added reduced-motion handling. Static link, image, fragment, and archive checks pass. Artwork: built-in image generation; dark listening bar with turntable and distant baseball television, warm practical lighting, no people or text. Final asset: images/after-hours-bar.jpg.
