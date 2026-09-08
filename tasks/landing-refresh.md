@@ -17,3 +17,7 @@ Built-in image generation produced `images/deep-cuts-editorial.jpg`. Brief: grit
 ## Atmospheric revision
 
 Replaced the flat masthead/grid with a full-width cinematic listening-bar hero, navy shadows, orange accents, expressive serif type, fine grain, staggered image-led coverage panels, and a back-room directory. Upcoming stories remain labeled; archives remain excluded. Added reduced-motion handling. Static link, image, fragment, and archive checks pass. Artwork: built-in image generation; dark listening bar with turntable and distant baseball television, warm practical lighting, no people or text. Final asset: images/after-hours-bar.jpg.
+
+## Minimalist refinement
+
+Removed Fantasy Vibes League from the homepage and moved its entire frontend into the excluded archive, preserving source in GitHub. Removed the repeated introduction, announcement banner, category tags, decorative numbering, and hero footer captions. Shortened hero copy and changed the back room to a simple five-item directory. Preserved navy/orange colors, imagery, and the clearly labeled upcoming stories.
