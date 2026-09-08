@@ -1,0 +1,8 @@
+# GitHub Pages builds main with Jekyll. Archives must never enter its output.
+exclude:
+  - _archive
+  - tasks
+  - CLAUDE.md
+  - README.md
+  - skills.md
+  - weather_channel.md
