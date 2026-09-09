@@ -21,3 +21,7 @@ Replaced the flat masthead/grid with a full-width cinematic listening-bar hero, 
 ## Minimalist refinement
 
 Removed Fantasy Vibes League from the homepage and moved its entire frontend into the excluded archive, preserving source in GitHub. Removed the repeated introduction, announcement banner, category tags, decorative numbering, and hero footer captions. Shortened hero copy and changed the back room to a simple five-item directory. Preserved navy/orange colors, imagery, and the clearly labeled upcoming stories.
+
+## Underground texture refinement
+
+Preserved the approved minimalist layout and navy/orange theme. Increased subtle grain, added static scanlines behind hero text, distressed photographic contrast, clipped print-like card corners, dashed dividers, and monospaced wordmark/navigation/directory labels. No new sections, scripts, flashing, or content. Existing archives remain excluded.
