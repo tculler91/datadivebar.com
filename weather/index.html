@@ -58,7 +58,27 @@
         }
 
         .leaflet-control-zoom,
-        .leaflet-control-attribution { display: none !important; }
+        /* Provider credits stay visible above the full-screen overlays. */
+        .map-credit, .map-status {
+            position: fixed;
+            top: calc(var(--bar-h) + 8px);
+            z-index: 601;
+            padding: 5px 8px;
+            background: rgba(4, 8, 32, 0.92);
+            color: #c5d3df;
+            font: 11px/1.5 'IBM Plex Mono', monospace;
+            border: 1px solid rgba(48, 148, 220, 0.25);
+            border-radius: 3px;
+        }
+        .map-credit { right: 10px; }
+        .map-credit a { color: inherit; text-underline-offset: 2px; }
+        .map-credit a:focus-visible { outline: 2px solid #ff9855; outline-offset: 3px; }
+        .map-status { left: 10px; max-width: min(320px, calc(100vw - 20px)); }
+        .map-status[hidden] { display: none; }
+        @media (max-width: 640px) {
+            .map-credit { font-size: 10px; right: 8px; }
+            .map-status { top: calc(var(--bar-h) + 44px); }
+        }
 
         /* ── CRT SCAN LINES ─────────────────────────────────── */
         .scanlines {
@@ -727,6 +747,9 @@
         <span id="alert-text"></span>
     </div>
 
+    <div class="map-credit">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Radar: <a href="https://mesonet.agron.iastate.edu/" target="_blank" rel="noopener">IEM</a></div>
+    <div class="map-status" id="map-status" role="status" hidden></div>
+
     <!-- Top bar -->
     <div class="top-bar">
         <div class="logo">
@@ -868,16 +891,33 @@
         fadeAnimation: true,
     });
 
-    // Basemap pane — keep dark map atmospheric, just slightly brighter
+    // Standard OSM tiles need no API key. Let the browser cache them normally;
+    // refresh only the radar overlay, never cache-bust or prefetch the basemap.
+    // CARTO's former anonymous dark_all endpoint now serves API-key warning tiles.
+    var BASEMAP_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     map.createPane('basemapPane');
     map.getPane('basemapPane').style.zIndex = 150;
-    map.getPane('basemapPane').style.filter = 'brightness(1.55) contrast(1.08) saturate(0.7) hue-rotate(10deg)';
+    // Filter this pane only, preserving the radar's precipitation colors.
+    map.getPane('basemapPane').style.filter = 'grayscale(1) invert(1) sepia(0.2) hue-rotate(165deg) saturate(0.7) brightness(0.8)';
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
+    var basemapLayer = L.tileLayer(BASEMAP_URL, {
         maxZoom: 19,
         pane: 'basemapPane',
-    }).addTo(map);
+        updateWhenIdle: true,
+        attribution: '&copy; OpenStreetMap contributors'
+    });
+    var basemapHadError = false;
+    var mapStatus = document.getElementById('map-status');
+    basemapLayer.on('loading', function() { basemapHadError = false; });
+    basemapLayer.on('tileerror', function() {
+        basemapHadError = true;
+        mapStatus.textContent = 'Map background unavailable. Weather data may still load.';
+        mapStatus.hidden = false;
+    });
+    basemapLayer.on('load', function() {
+        if (!basemapHadError) mapStatus.hidden = true;
+    });
+    basemapLayer.addTo(map);
 
     // Redraw heatmap after pan/zoom so colors stay locked to the correct roads
     map.on('moveend zoomend', function() {

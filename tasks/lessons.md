@@ -75,3 +75,8 @@
 The owner found the first editorial redesign too basic and requested moody, mysterious, interesting reader appeal. For this publication, use immersive atmospheric imagery, layered lighting and texture, expressive editorial typography, and varied composition. Large type plus a flat grid is insufficient. Keep upcoming content honest and old articles unpublished.
 
 Owner clarified: retain a dark navy and orange palette while adding mood and mystery. Do not replace the requested brand colors with green and gold.
+
+## Music direction — 2026-09-18
+Preserve the approved cozy navy/orange Macintosh layout while broadening the music identity to indie rock and shoegaze alongside yacht rock. Put grain, faded ink, and zine accents in artwork and chrome; keep the article reading surface calm.
+
+Owner rejected the literal generated band photo as corny and preferred the retro yacht-rock atmosphere. Preserve the marina illustration and record artwork; indie/shoegaze belongs subtly in the editorial range, not an obvious concert-photo aesthetic.

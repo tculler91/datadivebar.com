@@ -99,3 +99,29 @@ Timed trivia game pulling questions from existing Data Dive Bar articles. 10 que
 - "That's... not even close. You been drinking already?"
 - "Wrong. I've seen better guesses from the jukebox."
 - "Buddy, even the dart board knows that one."
+
+## Yacht rock / Macintosh editorial redesign — 2026-09-18
+- [x] Rebuild homepage around navy/orange, warm paper, Macintosh window details, original marina listening-room illustration.
+- [x] Put music/video and data/AI editorial sections first; retain working back-room destinations.
+- [x] Add explicitly labeled music and data reader previews, with comfortable reading measure and accessible navigation.
+- [x] Verify desktop/mobile layouts, links, keyboard controls, and archive exclusions; present a local preview.
+
+### Review
+- Verified homepage at 320, 390, 768 and default desktop widths; no horizontal overflow at checked mobile/tablet widths.
+- Verified category filtering, category navigation from readers, both article destinations, and keyboard activation of Lights down/up. No browser console errors observed.
+- Checked local file links, anchors and unique IDs; git diff --check passed.
+- Preserved existing back-room pages, CNAME and Jekyll archive exclusions.
+- Reader pages are explicitly sample copy and noindex; no new editorial claims are presented as published articles.
+- Local review at http://127.0.0.1:8766/ using a public-files-only temporary copy. No commit, push or deployment performed.
+
+## Indie / shoegaze refinement and Weather Desk repair — 2026-09-18
+- [x] Refine approved layout with subtle texture and broader music copy; retain marina and vinyl artwork after feedback; preserve readable article surfaces.
+- [x] Reproduced CARTO API KEY REQUIRED watermark; replaced anonymous CARTO map tiles with keyless OpenStreetMap tiles and pane-only dark styling. Added visible provider attribution and map-load failure feedback.
+- [ ] Validate responsive design and weather behavior; commit and publish to GitHub main; verify deployment.
+
+### Validation before publication
+- Desktop and 390px phone design reviewed. Category navigation and night-reading controls passed. Band-photo direction rejected and removed before publication.
+- Web image exported as JPEG (541 KB instead of 2 MB PNG); original generated image retained outside public site.
+- Local Weather Desk: 24/24 OSM map tiles and 8/8 IEM radar tiles loaded; all five current observations and hourly forecast populated; radar On/Off and audio mute verified.
+- JavaScript syntax, link/anchor checks and git diff --check passed. Map failure/recovery state regression test passed.
+- Map uses normal browser caching and visible OSM attribution in accordance with https://operations.osmfoundation.org/policies/tiles/.
