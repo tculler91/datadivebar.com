@@ -80,3 +80,6 @@ Owner clarified: retain a dark navy and orange palette while adding mood and mys
 Preserve the approved cozy navy/orange Macintosh layout while broadening the music identity to indie rock and shoegaze alongside yacht rock. Put grain, faded ink, and zine accents in artwork and chrome; keep the article reading surface calm.
 
 Owner rejected the literal generated band photo as corny and preferred the retro yacht-rock atmosphere. Preserve the marina illustration and record artwork; indie/shoegaze belongs subtly in the editorial range, not an obvious concert-photo aesthetic.
+
+## Homepage copy — 2026-09-18
+Keep front-page text minimal and editorial. No website-marketing slogans, introductory pitches, repeated atmosphere labels, or calls to explore. Let artwork carry the mood and reserve text for navigation, article headlines, and concise destination descriptions.
