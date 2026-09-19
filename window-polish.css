@@ -18,4 +18,10 @@
 .mini-screen{border-radius:4px;box-shadow:inset 0 2px 5px #06152480}
 .mini-computer:after{height:4px;border-radius:2px}
 .night .reader-toolbar button:hover{border-color:var(--paper)}
+.masthead{display:flex;align-items:center;gap:20px}
+.masthead-logo{display:block;flex:none;width:144px;height:144px;mix-blend-mode:lighten;margin-left:-22px;mask-image:linear-gradient(to right,transparent,#000 18%,#000 82%,transparent),linear-gradient(to bottom,transparent,#000 14%,#000 86%,transparent);mask-composite:intersect}
+.masthead .wordmark{font-size:clamp(48px,9vw,128px);letter-spacing:-.065em}
+.reader-brand .brand-logo{mix-blend-mode:lighten;border-radius:0}
+@media(max-width:900px){.masthead{gap:12px}.masthead-logo{width:108px;height:108px;margin-left:-16px}}
+@media(max-width:650px){.masthead{gap:8px;padding-block:24px}.masthead-logo{width:64px;height:64px;margin-left:-10px}.masthead .wordmark{font-size:9.2vw}.menu .home-link{padding-block:8px}}
 @media(max-width:650px){.brand-logo{width:34px;height:34px}.reader-brand{gap:9px}.reader-header .reader-brand{font-size:24px}.window-bar{padding:9px 11px;min-height:37px}.reader-shell{box-shadow:0 8px 24px #06152445}}
