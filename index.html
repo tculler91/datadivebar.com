@@ -16,7 +16,7 @@ body{background-image:radial-gradient(ellipse at 95% 22%,#4d637526,transparent 5
 .masthead-line{letter-spacing:.11em}
 .menu,.window-bar{background-image:repeating-linear-gradient(97deg,transparent 0 5px,#68543d05 5px 6px)}
 .hero .window{position:relative;transform:rotate(-.6deg)}
-.hero .window:before{content:"";position:absolute;z-index:1;top:-12px;right:36px;width:91px;height:24px;background:#b9b5a382;border-inline:2px dotted #eee5d17a;transform:rotate(5deg);pointer-events:none}
+
 .scene{filter:saturate(.8) contrast(.96)}
 .scene-caption{letter-spacing:.025em}
 .station-stamp{display:inline-block;padding:6px 10px;border:1px solid #e99a6880;color:var(--orange);font:10px/1.5 var(--mono);letter-spacing:.1em;transform:rotate(-2deg);margin-right:9px}
@@ -26,7 +26,7 @@ body{background-image:radial-gradient(ellipse at 95% 22%,#4d637526,transparent 5
 .data-art{background-color:#b8c1c2}
 .room{border-bottom-style:dashed}.room:first-child{border-top-style:dashed}
 .footer{border-top-style:dashed}
-@media(max-width:650px){.hero .window{transform:none}.hero .window:before{right:23px;width:74px}.station-stamp{font-size:9px;padding:4px 7px}.scene-caption{line-height:2}}
+@media(max-width:650px){.hero .window{transform:none}.station-stamp{font-size:9px;padding:4px 7px}.scene-caption{line-height:2}}
 /* A quiet front page: identity, artwork, and an editorial index. */
 .wordmark{max-width:none;margin:0;font-size:clamp(64px,10.8vw,151px)}
 .masthead{padding:28px 0 25px}
@@ -35,7 +35,7 @@ body{background-image:radial-gradient(ellipse at 95% 22%,#4d637526,transparent 5
 .scene{height:auto;aspect-ratio:3/2}
 .notes{padding-top:36px}
 @media(max-width:650px){.wordmark{font-size:11.4vw}.masthead{padding:22px 0}.hero{padding-top:24px}.scene{height:auto;aspect-ratio:3/2}.notes{padding-top:28px}}
-</style></head><body><a class="skip" href="#main">Skip to content</a><header class="menu"><div class="wrap menu-inner"><div class="menu-left"><a class="home-link" href="/" aria-label="Data Dive Bar home"><span class="mini-mark" aria-hidden="true">▧</span>Data Dive Bar</a><nav aria-label="Main navigation"><a href="/?category=music#notes">Music &amp; video</a><a href="/?category=data#notes">Data &amp; AI</a><a href="/#backroom">The back room ↗</a></nav></div></div></header>
+</style><link rel="icon" href="/images/brand/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/images/brand/favicon-32.png"><link rel="apple-touch-icon" href="/images/brand/apple-touch-icon.png"><link rel="stylesheet" href="/window-polish.css"></head><body><a class="skip" href="#main">Skip to content</a><header class="menu"><div class="wrap menu-inner"><div class="menu-left"><a class="home-link" href="/" aria-label="Data Dive Bar home"><img class="brand-logo" src="/images/brand/datadivebar.png" width="40" height="40" alt="">Data Dive Bar</a><nav aria-label="Main navigation"><a href="/?category=music#notes">Music &amp; video</a><a href="/?category=data#notes">Data &amp; AI</a><a href="/#backroom">The back room ↗</a></nav></div></div></header>
 <main id="main"><div class="wrap"><div class="masthead"><h1 class="wordmark">Data <span>Dive</span> Bar</h1></div>
 <div class="hero"><figure class="window" style="margin:0"><div class="window-bar"><span class="window-title">The listening room</span></div><img class="scene" src="/images/yacht-listening-room.jpg" width="1536" height="1024" alt="Pixel art of a cozy marina bar with a record player, beige computer, and sailboats at sunset." fetchpriority="high"></figure></div>
 <section class="notes" id="notes" aria-labelledby="notes-title"><div class="section-heading"><h2 id="notes-title">Notes</h2></div><div class="window"><div class="window-bar"><span class="window-title">Reading room</span></div><div class="notes-inner"><div class="notes-top"><div class="tabs" role="group" aria-label="Filter notes"><button type="button" data-filter="all" aria-pressed="true">All notes</button><button type="button" data-filter="music" aria-pressed="false">Music &amp; video</button><button type="button" data-filter="data" aria-pressed="false">Data &amp; AI</button></div><span id="result-count" role="status">2 reader previews</span></div><div class="story-grid">
