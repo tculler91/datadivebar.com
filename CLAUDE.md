@@ -13,7 +13,11 @@ datadivebar.com is a fun, interactive data visualization website hosted on GitHu
 
 ## Project Structure
 
-- `index.html` – Main landing page
+- `index.html` – Main landing page (yacht rock marina theme; previous versions in `_archive/`)
+- `marina.css` / `marina.js` – Shared marina chrome: palette, menu, windows, pixel icons, smooth radio toggle
+- `music/` – The Boathouse: home-recorded covers (Dockside Sessions)
+- `reading-room/music.html` – Post template for stories
+- `feed.xml` – RSS feed; add an `<item>` per new story or cover
 - `americas-deadliest-animal/` – Data viz about America's deadliest animals
 - `bar_invaders/` – Space Invaders-style data game
 - `barcade/` – Arcade-themed interactive data experiences

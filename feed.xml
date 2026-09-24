@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Data Dive Bar</title>
+    <link>https://datadivebar.com/</link>
+    <atom:link href="https://datadivebar.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>Soft rock, deep cuts &amp; dockside ramblings: yacht rock, musician stories, home-recorded covers.</description>
+    <language>en-us</language>
+    <!-- Add one <item> per story or cover, newest first:
+    <item>
+      <title>Story title</title>
+      <link>https://datadivebar.com/logbook/2026-10-slug.html</link>
+      <guid>https://datadivebar.com/logbook/2026-10-slug.html</guid>
+      <pubDate>Thu, 01 Oct 2026 19:00:00 -0400</pubDate>
+      <description>One-sentence summary.</description>
+    </item>
+    -->
+  </channel>
+</rss>
