@@ -24,7 +24,7 @@
   var streams=['https://ice1.somafm.com/seventies-128-mp3','https://ice2.somafm.com/seventies-128-mp3','https://ice4.somafm.com/seventies-128-mp3'];
   var audio=new Audio();audio.preload='none';audio.volume=.7;
   var label=button.querySelector('.radio-label'),dot=button.querySelector('.radio-dot'),index=0;
-  function set(state,text,glyph){button.dataset.state=state;label.textContent=text;dot.textContent=glyph;button.setAttribute('aria-pressed',String(state==='on'))}
+  function set(state,text,glyph){button.dataset.state=state;document.documentElement.dataset.radio=state;label.textContent=text;dot.textContent=glyph;button.setAttribute('aria-pressed',String(state==='on'))}
   function tune(i){
     index=i;set('tuning','Tuning in…','…');audio.src=streams[i];
     audio.play().then(function(){set('on','On air','■')}).catch(function(){
