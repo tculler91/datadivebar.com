@@ -15,6 +15,7 @@ datadivebar.com is a fun, interactive data visualization website hosted on GitHu
 
 - `index.html` – Main landing page (yacht rock marina theme; previous versions in `_archive/`)
 - `marina.css` / `marina.js` – Shared marina chrome: palette, menu, windows, pixel icons, smooth radio toggle
+- `images/brand/` – `logo.svg` (full Mac mark: footer, large uses), `favicon.svg` (sunset tile: menu bar, browser tab); PNG/ICO exports are rendered from these
 - `music/` – The Boathouse: home-recorded covers (Dockside Sessions)
 - `reading-room/music.html` – Post template for stories
 - `feed.xml` – RSS feed; add an `<item>` per new story or cover

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="12 3.5 40 40" role="img" aria-label="Data Dive Bar">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b3658"/>
+      <stop offset=".55" stop-color="#8b4f68"/>
+      <stop offset="1" stop-color="#e98a5e"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbc47f"/>
+      <stop offset="1" stop-color="#f08a58"/>
+    </linearGradient>
+    <clipPath id="screen"><rect x="14" y="7.5" width="36" height="32" rx="5"/></clipPath>
+    <mask id="stripes">
+      <rect x="0" y="0" width="64" height="64" fill="#fff"/>
+      <rect x="0" y="24.6" width="64" height="1.1" fill="#000"/>
+      <rect x="0" y="27.4" width="64" height="1.5" fill="#000"/>
+    </mask>
+  </defs>
+  <rect x="12" y="3.5" width="40" height="40" rx="8" fill="#f3ead6"/>
+  <g clip-path="url(#screen)">
+    <rect x="14" y="7.5" width="36" height="32" fill="url(#sky)"/>
+    <circle cx="30" cy="31" r="11.5" fill="url(#sun)" mask="url(#stripes)"/>
+    <rect x="14" y="31" width="36" height="9" fill="#17304c"/>
+    <rect x="21" y="33.2" width="18" height="1" rx=".5" fill="#f6a56f" opacity=".8"/>
+    <rect x="25" y="35.4" width="10" height="1" rx=".5" fill="#6bb8b0" opacity=".7"/>
+    <!-- Sailboat silhouette -->
+    <path d="M40.4 17.5V30.2M40.4 18.5 34.2 29h6.2ZM41.4 21V29h4.6Z" fill="#10263b" stroke="#10263b" stroke-width=".8" stroke-linejoin="round"/>
+    <path d="M33.2 30.2h14l-2 2.2H35.2Z" fill="#10263b"/>
+  </g>
+</svg>
